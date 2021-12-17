@@ -200,9 +200,8 @@ SearchServer CreateSearchServer() {
         vector<int> ratings(ratings_size, 0);
         for (int& rating : ratings) {
             cin >> rating;
-            cin.ignore(32767, '\n');
         }
-
+        ReadLine();
         search_server.AddDocument(document_id, text, ratings);
         
     }
