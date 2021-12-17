@@ -1,13 +1,8 @@
 import pandas as pd
-from pathlib import Path
-
-home = Path.cwd()
-
 def ConvertExcel(path):
-    path_xls = home / path
-    print(path_xls)
-    base = pd.read_excel(path)
-    print(base)
+    base = pd.read_excel(path, sheet_name=[x for x in range(3)],  index_col = None)
+    new_base = pd.concat(base.values(), ignore_index=True)
+    new_base.to_excel("new_Upwork.xlsx", index=False)
     pass
-print("Gurban LOH\n"*10000)
+
 ConvertExcel('Upwork.xlsx')
