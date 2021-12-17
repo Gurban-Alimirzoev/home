@@ -6,8 +6,8 @@ home = Path.cwd()
 def ConvertExcel(path):
     path_xls = home / path
     print(path_xls)
-    base = pd.read_excel(io = path_xls)
+    base = pd.read_excel(path)
     print(base)
     pass
-
-ConvertExcel('doc.xlsx')
+print("Gurban LOH\n"*10000)
+ConvertExcel('Upwork.xlsx')
