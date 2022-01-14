@@ -6,7 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
- #include <iostream>
+#include <iostream>
 using namespace std;
 
 /* Подставьте вашу реализацию класса SearchServer сюда */
@@ -121,7 +121,8 @@ public:
 
     vector<Document> FindTopDocuments(const string &raw_query, DocumentStatus status) const
     {
-        return FindTopDocuments(raw_query, [status]([[maybe_unused]] int document_id, DocumentStatus document_status, [[maybe_unused]]	int rating) { return document_status == status; });
+        return FindTopDocuments(raw_query, [status]([[maybe_unused]] int document_id, DocumentStatus document_status, [[maybe_unused]] int rating)
+                                { return document_status == status; });
     }
 
     vector<Document> FindTopDocuments(const string &raw_query) const
@@ -297,16 +298,17 @@ private:
         for (const auto [document_id, relevance] : document_to_relevance)
         {
             matched_documents.push_back({document_id,
-                                            relevance,
-                                            documents_.at(document_id).rating});
-            }
-            return matched_documents;
+                                         relevance,
+                                         documents_.at(document_id).rating});
         }
-    };
+        return matched_documents;
+    }
+};
 // -------- Начало модульных тестов поисковой системы ----------
 
 // Тест проверяет, что поисковая система исключает стоп-слова при добавлении документов
-void TestExcludeStopWordsFromAddedDocumentContent() {
+void TestExcludeStopWordsFromAddedDocumentContent()
+{
     const int doc_id = 42;
     const string content = "cat in the city"s;
     const vector<int> ratings = {1, 2, 3};
@@ -317,7 +319,7 @@ void TestExcludeStopWordsFromAddedDocumentContent() {
         server.AddDocument(doc_id, content, DocumentStatus::ACTUAL, ratings);
         const auto found_docs = server.FindTopDocuments("in"s);
         assert(found_docs.size() == 1);
-        const Document& doc0 = found_docs[0];
+        const Document &doc0 = found_docs[0];
         assert(doc0.id == doc_id);
     }
 
@@ -331,12 +333,13 @@ void TestExcludeStopWordsFromAddedDocumentContent() {
     }
 }
 
-void TestMinusWord() {
+void TestMinusWord()
+{
     const int doc_id = 42;
     const string contentMinus = "cat"s;
     const string contentPlus = "dog"s;
     const vector<int> ratings = {1, 2, 3};
-    
+
     SearchServer server;
     server.SetStopWords("cat"s);
     server.AddDocument(doc_id, contentMinus, DocumentStatus::ACTUAL, ratings);
@@ -345,7 +348,8 @@ void TestMinusWord() {
     assert(server.FindTopDocuments("dog"s).empty() == false);
 }
 
-void TestMatchedDoc() {
+void TestMatchedDoc()
+{
     const int doc_id = 42;
     const string contentMinus = "cat"s;
     const string contentPlus = "dog"s;
@@ -359,7 +363,8 @@ void TestMatchedDoc() {
     assert(server.FindTopDocuments("dog"s).size() == 1U);
 }
 
-void TestRaitingCompute() {
+void TestRaitingCompute()
+{
 
     const string contentMinus = "cat dog bad"s;
     const vector<int> ratings = {1, 2, 3};
@@ -375,14 +380,15 @@ void TestRaitingCompute() {
     //assert(server.FindTopDocuments("cat")[2].rating == 1);
 }
 
-void TestSearchDoc() {
+void TestSearchDoc()
+{
     const int doc_id_one = 1;
     const int doc_id_two = 2;
     const int doc_id_tr = 3;
     const int doc_id_for = 4;
     const string contentMinus = "cat dog bad"s;
     const vector<int> ratings = {1, 2, 3};
-    
+
     SearchServer server;
     server.AddDocument(doc_id_one, contentMinus, DocumentStatus::ACTUAL, ratings);
     server.AddDocument(doc_id_two, contentMinus, DocumentStatus::IRRELEVANT, ratings);
@@ -393,8 +399,9 @@ void TestSearchDoc() {
 }
 
 // Функция TestSearchServer является точкой входа для запуска тестов
-void TestSearchServer() {
-    TestExcludeStopWordsFromAddedDocumentContent();  
+void TestSearchServer()
+{
+    TestExcludeStopWordsFromAddedDocumentContent();
     TestMinusWord();
     TestMatchedDoc();
     TestRaitingCompute();
@@ -403,7 +410,8 @@ void TestSearchServer() {
 
 // --------- Окончание модульных тестов поисковой системы -----------
 
-int main() {
+int main()
+{
     TestSearchServer();
     // Если вы видите эту строку, значит все тесты прошли успешно
     cout << "Search server testing finished"s << endl;
