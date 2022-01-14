@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [    
 
-        {
+        /*{
             "name": "g++.exe - Сборка и отладка активного файла",
             "type": "cppdbg",
             "request": "launch",
@@ -27,7 +27,7 @@
                 }
             ],
             "preLaunchTask": "C/C++: g++.exe сборка активного файла"
-        },
+        },*/
         {
             "name": "mingw64",
             "type": "cppdbg",
@@ -39,9 +39,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:\\MinGw64\\mingw32\\bin\\gdb.exe",
-            "visualizerFile": "${workspaceFolder}/my.natvis",
-            "showDisplayString": true,                       
+            "miDebuggerPath": "C:\\MinGw64\\mingw32\\bin\\gdb.exe",                      
             "setupCommands": [
                 {
                     "description": "Включить автоматическое форматирование для gdb",

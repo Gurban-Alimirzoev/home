@@ -1,6 +1,6 @@
 {
     "tasks": [
-        {
+        /*{
             "type": "cppbuild",
             "label": "C/C++: cpp.exe сборка активного файла",
             "command": "C:\\MinGW\\bin\\cpp.exe",
@@ -23,7 +23,7 @@
             },
             "detail": "компилятор: C:\\MinGW\\bin\\cpp.exe"
         }
-    ,
+    ,*/
     {
         "type": "cppbuild",
         "label": "mingw64",
