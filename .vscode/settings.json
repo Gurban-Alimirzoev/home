@@ -1,8 +1,7 @@
 {
     "files.associations": {
         "*.cpp": "cpp",
-        "tuple": "cpp",
-        "array": "cpp",
-        "string_view": "cpp"
-    }
+        "iostream": "cpp"
+    },
+    "C_Cpp.default.cppStandard": "c++17"
 }
