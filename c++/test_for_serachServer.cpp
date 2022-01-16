@@ -337,15 +337,15 @@ void TestMinusWord()
 {
     const int doc_id = 42;
     const string contentMinus = "cat"s;
-    const string contentPlus = "dog"s;
+    //const string contentPlus = "dog"s;
     const vector<int> ratings = {1, 2, 3};
 
     SearchServer server;
-    server.SetStopWords("cat"s);
+    
     server.AddDocument(doc_id, contentMinus, DocumentStatus::ACTUAL, ratings);
+    assert(server.FindTopDocuments("cat"s).empty() == false);
+    server.SetStopWords("cat"s);
     assert(server.FindTopDocuments("cat"s).empty());
-    server.AddDocument(doc_id, contentPlus, DocumentStatus::ACTUAL, ratings);
-    assert(server.FindTopDocuments("dog"s).empty() == false);
 }
 
 void TestMatchedDoc()
@@ -353,13 +353,17 @@ void TestMatchedDoc()
     const int doc_id = 42;
     const string contentMinus = "cat"s;
     const string contentPlus = "dog"s;
+    const string contentPlusWithMinus = "cat dog"s;
+    
     const vector<int> ratings = {1, 2, 3};
 
     SearchServer server;
     server.SetStopWords("cat"s);
     server.AddDocument(doc_id, contentMinus, DocumentStatus::ACTUAL, ratings);
+    server.AddDocument(doc_id, contentPlusWithMinus, DocumentStatus::ACTUAL, ratings);
     server.AddDocument(doc_id, contentPlus, DocumentStatus::ACTUAL, ratings);
     assert(server.FindTopDocuments("cat"s).size() == 0U);
+    assert(server.FindTopDocuments("cat dog"s).size() == 1U);
     assert(server.FindTopDocuments("dog"s).size() == 1U);
 }
 
@@ -376,26 +380,32 @@ void TestRaitingCompute()
     server.AddDocument(5, contentMinus, DocumentStatus::ACTUAL, zero);
     server.AddDocument(9, contentMinus, DocumentStatus::ACTUAL, one);
     assert(server.FindTopDocuments("cat dog bad")[0].rating == 2);
-    //assert(server.FindTopDocuments("cat dog")[1].rating == 0);
-    //assert(server.FindTopDocuments("cat")[2].rating == 1);
+    assert(server.FindTopDocuments("cat dog")[1].rating == 1);
+    assert(server.FindTopDocuments("cat")[2].rating == 0);
 }
 
-void TestSearchDoc()
+void TestSortRelev()
 {
     const int doc_id_one = 1;
     const int doc_id_two = 2;
     const int doc_id_tr = 3;
     const int doc_id_for = 4;
-    const string contentMinus = "cat dog bad"s;
+    const string contentOne = "cat dog bad good"s;
+    const string contentTwo = "cat"s;
+    const string contentThree = "dog bad cat"s;
+    const string contentFore = "bad good"s;
+    
     const vector<int> ratings = {1, 2, 3};
 
     SearchServer server;
-    server.AddDocument(doc_id_one, contentMinus, DocumentStatus::ACTUAL, ratings);
-    server.AddDocument(doc_id_two, contentMinus, DocumentStatus::IRRELEVANT, ratings);
-    server.AddDocument(doc_id_tr, contentMinus, DocumentStatus::BANNED, ratings);
-    server.AddDocument(doc_id_for, contentMinus, DocumentStatus::REMOVED, ratings);
+    server.AddDocument(doc_id_one, contentOne, DocumentStatus::ACTUAL, ratings);
+    server.AddDocument(doc_id_two, contentTwo, DocumentStatus::ACTUAL, ratings);
+    server.AddDocument(doc_id_tr, contentThree, DocumentStatus::ACTUAL, ratings);
+    server.AddDocument(doc_id_for, contentFore, DocumentStatus::ACTUAL, ratings);
 
-    assert(server.FindTopDocuments("cat").size() == 1U);
+    assert(server.FindTopDocuments("cat dog")[0].id == 3);
+    assert(server.FindTopDocuments("cat dog")[1].id == 2);
+    assert(server.FindTopDocuments("cat dog")[2].id == 1);
 }
 
 // Функция TestSearchServer является точкой входа для запуска тестов
@@ -405,7 +415,7 @@ void TestSearchServer()
     TestMinusWord();
     TestMatchedDoc();
     TestRaitingCompute();
-    TestSearchDoc();
+    TestSortRelev();
 }
 
 // --------- Окончание модульных тестов поисковой системы -----------
