@@ -1,5 +1,3 @@
-// search_server_s3_t3_v1.cpp
-
 #include <algorithm>
 #include <cmath>
 #include <iostream>
