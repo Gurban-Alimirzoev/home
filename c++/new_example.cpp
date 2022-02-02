@@ -16,26 +16,22 @@ void PrintRange(It range_begin, It range_end)
     cout << endl;
 }
 
-template <typename Container, typename It>
-void EraseAndPrint(Container cont, It it)
+template <typename It>
+auto MakeVector(It range_begin, It range_end)
 {
-    auto oldBegin = cont.begin();
-    auto oldEnd = cont.end();
-    if (it != oldBegin)
-    {
-        cont.erase(it);
-        PrintRange(cont.begin(), it++);
-        PrintRange(it++, cont.end());
-    }
-    else {
-        cont.erase(it);
-        cout << endl;
-        PrintRange(cont.begin(), cont.end()); 
-    }
+    return vector(range_begin, range_end);
 }
 
-int main()
-{
+template <typename Container>
+void EraseAndPrint(Container& container, int position, int range_begin, int range_end) {
+    container.erase(container.begin() + position);
+    PrintRange(container.begin(), container.end());
+    container.erase(container.begin() + range_begin, container.begin() + range_end);
+    PrintRange(container.begin(), container.end());
+}
+
+int main() {
     vector<string> langs = {"Python"s, "Java"s, "C#"s, "Ruby"s, "C++"s};
-    EraseAndPrint(langs, langs.begin());
+    EraseAndPrint(langs, 0, 0, 2);
+    return 0;
 }
