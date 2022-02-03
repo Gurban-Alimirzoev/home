@@ -66,34 +66,63 @@ private:
         }
     }
 };
+void swapTwoDisk(vector<Tower> &towers, int outTower, int inTower, int mediumTower)
+{
+    towers[outTower].EraseTopDisk();
+    towers[mediumTower].AddToTop(towers[outTower].TopDiskInTower());
+    towers[outTower].EraseTopDisk();
+    towers[inTower].AddToTop(towers[outTower].TopDiskInTower());
+    towers[mediumTower].EraseTopDisk();
+    towers[inTower].AddToTop(towers[mediumTower].TopDiskInTower());
+}
+
+void swapOneDisk(vector<Tower> &towers, int outTower, int inTower)
+{
+    towers[outTower].EraseTopDisk();
+    towers[inTower].AddToTop(towers[outTower].TopDiskInTower());
+}
 
 void SolveHanoi(vector<Tower> &towers)
 {
-
+    int disks_num = towers[0].GetDisksNum();
+    if (towers[0].GetDisksNum() > 1 && towers[2].GetDisksNum() == 0)
+    {
+        swapTwoDisk(towers, 0, 1, 2);
+    }
+    if (towers[1].GetDisksNum() % 2 == 0 && towers[1].GetDisksNum() != 0)
+    {
+        swapOneDisk(towers, 0, 2);
+        for (int i = 0; i < towers[1].GetDisksNum() / 2; i++)
+        {
+            swapTwoDisk(towers, 1, 2, 0);
+        }
+    }
+    else
+    {
+        swapTwoDisk(towers, 2, 1, 0);
+        swapOneDisk(towers, 2, 0);
+        swapTwoDisk(towers, 1, 2, 0);
+        swapOneDisk(towers, 0, 1);
+        swapTwoDisk(towers, 2, 1, 0);
+        swapOneDisk(towers, 0, 2);
+        swapTwoDisk(towers, 1, 0, 2);
+        swapOneDisk(towers, 1, 2);
+        swapTwoDisk(towers, 0, 2, 1);
+    }
     if (towers[0].GetDisksNum() != 0)
     {
-        towers[0].EraseTopDisk();
-        towers[2].AddToTop(towers[0].TopDiskInTower());
-        towers[0].EraseTopDisk();
-        towers[1].AddToTop(towers[0].TopDiskInTower());
-        towers[2].EraseTopDisk();
-        towers[1].AddToTop(towers[2].TopDiskInTower());
-        towers[0].EraseTopDisk();
-        towers[2].AddToTop(towers[0].TopDiskInTower());
-        towers[1].EraseTopDisk();
-        towers[0].AddToTop(towers[1].TopDiskInTower());
-        towers[1].EraseTopDisk();
-        towers[2].AddToTop(towers[1].TopDiskInTower());
-        towers[0].EraseTopDisk();
-        towers[2].AddToTop(towers[0].TopDiskInTower());
         SolveHanoi(towers);
+    }
+    if (disks_num == towers[2].GetDisksNum())
+    {
+        cout << "Все диски на 3 башне в нужном порядке" << endl;
     }
 }
 
 int main()
 {
     int towers_num = 3;
-    int disks_num = 8;
+    int disks_num = 6;
     vector<Tower> towers;
     // добавим в вектор три пустые башни
     for (int i = 0; i < towers_num; ++i)
