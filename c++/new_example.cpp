@@ -84,14 +84,14 @@ void swapOneDisk(vector<Tower> &towers, int outTower, int inTower)
 
 void SolveHanoi(vector<Tower> &towers)
 {
+    
     int disks_num = towers[0].GetDisksNum();
     if (towers[0].GetDisksNum() > 1 && towers[2].GetDisksNum() == 0)
     {
         swapTwoDisk(towers, 0, 1, 2);
     }
-    if (towers[1].GetDisksNum() % 2 == 0 && towers[1].GetDisksNum() != 0)
+    if (towers[2].GetDisksNum() % 2 == 0 && towers[0].GetDisksNum() != 0)
     {
-        swapOneDisk(towers, 0, 2);
         for (int i = 0; i < towers[1].GetDisksNum() / 2; i++)
         {
             swapTwoDisk(towers, 1, 2, 0);
@@ -122,7 +122,7 @@ void SolveHanoi(vector<Tower> &towers)
 int main()
 {
     int towers_num = 3;
-    int disks_num = 6;
+    int disks_num = 3;
     vector<Tower> towers;
     // добавим в вектор три пустые башни
     for (int i = 0; i < towers_num; ++i)
