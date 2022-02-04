@@ -44,9 +44,9 @@ void MergeSort(RandomIt range_begin, RandomIt range_end) {
     auto i = findMedian(range_begin, range_end);
     auto vecOne = MakeVector(range_begin, i);
     auto vecTwo = MakeVector(i, range_end);
+    
 
 }
-
 
 int main() {
     vector<int> test_vector(10);
