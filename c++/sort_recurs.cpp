@@ -7,6 +7,21 @@
 using namespace std;
 
 template <typename It>
+auto MakeVector(It range_begin, It range_end) {
+    return vector(range_begin, range_end);
+}
+
+template <typename RandomIt>
+RandomIt findMedian(RandomIt range_begin, RandomIt range_end)
+{
+    if (range_begin + 1 != range_end - 1 || range_begin != range_end-1)
+    {
+        findMedian(range_begin + 1, range_end - 1);
+    }
+    return range_begin;
+}
+
+template <typename It>
 void PrintRange(It range_begin, It range_end)
 {
     for (auto it = range_begin; it != range_end; ++it)
@@ -15,21 +30,6 @@ void PrintRange(It range_begin, It range_end)
     }
     cout << endl;
 }
-
-template <typename It>
-auto MakeVector(It range_begin, It range_end) {
-    return vector(range_begin, range_end);
-}
-
-/*template <typename RandomIt>
-RandomIt findMedian(RandomIt range_begin, RandomIt range_end)
-{
-    if (range_begin + 1 != range_end - 1 || range_begin != range_end-1)
-    {
-        findMedian(range_begin + 1, range_end - 1);
-    }
-    return range_begin;
-}*/
 
 template <typename RandomIt>
 bool sortHand(RandomIt range_begin, RandomIt range_end) {
@@ -40,16 +40,15 @@ bool sortHand(RandomIt range_begin, RandomIt range_end) {
 }
 
 template <typename RandomIt>
-void MergeSort(RandomIt range_begin, RandomIt range_end)
-{
-    RandomIt i = findMedian(range_begin, range_end);
-    auto first = MakeVector(range_begin, i);
-    auto second = MakeVector(i, range_end);
-    if (sortHand(range_begin, range_begin + 1))
+void MergeSort(RandomIt range_begin, RandomIt range_end) {
+    auto i = findMedian(range_begin, range_end);
+    auto vecOne = MakeVector(range_begin, i);
+    auto vecTwo = MakeVector(i, range_end);
+
 }
 
-int main()
-{
+
+int main() {
     vector<int> test_vector(10);
 
     // iota             -> http://ru.cppreference.com/w/cpp/algorithm/iota
