@@ -1,51 +1,40 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <sstream>
 #include <vector>
 
 using namespace std;
 
 template <typename It>
-auto MakeVector(It range_begin, It range_end) {
-    return vector(range_begin, range_end);
-}
-
-template <typename RandomIt>
-RandomIt findMedian(RandomIt range_begin, RandomIt range_end)
-{
-    if (range_begin + 1 != range_end - 1 || range_begin != range_end-1)
-    {
-        findMedian(range_begin + 1, range_end - 1);
-    }
-    return range_begin;
-}
-
-template <typename It>
-void PrintRange(It range_begin, It range_end)
-{
-    for (auto it = range_begin; it != range_end; ++it)
-    {
+void PrintRange(It range_begin, It range_end) {
+    for (auto it = range_begin; it != range_end; ++it) {
         cout << *it << " "s;
     }
     cout << endl;
 }
 
 template <typename RandomIt>
-bool sortHand(RandomIt range_begin, RandomIt range_end) {
-    if (*range_begin > range_begin[1]) {
-        return true;
-    }
-    return false;
-}
-
-template <typename RandomIt>
 void MergeSort(RandomIt range_begin, RandomIt range_end) {
-    auto i = findMedian(range_begin, range_end);
-    auto vecOne = MakeVector(range_begin, i);
-    auto vecTwo = MakeVector(i, range_end);
-    
+    // 1. Если диапазон содержит меньше 2 элементов, выходим из функции
+    int range_length = range_end - range_begin;
+    if (range_length < 2) {
+        return;
+    }
 
+    // 2. Создаем вектор, содержащий все элементы текущего диапазона
+    vector<typename RandomIt::value_type> elements(range_begin, range_end);
+
+    // 3. Разбиваем вектор на две равные части
+    auto mid = elements.begin() + range_length / 2;
+
+    // 4. Вызываем функцию MergeSort от каждой половины вектора
+    MergeSort(elements.begin(), mid);
+    MergeSort(mid, elements.end());
+
+    // 5. С помощью алгоритма merge сливаем отсортированные половины
+    // в исходный диапазон
+    // merge -> http://ru.cppreference.com/w/cpp/algorithm/merge
+    merge(elements.begin(), mid, mid, elements.end(), range_begin);
 }
 
 int main() {
