@@ -356,15 +356,42 @@ private:
     }
 };
 
+/*template <typename It>
+void PrintRange(It range_begin, It range_end)
+{
+    for (auto it = range_begin; it != range_end; ++it)
+    {
+        cout << *it << " "s;
+    }
+    cout << endl;
+}*/
+
+template <typename It>
+ostream &operator<<(ostream &cout, It &it)
+{
+    cout << *it << " "s;
+    cout << endl;
+    return cout;
+}
+
+ostream &operator<<(ostream &cout, Document &document)
+{
+    cout << "{ "s
+         << "document_id = "s << document.id << ", "s
+         << "relevance = "s << document.relevance << ", "s
+         << "rating = "s << document.rating << " }"s << endl;
+    return cout;
+}
+
 template <typename Iterator>
-class Paginator
+class IteratorRange
 {
 public:
-    explicit Paginator(Iterator beginIt, Iterator endIt, size_t page_size)
+    explicit IteratorRange(Iterator beginIt, Iterator endIt, size_t page_size)
         : page_size_(page_size)
     {
     }
-    int size(size_t page_size_)
+    int sizeRange(size_t page_size_)
     {
         return static_cast<int>(page_size_);
     }
@@ -372,13 +399,47 @@ public:
     {
         return beginIt;
     }
-    Iterator end(Iterator endIt)
+    Iterator end(Iterator beginIt)
     {
-        return endIt + size(page_size_);
+        return beginIt + sizeRange(page_size_);
     }
+
+    // return this->vector<pair<IteratorRange, IteratorRange>> { begin(beginIt), end(beginIt) }
 
 private:
     size_t page_size_;
+};
+
+template <typename Iterator>
+class Paginator
+{
+public:
+    explicit Paginator(Iterator firstI, Iterator secondI, size_t page_size){}
+        : page_size_(page_size), firstIt(firstI), secondIt(secondI)
+    {
+    }
+
+    vector<Iterator, Iterator> resultPage(Iterator firstIt, Iterator secondIt, size_t page_size_)
+    {
+        int sizeIt = static_cast<int>(page_size_);
+        //vector<Iterator, Iterator> resultVec;
+        {
+            if (distance(firstIt, secondIt) > sizeIt)
+            {
+                resultVec.push_back(advance(firstIt, sizeIt), secondIt);
+                resultPage(advance(firstIt, sizeIt), secondIt, page_size_);
+            }
+            else
+            {
+                resultVec(firstIt, secondIt);
+            }
+        }
+        return resultVec;
+    }
+
+private:
+    size_t page_size;
+    vector<Iterator, Iterator> resultVec;
 };
 
 template <typename Container>
