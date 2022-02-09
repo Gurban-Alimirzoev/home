@@ -1,13 +1,19 @@
 #include <iostream>
 #include <string>
-
+#include <algorithm>
 using namespace std;
 
-bool IsPalindrome(const string &text)
+bool isPalindrome(string s)
 {
-    int size_text = text.size(), var = 0;
-    string prob;
-    for (int i = 0; i < size_text; i++)
+    int var = 0;
+    string prob, text;
+    for (auto i = begin(s); i < end(s); i++) {
+        if ( !(*i >= '\0' && *i < '0' || *i > '9' && *i < 'A' || *i > 'Z' && *i < 'a' || *i > 'z')) {
+            *i = tolower(*i);
+            text.push_back(*i);
+        }
+    }
+    for (int i = 0; i < text.size(); i++)
     {
         if (text[i] != ' ')
         {
@@ -16,14 +22,14 @@ bool IsPalindrome(const string &text)
     }
     if (prob.empty())
     {
-        return false;
+        return true;
     }
     else
     {
         int size_prob = prob.size();
         for (int i = 0; i < (size_prob / 2); i++)
         {
-            if (prob[i] == prob[size_text - i - 1])
+            if (prob[i] == prob[size_prob - i - 1])
             {
                 var++;
             }
@@ -45,9 +51,9 @@ bool IsPalindrome(const string &text)
 
 int main()
 {
-    string text = "never odd or even";
+    string text = "ab _a";
 
-    if (IsPalindrome(text))
+    if (isPalindrome(text))
     {
         cout << "palindrome"s << endl;
     }

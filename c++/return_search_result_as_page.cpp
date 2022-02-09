@@ -356,16 +356,6 @@ private:
     }
 };
 
-/*template <typename It>
-void PrintRange(It range_begin, It range_end)
-{
-    for (auto it = range_begin; it != range_end; ++it)
-    {
-        cout << *it << " "s;
-    }
-    cout << endl;
-}*/
-
 template <typename It>
 ostream &operator<<(ostream &cout, It &it)
 {
@@ -383,12 +373,28 @@ ostream &operator<<(ostream &cout, Document &document)
     return cout;
 }
 
-template <typename Iterator>
+/*template <typename It>
+ostringstream &operator<<(ostringstream &os, It &it)
+{
+    os << *it << " "s << endl;
+    return os;
+}
+
+ostringstream &operator<<(ostringstream &os, Document &document)
+{
+    os << "{ document_id = " << document.id; 
+    os << ", relevance = " << document.relevance; 
+    os << ", rating = " << document.rating << " }" << "\n";
+    return os;
+}*/
+
+
+/*template <typename Iterator>
 class IteratorRange
 {
 public:
-    explicit IteratorRange(Iterator beginIt, Iterator endIt, size_t page_size)
-        : page_size_(page_size)
+    explicit IteratorRange(Iterator beginIter, Iterator endIter, size_t page_size)
+        : beginIt(beginIter), endIt(endIter), page_size_(page_size)
     {
     }
     int sizeRange(size_t page_size_)
@@ -403,26 +409,26 @@ public:
     {
         return beginIt + sizeRange(page_size_);
     }
-
+    
     // return this->vector<pair<IteratorRange, IteratorRange>> { begin(beginIt), end(beginIt) }
 
 private:
     size_t page_size_;
-};
+    Iterator beginIt, endIt;
+};*/
 
 template <typename Iterator>
 class Paginator
 {
 public:
-    explicit Paginator(Iterator firstI, Iterator secondI, size_t page_size){}
-        : page_size_(page_size), firstIt(firstI), secondIt(secondI)
-    {
+    explicit Paginator(Iterator firstI, Iterator secondI, size_t page_size)
+        : firstIt(firstI), secondIt(secondI), page_size_(page_size)
+    {   
     }
-
     vector<Iterator, Iterator> resultPage(Iterator firstIt, Iterator secondIt, size_t page_size_)
     {
         int sizeIt = static_cast<int>(page_size_);
-        //vector<Iterator, Iterator> resultVec;
+        vector<Iterator, Iterator> resultVec;
         {
             if (distance(firstIt, secondIt) > sizeIt)
             {
@@ -438,7 +444,9 @@ public:
     }
 
 private:
-    size_t page_size;
+
+    size_t page_size_;
+    Iterator firstIt, secondIt;
     vector<Iterator, Iterator> resultVec;
 };
 
