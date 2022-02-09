@@ -382,14 +382,13 @@ ostringstream &operator<<(ostringstream &os, It &it)
 
 ostringstream &operator<<(ostringstream &os, Document &document)
 {
-    os << "{ document_id = " << document.id; 
-    os << ", relevance = " << document.relevance; 
+    os << "{ document_id = " << document.id;
+    os << ", relevance = " << document.relevance;
     os << ", rating = " << document.rating << " }" << "\n";
     return os;
 }*/
 
-
-/*template <typename Iterator>
+template <typename Iterator>
 class IteratorRange
 {
 public:
@@ -397,54 +396,63 @@ public:
         : beginIt(beginIter), endIt(endIter), page_size_(page_size)
     {
     }
+
     int sizeRange(size_t page_size_)
     {
         return static_cast<int>(page_size_);
     }
-    Iterator begin(Iterator beginIt)
+
+    optional pair<Iterator, Iterator> begin(Iterator beginIt, Iterator endIt)
     {
-        return beginIt;
+        sizeNow = sizeRange(page_size_);
+        if (distance(beginIt, endIt) > sizeNow)
+        {
+            return {beginIt, advance(beginIt, sizeNow)};
+        }
     }
-    Iterator end(Iterator beginIt)
+
+    optional pair<Iterator, Iterator> end(Iterator beginIt)
     {
-        return beginIt + sizeRange(page_size_);
+        sizeNow = sizeRange(page_size_);
+        if (distance(beginIt, endIt) <= sizeNow)
+        {
+            return {beginIt, advance(beginIt, sizeNow)};
+        }
     }
-    
-    // return this->vector<pair<IteratorRange, IteratorRange>> { begin(beginIt), end(beginIt) }
+
+    /*vector<Iterator, Iterator> resultVec;
+    resultPage(Iterator firstIt, Iterator secondIt, size_t page_size_)
+    {
+        int sizeIt = static_cast<int>(page_size_);
+        {
+            if (distance(firstIt, secondIt) > sizeIt)
+            {
+                resultVec.push_back(firstIt, advance(firstIt, sizeIt));
+                resultPage(advance(firstIt, sizeIt), secondIt, page_size_, resultVec);
+            }
+            else
+            {
+                resultVec.push_back(firstIt, secondIt);
+            }
+        }
+        return resultVec;
+    }*/
 
 private:
     size_t page_size_;
     Iterator beginIt, endIt;
-};*/
+};
 
 template <typename Iterator>
 class Paginator
 {
 public:
     explicit Paginator(Iterator firstI, Iterator secondI, size_t page_size)
-        : firstIt(firstI), secondIt(secondI), page_size_(page_size)
-    {   
-    }
-    vector<Iterator, Iterator> resultPage(Iterator firstIt, Iterator secondIt, size_t page_size_)
+        : resultVec(IteratorRange::resultPage(firstI, secondI, page_size))
     {
-        int sizeIt = static_cast<int>(page_size_);
-        vector<Iterator, Iterator> resultVec;
-        {
-            if (distance(firstIt, secondIt) > sizeIt)
-            {
-                resultVec.push_back(advance(firstIt, sizeIt), secondIt);
-                resultPage(advance(firstIt, sizeIt), secondIt, page_size_);
-            }
-            else
-            {
-                resultVec(firstIt, secondIt);
-            }
-        }
-        return resultVec;
     }
 
 private:
-
     size_t page_size_;
     Iterator firstIt, secondIt;
     vector<Iterator, Iterator> resultVec;
