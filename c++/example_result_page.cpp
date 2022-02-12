@@ -105,10 +105,12 @@ class Paginator
     public: 
     Paginator(Iterator range_begin, Iterator range_end, size_t page_size_) : page_size(page_size_)
     {
-        for ( Iterator iterator = range_begin; iterator != range_end - page_size; iterator += page_size )
+        Iterator iterator = range_begin;
+        for ( iterator = range_begin; page_size - 1 <= distance(iterator, range_end); iterator += page_size )
         {
         pages.push_back( IteratorRange(iterator, iterator + page_size) );
         }
+        pages.push_back( IteratorRange(iterator, range_end) );
     }
  
     auto begin() const 
@@ -126,8 +128,7 @@ class Paginator
         return page_size;
     }
  
-private:
- 
+private: 
     size_t page_size;
     vector <IteratorRange<Iterator>> pages;
 };

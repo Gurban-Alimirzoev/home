@@ -356,96 +356,91 @@ private:
     }
 };
 
-template <typename It>
-ostream &operator<<(ostream &cout, It &it)
-{
-    cout << *it << " "s;
-    cout << endl;
-    return cout;
-}
-
-ostream &operator<<(ostream &cout, Document &document)
-{
-    cout << "{ "s
-         << "document_id = "s << document.id << ", "s
-         << "relevance = "s << document.relevance << ", "s
-         << "rating = "s << document.rating << " }"s << endl;
-    return cout;
-}
-
-/*template <typename It>
-ostringstream &operator<<(ostringstream &os, It &it)
-{
-    os << *it << " "s << endl;
-    return os;
-}
-
-ostringstream &operator<<(ostringstream &os, Document &document)
-{
-    os << "{ document_id = " << document.id;
-    os << ", relevance = " << document.relevance;
-    os << ", rating = " << document.rating << " }" << "\n";
-    return os;
-}*/
-
 template <typename Iterator>
 class IteratorRange
 {
 public:
-    IteratorRange(Iterator firstIter, size_t sizeIter)
-        : beginIt(firstIter), page_size_(size(sizeIter)), page({begin(), end()})
+    IteratorRange(Iterator firstIter, Iterator endIter, size_t sizeIter)
+        : beginIt(firstIter), endIt(endIter), page_size_(size(sizeIter))
     {
     }
 
-    int size()
+    int size(size_t page_size)
     {
-        return static_cast<int>(page_size_);
+        return static_cast<int>(page_size);
     }
 
-    Iterator begin()
+    auto begin() const
     {
         return beginIt;
     }
 
-    Iterator end()
+    auto end() const
     {
-        advance(beginIt, page_size_);
-        return beginIt;
+        return endIt;
     }
-    pair<Iterator, Iterator> page;
 
 private:
     int page_size_;
-    Iterator beginIt;
+    Iterator beginIt, endIt;
 };
 
 template <typename Iterator>
 class Paginator
 {
 public:
-    explicit Paginator(Iterator firstIter, Iterator secondIter, size_t sizeIter)
-        : resultVec(
-              for (i = firstIt; i < secondIt; i = end()) {
-                  varab.push_back({i, end()});
-              } 
-              if (distance(i, secondIt) > 0) {
-                  varab.push_back({i, secondIt});
-              })
+    explicit Paginator(Iterator firstIter, Iterator secondIter, size_t sizeIter) : page_size_(IteratorRange(firstIter, secondIter, sizeIter).size(sizeIter))
     {
+        auto i = firstIter;
+        for (i = firstIter; page_size_ <= distance(i, secondIter); i = plusPageSize(i))
+        {
+            resultVec.push_back(IteratorRange(i, plusPageSize(i), page_size_));
+        }
+        if (distance(i, secondIter) > 0)
+        {
+            resultVec.push_back(IteratorRange(i, secondIter, page_size_));
+        }
+    }
+    auto begin() const
+    {
+        return resultVec.begin();
     }
 
-    vector<IteratorRange<Iterator>> resultVec;
+    auto end() const
+    {
+        return resultVec.end();
+    }
+
+    auto plusPageSize(Iterator begIt) {
+        advance(begIt, page_size_);
+        return begIt;
+    }
 
 private:
-    /*size_t sizeIt;
-    int size_int;
-    Iterator firstIt, secondIt;*/
+    vector<IteratorRange<Iterator>> resultVec;
+    int page_size_;
 };
 
 template <typename Container>
 auto Paginate(const Container &c, size_t page_size)
 {
     return Paginator(begin(c), end(c), page_size);
+}
+
+template <typename Iterator>
+ostream &operator<<(ostream &os, const IteratorRange<Iterator> &range)
+{
+    for (auto it : range)
+    {
+        os << it << " ";
+    }
+    return os;
+}
+
+ostream &operator<<(ostream &os, const Document doc)
+{
+    os << "{ document_id = " << doc.id << ", relevance = " << doc.relevance << ", rating = " << doc.rating << " }";
+    return os;
 }
 
 int main()
@@ -458,7 +453,7 @@ int main()
     search_server.AddDocument(5, "big dog hamster Borya"s, DocumentStatus::ACTUAL, {1, 1, 1});
 
     const auto search_results = search_server.FindTopDocuments("curly dog"s);
-    int page_size = 2;
+    int page_size = 3;
     const auto pages = Paginate(search_results, page_size);
     // Выводим найденные документы по страницам
     for (auto page = pages.begin(); page != pages.end(); ++page)
