@@ -392,70 +392,54 @@ template <typename Iterator>
 class IteratorRange
 {
 public:
-    explicit IteratorRange(Iterator beginIter, Iterator endIter, size_t page_size)
-        : beginIt(beginIter), endIt(endIter), page_size_(page_size)
+    IteratorRange(Iterator firstIter, size_t sizeIter)
+        : beginIt(firstIter), page_size_(size(sizeIter)), page({begin(), end()})
     {
     }
 
-    int sizeRange(size_t page_size_)
+    int size()
     {
         return static_cast<int>(page_size_);
     }
 
-    optional pair<Iterator, Iterator> begin(Iterator beginIt, Iterator endIt)
+    Iterator begin()
     {
-        sizeNow = sizeRange(page_size_);
-        if (distance(beginIt, endIt) > sizeNow)
-        {
-            return {beginIt, advance(beginIt, sizeNow)};
-        }
+        return beginIt;
     }
 
-    optional pair<Iterator, Iterator> end(Iterator beginIt)
+    Iterator end()
     {
-        sizeNow = sizeRange(page_size_);
-        if (distance(beginIt, endIt) <= sizeNow)
-        {
-            return {beginIt, advance(beginIt, sizeNow)};
-        }
+        advance(beginIt, page_size_);
+        return beginIt;
     }
-
-    /*vector<Iterator, Iterator> resultVec;
-    resultPage(Iterator firstIt, Iterator secondIt, size_t page_size_)
-    {
-        int sizeIt = static_cast<int>(page_size_);
-        {
-            if (distance(firstIt, secondIt) > sizeIt)
-            {
-                resultVec.push_back(firstIt, advance(firstIt, sizeIt));
-                resultPage(advance(firstIt, sizeIt), secondIt, page_size_, resultVec);
-            }
-            else
-            {
-                resultVec.push_back(firstIt, secondIt);
-            }
-        }
-        return resultVec;
-    }*/
+    pair<Iterator, Iterator> page;
 
 private:
-    size_t page_size_;
-    Iterator beginIt, endIt;
+    int page_size_;
+    Iterator beginIt;
 };
 
 template <typename Iterator>
 class Paginator
 {
 public:
-    explicit Paginator(Iterator firstI, Iterator secondI, size_t page_size)
-        : resultVec(IteratorRange::resultPage(firstI, secondI, page_size))
+    explicit Paginator(Iterator firstIter, Iterator secondIter, size_t sizeIter)
+        : resultVec(
+              for (i = firstIt; i < secondIt; i = end()) {
+                  varab.push_back({i, end()});
+              } 
+              if (distance(i, secondIt) > 0) {
+                  varab.push_back({i, secondIt});
+              })
     {
     }
 
+    vector<IteratorRange<Iterator>> resultVec;
+
 private:
-    size_t page_size_;
-    Iterator firstIt, secondIt;
-    vector<Iterator, Iterator> resultVec;
+    /*size_t sizeIt;
+    int size_int;
+    Iterator firstIt, secondIt;*/
 };
 
 template <typename Container>
@@ -467,7 +451,6 @@ auto Paginate(const Container &c, size_t page_size)
 int main()
 {
     SearchServer search_server("and with"s);
-
     search_server.AddDocument(1, "funny pet and nasty rat"s, DocumentStatus::ACTUAL, {7, 2, 7});
     search_server.AddDocument(2, "funny pet with curly hair"s, DocumentStatus::ACTUAL, {1, 2, 3});
     search_server.AddDocument(3, "big cat nasty hair"s, DocumentStatus::ACTUAL, {1, 2, 8});
@@ -477,7 +460,6 @@ int main()
     const auto search_results = search_server.FindTopDocuments("curly dog"s);
     int page_size = 2;
     const auto pages = Paginate(search_results, page_size);
-
     // Выводим найденные документы по страницам
     for (auto page = pages.begin(); page != pages.end(); ++page)
     {
