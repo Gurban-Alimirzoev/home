@@ -360,14 +360,14 @@ template <typename Iterator>
 class IteratorRange
 {
 public:
-    IteratorRange(Iterator firstIter, Iterator endIter, size_t sizeIter)
-        : beginIt(firstIter), endIt(endIter), page_size_(size(sizeIter))
+    IteratorRange(Iterator firstIter, Iterator endIter)
+        : beginIt(firstIter), endIt(endIter)
     {
     }
 
-    int size(size_t page_size)
+    int size()
     {
-        return static_cast<int>(page_size);
+        return distance(beginIt, endIt);
     }
 
     auto begin() const
@@ -381,7 +381,6 @@ public:
     }
 
 private:
-    int page_size_;
     Iterator beginIt, endIt;
 };
 
@@ -389,16 +388,16 @@ template <typename Iterator>
 class Paginator
 {
 public:
-    explicit Paginator(Iterator firstIter, Iterator secondIter, size_t sizeIter) : page_size_(IteratorRange(firstIter, secondIter, sizeIter).size(sizeIter))
+    explicit Paginator(Iterator firstIter, Iterator secondIter, size_t sizeIter) : page_size_(size(sizeIter))
     {
         auto i = firstIter;
-        for (i = firstIter; page_size_ <= distance(i, secondIter); i = plusPageSize(i))
+        for (i = firstIter; IteratorRange(i, secondIter).size() > page_size_; i = plusPageSize(i))
         {
-            resultVec.push_back(IteratorRange(i, plusPageSize(i), page_size_));
+            resultVec.push_back(IteratorRange(i, plusPageSize(i)));
         }
-        if (distance(i, secondIter) > 0)
+        if (IteratorRange(i, secondIter).size() > 0)
         {
-            resultVec.push_back(IteratorRange(i, secondIter, page_size_));
+            resultVec.push_back(IteratorRange(i, secondIter));
         }
     }
     auto begin() const
@@ -410,8 +409,12 @@ public:
     {
         return resultVec.end();
     }
-
-    auto plusPageSize(Iterator begIt) {
+    int size(size_t var)
+    {
+        return static_cast<int>(var);
+    }
+    auto plusPageSize(Iterator begIt)
+    {
         advance(begIt, page_size_);
         return begIt;
     }
@@ -432,7 +435,7 @@ ostream &operator<<(ostream &os, const IteratorRange<Iterator> &range)
 {
     for (auto it : range)
     {
-        os << it << " ";
+        os << it;
     }
     return os;
 }
@@ -451,9 +454,11 @@ int main()
     search_server.AddDocument(3, "big cat nasty hair"s, DocumentStatus::ACTUAL, {1, 2, 8});
     search_server.AddDocument(4, "big dog cat Vladislav"s, DocumentStatus::ACTUAL, {1, 3, 2});
     search_server.AddDocument(5, "big dog hamster Borya"s, DocumentStatus::ACTUAL, {1, 1, 1});
+    search_server.AddDocument(6, "big dog hamster Bory"s, DocumentStatus::ACTUAL, {1, 1, 1});
+    search_server.AddDocument(7, "big dog hamster Bor"s, DocumentStatus::ACTUAL, {1, 1, 1});
 
     const auto search_results = search_server.FindTopDocuments("curly dog"s);
-    int page_size = 3;
+    int page_size = 2;
     const auto pages = Paginate(search_results, page_size);
     // Выводим найденные документы по страницам
     for (auto page = pages.begin(); page != pages.end(); ++page)
