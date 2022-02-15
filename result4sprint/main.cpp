@@ -1,9 +1,10 @@
+#include "read_input_functions.h"
 #include "document.h"
+#include "string_processing.h"
+#include "search_server.h"
 #include "paginator.h"
 #include "read_input_functions.h"
 #include "request_queue.h"
-#include "search_server.h"
-#include "string_processing.h"
 
 int main()
 {
