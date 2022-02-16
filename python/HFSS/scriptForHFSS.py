@@ -190,7 +190,6 @@ with open(home / antennaName, 'w') as file:
     
     file.writelines(beginString)
     file.writelines(dateDict['5_6.cti']['2_2'])
-    file.writelines(endString)
-    
+    file.writelines(endString)    
     
     file.writelines(endOfAnt)
