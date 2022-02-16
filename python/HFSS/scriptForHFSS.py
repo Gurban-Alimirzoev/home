@@ -38,7 +38,7 @@ for name in listAntEl:
 
 endString = 'END\n'
 beginString = 'BEGIN\n'
-antennaName = 'antenna1.cit'
+antennaName = 'antenna.cit'
 
 file = open(home / antennaName)
 lines = file.readlines()[:]
