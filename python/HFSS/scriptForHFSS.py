@@ -1,8 +1,3 @@
-import sys  # sys нужен для передачи argv в QApplication
-from PyQt5 import QtWidgets
-import gui
-import sys  # sys нужен для передачи argv в QApplication
-import os  # Отсюда нам понадобятся методы для отображения содержимого директорий
 from pathlib import Path    
 
 listAntEl = [
@@ -23,7 +18,7 @@ listAntEl = [
     '5_6.cti'
 ]
 
-home = ExampleApp.browse_folder().directory
+home = Path.cwd()
 #for name in listAntEl:
 dateDict = {() : {():()} }
 
