@@ -1,7 +1,9 @@
 #include "request_queue.h"
 
 using namespace std;
-
+RequestQueue::RequestQueue(const SearchServer &search_server) : searchServer(search_server)
+    {
+    }
 vector<Document> RequestQueue::AddFindRequest(const string &raw_query, DocumentStatus status)
 {
     const auto search_results = searchServer.FindTopDocuments(raw_query, status);

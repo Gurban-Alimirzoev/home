@@ -2,6 +2,11 @@
 
 using namespace std;
 
+SearchServer::SearchServer(const std::string &stop_words_text)
+        : SearchServer(SplitIntoWords(stop_words_text))
+    {
+    }
+
 void SearchServer::AddDocument(int document_id, const string &document, DocumentStatus status, const vector<int> &ratings)
 {
     if ((document_id < 0) || (documents_.count(document_id) > 0))
@@ -102,11 +107,7 @@ int SearchServer::ComputeAverageRating(const vector<int> &ratings)
     {
         return 0;
     }
-    int rating_sum = 0;
-    for (const int rating : ratings)
-    {
-        rating_sum += rating;
-    }
+    int rating_sum = accumulate(ratings.begin(), ratings.end(), 0);
     return rating_sum / static_cast<int>(ratings.size());
 }
 struct SearchServer::QueryWord
