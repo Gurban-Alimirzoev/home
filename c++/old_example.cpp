@@ -1,5 +1,4 @@
 #include "log_duration.h"
-
 #include <iostream>
 #include <numeric>
 #include <random>
@@ -8,18 +7,21 @@
 
 using namespace std;
 
-vector<float> ComputeAvgTemp(const vector<vector<float>>& measures) {
+vector<float> ComputeAvgTemp(const vector<vector<float>> &measures)
+{
     vector<float> result;
-    if (measures.empty()) {
+    if (measures.empty())
+    {
         return result;
     }
-    
-    for (int i = 0; i < measures.size(); i++) {
-        double countVar = 0;
-        for (int j = 0; j < measures[i].size(); j++) {
+    int countVar;
+    for (int i = 0; i < measures.size(); ++i)
+    {
+        countVar = 0;
+        for (int j = 0; j < measures[i].size(); ++j)
+        {
             result[i] += (measures[i][j] >= 0 ? measures[i][j] : 0);
-            countVar += (measures[i][j] >= 0 ? 1 : 0); 
-            
+            countVar += (measures[i][j] >= 0 ? 1 : 0);
         }
         result[i] /= countVar;
         result[i] = (result[i] >= 0 ? result[i] : 0);
@@ -27,23 +29,27 @@ vector<float> ComputeAvgTemp(const vector<vector<float>>& measures) {
     return result;
 }
 
-vector<float> GetRandomVector(int size) {
+vector<float> GetRandomVector(int size)
+{
     static mt19937 engine;
     uniform_real_distribution<float> d(-100, 100);
 
     vector<float> res(size);
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < size; ++i)
+    {
         res[i] = d(engine);
     }
 
     return res;
 }
 
-int main() {
+int main()
+{
     vector<vector<float>> data;
     data.reserve(5000);
 
-    for (int i = 0; i < 5000; ++i) {
+    for (int i = 0; i < 5000; ++i)
+    {
         data.push_back(GetRandomVector(5000));
     }
 
