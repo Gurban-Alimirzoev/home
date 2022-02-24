@@ -14,11 +14,15 @@ vector<float> ComputeAvgTemp(const vector<vector<float>>& measures) {
         return result;
     }
     
-    for (int i = 0; i < measures.size(); ++i) {
-        for (int j = 0; j < measures[i].size(); ++j) {
+    for (int i = 0; i < measures.size(); i++) {
+        double countVar = 0;
+        for (int j = 0; j < measures[i].size(); j++) {
             result[i] += (measures[i][j] >= 0 ? measures[i][j] : 0);
+            countVar += (measures[i][j] >= 0 ? 1 : 0); 
+            
         }
-        result[i] /= measures[i].size();
+        result[i] /= countVar;
+        result[i] = (result[i] >= 0 ? result[i] : 0);
     }
     return result;
 }
