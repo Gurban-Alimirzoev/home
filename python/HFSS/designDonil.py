@@ -16,9 +16,6 @@ class Ui_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(14)
         MainWindow.setFont(font)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("C:/Users/skorp/Desktop/400-4009677_the-bullet-from-enter-the-gungeon-red-caped.ico"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
-        MainWindow.setWindowIcon(icon)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -53,5 +50,5 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Подстановка S-параметров для HFSS"))
-        self.btnBrowse.setText(_translate("MainWindow", "Выберете папку"))
+        self.btnBrowse.setText(_translate("MainWindow", "Выбрать папку"))
         self.runCalc.setText(_translate("MainWindow", "Подставить данные"))
