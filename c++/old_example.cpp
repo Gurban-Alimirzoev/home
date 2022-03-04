@@ -1,38 +1,37 @@
-#include <cstdint>
 #include <iostream>
-
+#include <string>
+#include <sstream>
 using namespace std;
 
-// упростите эту экспоненциальную функцию,
-// реализовав линейный алгоритм
-int64_t T(int i) {
-    if (i <= 1) {
-        return 0;
+template <typename F>
+string BruteForce(F check) {
+    stringstream ss;
+    string result, var;
+    for (char a = 'A'; a < '['; a++) {
+        for (char b = 'A'; b < '['; b++) {
+            for (char c = 'A'; c < '['; c++) {
+                for (char d = 'A'; d < '['; d++) {
+                    for (char e = 'A'; e < '['; e++) {
+                        var.push_back(a);
+                        var.push_back(b);
+                        var.push_back(c);
+                        var.push_back(d);
+                        var.push_back(e);
+                        return result = (check(var) == 1 ? var : "0");
+                        var.clear();
+                        }
+                }
+            }
+        }
     }
-    if (i == 2) {
-        return 1;
-    }
-    int64_t prev0 = 0, prev1 = 0, prev2 = 1;
-
-    for (int t = 2; t < i; t++) {
-        int64_t next = prev0 + prev1 + prev2;
-        prev0 = prev1;
-        prev1 = prev2;
-        prev2 = next;
-    }
-
-    return prev2;
+    return result;
+    // верните строку str, для которой check(str) будет true
 }
 
 int main() {
-    int i;
-
-    while (true) {
-        cout << "Enter index: "s;
-        if (!(cin >> i)) {
-            break;
-        }
-
-        cout << "Ti = "s << T(i) << endl;
-    }
+    string pass = "ARTUR"s;
+    auto check = [pass](const string& s) {
+        return s == pass;
+    };
+    cout << BruteForce(check) << endl;
 }
