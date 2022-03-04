@@ -1,3 +1,4 @@
 
 .vscode/
 *.exe
+!mingw-w64-install.exe
