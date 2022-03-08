@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include "string_processing.h"
 #include "document.h"
+#include "log_duration.h"
 
 using namespace std::string_literals;
 
@@ -18,7 +19,7 @@ class SearchServer
 {
 public:
     template <typename StringContainer>
-    explicit SearchServer(const StringContainer &stop_words)
+    SearchServer(const StringContainer &stop_words)
         : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
     {
         if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord))
@@ -29,25 +30,27 @@ public:
 
     explicit SearchServer(const std::string &stop_words_text);
 
+    SearchServer();
+
     void AddDocument(int document_id, const std::string &document, DocumentStatus status, const std::vector<int> &ratings);
 
     template <typename DocumentPredicate>
     std::vector<Document> FindTopDocuments(const std::string &raw_query, DocumentPredicate document_predicate) const
     {
+        LOG_DURATION_STREAM("FindTopDocuments", std::cout);
         const auto query = ParseQuery(raw_query);
 
         auto matched_documents = FindAllDocuments(query, document_predicate);
         double precision = 1e-6;
 
         sort(matched_documents.begin(), matched_documents.end(), [precision](const Document &lhs, const Document &rhs)
-            {
+             {
                 if (std::abs(lhs.relevance - rhs.relevance) < precision) {
                     return lhs.rating > rhs.rating;
                 } 
                 else {
                     return lhs.relevance > rhs.relevance;
-                } 
-            });
+                } });
         if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT)
         {
             matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
@@ -59,7 +62,10 @@ public:
     std::vector<Document> FindTopDocuments(const std::string &raw_query, DocumentStatus status) const;
     std::vector<Document> FindTopDocuments(const std::string &raw_query) const;
     int GetDocumentCount() const;
-    int GetDocumentId(int index) const;
+    std::vector<int>::const_iterator begin() const;
+    std::vector<int>::const_iterator end() const;
+    const std::map<std::string, double> &GetWordFrequencies(int document_id) const;
+    void RemoveDocument(int document_id);
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string &raw_query, int document_id) const;
 
 private:
@@ -70,6 +76,7 @@ private:
         DocumentStatus status;
     };
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
+    std::map<int, std::map<std::string, double>> document_to_word_freqs_;
     std::map<int, DocumentData> documents_;
     std::vector<int> document_ids_;
     bool IsStopWord(const std::string &word) const;
