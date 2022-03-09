@@ -1,45 +1,45 @@
-#include <algorithm>
-#include <cmath>
-#include <cstdint>
-#include <iostream>
-#include <random>
-#include <vector>
+#include <cassert>
+#include <string>
 
-using namespace std;
-
-int EffectiveCount(const vector<int>& v, int n, int i) {
-    auto N = static_cast<int64_t>(v.size())*(i + 1)/(n + 1);
-    if (N < log2(v.size())) {
-        auto x = find_if(v.begin(), v.end(), [i] (int lhs) {
-            return lhs > i;
-        });
-        cout << "Using find_if" << endl;
-        return x - v.begin();
-    }
-    else {
-        auto x = upper_bound(v.begin(), v.end(), i);
-        cout << "Using upper_bound" << endl;
-        return x - v.begin();
-    }
-    // место для вашего решения
+template <typename T>
+bool IsSameObject(T value1, T value2) {
+    T* value_ptr1 = &value1;
+    T* value_ptr2 = &value2;
+    bool result = (value_ptr1 == value_ptr2 ? 1 : 0);
+    value_ptr1 = nullptr;
+    value_ptr2 = nullptr;
+    return result;
 }
 
 int main() {
-    static const int NUMBERS = 10000;
-    static const int MAX = 4999;
+    using namespace std;
 
-    mt19937 r;
-    uniform_int_distribution<int> uniform_dist(0, MAX);
+    const int x = 1;
+    const int y = 1;
+    // x и y — разные объекты, хоть и имеющие одинаковое значение
+    assert(!IsSameObject(x, y));
+    // Оба аргумента — один и тот же объект
+    assert(IsSameObject(x, x));
 
-    vector<int> nums;
-    for (int i = 0; i < NUMBERS; ++i) {
-        int random_number = uniform_dist(r);
-        nums.push_back(random_number);
-    }
-    sort(nums.begin(), nums.end());
+    const string name1 = "Harry"s;
+    const string name1_copy = name1;
+    const string name2 = "Ronald"s;
+    auto name1_ptr = &name1;
+    const string& name1_ref = name1;
 
-    int i;
-    cin >> i;
-    int result = EffectiveCount(nums, MAX, i);
-    cout << "Total numbers before "s << i << ": "s << result << endl;
+    assert(!IsSameObject(name1, name2));  // Две строки с разными значениями — разные объекты
+    assert(!IsSameObject(name1, name1_copy));  // Строка и её копия — разные объекты
+
+    // Оба параметра ссылаются на одну и ту же строку
+    assert(IsSameObject(name1, name1));
+    assert(IsSameObject(name2, name2));
+    assert(IsSameObject(name1_copy, name1_copy));
+
+    // Разыменованный указатель на объект и сам объект — один и тот же объект
+    assert(IsSameObject(*name1_ptr, name1));
+
+    // Переменная и ссылка на неё относятся к одному и тому же объекту
+    assert(IsSameObject(name1_ref, name1));
+    // Ссылка на объект и разыменованный указатель на объект относятся к одному и тому же объекту
+    assert(IsSameObject(name1_ref, *name1_ptr));
 }
