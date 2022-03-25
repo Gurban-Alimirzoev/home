@@ -8,31 +8,25 @@ using namespace std;
 // функция возвращает функциональный объект,
 // выполняющий вставку в выбранный список
 template <class Type>
-auto MakeInsertingFunction(vector<SingleLinkedList<Type>> &lists, int x)
-{
-    return [&, x](const Type &value)
-    {
+auto MakeInsertingFunction(vector<SingleLinkedList<Type>>& lists, int x) {
+    return [&, x](const Type& value) {
         lists[x].PushFront(value);
     };
 }
 
 template <class T>
-void InsertRange(int from, int to, T push_function)
-{
-    for (int i = from; i < to; ++i)
-    {
+void InsertRange(int from, int to, T push_function) {
+    for (int i = from; i < to; ++i) {
         push_function(i);
     }
 }
 
-int main()
-{
+int main() {
     // main тестирует вектор, в нём нет ошибок.
     // не меняйте код этой функции
     // помимо этих тестов, список должен проходить все обычные тесты списка.
     // Ищите ошибки в коде списка и
     // других функциях этого файла
-
     vector<SingleLinkedList<int>> lists_a(10);
 
     auto push_to_2a = MakeInsertingFunction(lists_a, 2);
@@ -60,7 +54,7 @@ int main()
     assert(lists_b[2] == SingleLinkedList<int>({21, 20, 11, 10}));
     assert(lists_b[5] == SingleLinkedList<int>({23, 22, 13, 12}));
     assert(lists_b[7] == SingleLinkedList<int>({25, 24, 15, 14}));
-
+        
     lists_a[2].PopFront();
     lists_a[5].InsertAfter(lists_a[5].begin(), 100);
     lists_b[5].EraseAfter(next(lists_b[5].begin()));

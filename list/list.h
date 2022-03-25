@@ -3,6 +3,9 @@
 #include <cassert>
 #include <cstddef>
 #include <iterator>
+#include <string>
+#include <utility>
+#include <algorithm>
 
 template <typename Type>
 class SingleLinkedList
@@ -148,6 +151,11 @@ public:
 
     SingleLinkedList() = default;
 
+    SingleLinkedList(const SingleLinkedList &other)
+    {
+        Assign(other.begin(), other.end()); // Может бросить исключение
+    }
+
     SingleLinkedList(std::initializer_list<Type> values)
     {
         Assign(values.begin(), values.end()); // Может бросить исключение
@@ -159,13 +167,6 @@ public:
         {
             Clear();
         }
-    }
-
-    SingleLinkedList &operator=(const SingleLinkedList &rhs)
-    {
-        SingleLinkedList copy(rhs);
-        swap(copy);
-        return *this;
     }
 
     // Возвращает итератор, ссылающийся на первый элемент
@@ -262,20 +263,17 @@ public:
      */
     Iterator InsertAfter(ConstIterator pos, const Type &value)
     {
-        auto &prev_node = pos.node_;
-        assert(prev_node);
-
-        // Если оператор new выбросит исключение, указатель prev_node->next_node останется прежним
-        prev_node->next_node = new Node(value, prev_node->next_node);
-
-        // Последующий код не выбрасывает исключений
+        assert(pos.node_ != nullptr);
+        Node *node_to_insert_after = pos.node_;
+        Node *new_node = new Node(value, node_to_insert_after->next_node);
+        node_to_insert_after->next_node = new_node;
         ++size_;
-        return Iterator{prev_node->next_node};
+        return Iterator(new_node);
     }
 
     void PopFront() noexcept
     {
-        assert(head_.next_node != nullptr);
+        assert(!IsEmpty());
         Node *must_be_del_node = head_.next_node;
         head_.next_node = must_be_del_node->next_node;
         delete must_be_del_node;
@@ -288,6 +286,14 @@ public:
      */
     Iterator EraseAfter(ConstIterator pos) noexcept
     {
+        /*assert(!IsEmpty());
+        Node *const node_to_erase = pos.node_->next_node;
+        Node *const node_after_erased = node_to_erase->next_node;
+        pos.node_->next_node = node_after_erased;
+        delete node_to_erase;
+        --size_;
+        return Iterator{node_after_erased};*/
+
         assert(pos.node_ != nullptr);
         Node *node_to_erase_after = pos.node_;
         Node *var = node_to_erase_after->next_node;
@@ -296,17 +302,17 @@ public:
         size_--;
         return Iterator(node_to_erase_after->next_node);
     }
-
     // Очищает список за время O(N)
     void Clear() noexcept
     {
-        do
+        // Удаляем элементы начиная с головы списка, пока они не закончатся
+        while (head_.next_node != nullptr)
         {
             Node *must_be_del_node = head_.next_node;
             head_.next_node = must_be_del_node->next_node;
             delete must_be_del_node;
-        } while (head_.next_node != nullptr);
-        size_ = 0u;
+        }
+        size_ = 0;
     }
 
     // Обменивает содержимое списков за время O(1)
@@ -364,8 +370,14 @@ void swap(SingleLinkedList<Type> &lhs, SingleLinkedList<Type> &rhs) noexcept
 template <typename Type>
 bool operator==(const SingleLinkedList<Type> &lhs, const SingleLinkedList<Type> &rhs)
 {
+
     return (&lhs == &rhs)                                                                                     // Оптимизация сравнения списка с собой
            || (lhs.GetSize() == rhs.GetSize() && std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end())); // может бросить исключение
+
+    /*
+    bool result = std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()) ? 1 : 0;
+    return result;
+    */
 }
 
 template <typename Type>
