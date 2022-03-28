@@ -1,5 +1,5 @@
 #include "list.h"
-
+#include <iostream>
 #include <cassert>
 #include <vector>
 
@@ -64,4 +64,5 @@ int main() {
     assert(lists_a[5] == SingleLinkedList<int>({13, 100, 12}));
     assert(lists_b[5] == SingleLinkedList<int>({23, 22, 12}));
     assert(lists_b[7] == SingleLinkedList<int>());
+    cout << "Ok";
 }

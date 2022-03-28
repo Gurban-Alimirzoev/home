@@ -139,12 +139,6 @@ public:
     using Iterator = BasicIterator<Type>;
     using ConstIterator = BasicIterator<const Type>;
 
-    void PushFront(const Type &value)
-    {
-        head_.next_node = new Node(value, head_.next_node);
-        ++size_;
-    }
-
     void Clear() noexcept
     {
         do
@@ -241,6 +235,12 @@ public:
     [[nodiscard]] ConstIterator before_begin() const noexcept
     {
         return cbefore_begin();
+    }
+
+    void PushFront(const Type &value)
+    {
+        head_.next_node = new Node(value, head_.next_node);
+        ++size_;
     }
 
     Iterator InsertAfter(ConstIterator pos, const Type &value)

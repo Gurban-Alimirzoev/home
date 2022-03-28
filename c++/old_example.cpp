@@ -1,102 +1,149 @@
+#pragma once
+
 #include <cassert>
-#include <cstdlib>
+#include <initializer_list>
+#include <array>
+#include "array_ptr.cpp"
+
+using namespace std;
 
 template <typename Type>
-class ArrayPtr
+class SimpleVector
 {
 public:
-    // Инициализирует ArrayPtr нулевым указателем
-    ArrayPtr() = default;
+    using Iterator = Type *;
+    using ConstIterator = const Type *;
 
-    // Создаёт в куче массив из size элементов типа Type.
-    // Если size == 0, поле raw_ptr_ должно быть равно nullptr
-    explicit ArrayPtr(size_t size)
+    SimpleVector() noexcept = default;
+
+    // Создаёт вектор из size элементов, инициализированных значением по умолчанию
+    explicit SimpleVector(size_t size) : size_(size)
     {
-        if (size == 0u) {
-            raw_ptr_ = nullptr;
-        }
-        else {
-            raw_ptr_ = new Type[size]{};
-        }
+        Type var[size_];
+        var.fill(NULL);
+        auto varPtr = ArrayPtr(&var);
+        swap(arr_vec, varPtr);
     }
 
-    // Конструктор из сырого указателя, хранящего адрес массива в куче либо nullptr
-    explicit ArrayPtr(Type *raw_ptr) noexcept : raw_ptr_(raw_ptr)
+    // Создаёт вектор из size элементов, инициализированных значением value
+    SimpleVector(size_t size, const Type &value) : size_(size)
     {
+        Type raw[size_];
+        raw.fill(value);
+        arr_vec = ArrayPtr(&raw);
     }
 
-    // Запрещаем копирование
-    ArrayPtr(const ArrayPtr &) = delete;
-
-    ~ArrayPtr()
+    // Создаёт вектор из std::initializer_list
+    SimpleVector(std::initializer_list<Type> init) : size_(size)
     {
-        delete[] raw_ptr_;
+        Type raw[size_] = {init};
+        arr_vec = ArrayPtr(&raw);
     }
 
-    // Запрещаем присваивание
-    ArrayPtr &operator=(const ArrayPtr &) = delete;
-
-    // Прекращает владением массивом в памяти, возвращает значение адреса массива
-    // После вызова метода указатель на массив должен обнулиться
-    [[nodiscard]] Type *Release() noexcept
+    // Возвращает количество элементов в массиве
+    size_t GetSize() const noexcept
     {
-        Type* var = raw_ptr_;
-        raw_ptr_ = nullptr;
-        return var;
+        // Напишите тело самостоятельно
+        return size_;
     }
 
-    // Возвращает ссылку на элемент массива с индексом index
+    // Возвращает вместимость массива
+    size_t GetCapacity() const noexcept
+    {
+        // Напишите тело самостоятельно
+        return (arr_vec.Get())->max_size();
+    }
+
+    // Сообщает, пустой ли массив
+    bool IsEmpty() const noexcept
+    {
+        return true;
+    }
+
+    // Возвращает ссылку на элемент с индексом index
     Type &operator[](size_t index) noexcept
-    {        
-        return raw_ptr_[index];
+    {
+        return 
     }
 
-    // Возвращает константную ссылку на элемент массива с индексом index
+    // Возвращает константную ссылку на элемент с индексом index
     const Type &operator[](size_t index) const noexcept
     {
-        return raw_ptr_[index];
+        // Напишите тело самостоятельно
     }
 
-    // Возвращает true, если указатель ненулевой, и false в противном случае
-    explicit operator bool() const
+    // Возвращает константную ссылку на элемент с индексом index
+    // Выбрасывает исключение std::out_of_range, если index >= size
+    Type &At(size_t index)
     {
-        bool result = raw_ptr_ == nullptr ? 0 : 1;
-        return result;
+        // Напишите тело самостоятельно
     }
 
-    // Возвращает значение сырого указателя, хранящего адрес начала массива
-    Type *Get() const noexcept
+    // Возвращает константную ссылку на элемент с индексом index
+    // Выбрасывает исключение std::out_of_range, если index >= size
+    const Type &At(size_t index) const
     {
-        return raw_ptr_;
+        // Напишите тело самостоятельно
     }
 
-    // Обменивается значениям указателя на массив с объектом other
-    void swap(ArrayPtr& other) noexcept {
-        auto var = other.raw_ptr_;
-        other.raw_ptr_ = raw_ptr_;
-        raw_ptr_ = var;
+    // Обнуляет размер массива, не изменяя его вместимость
+    void Clear() noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Изменяет размер массива.
+    // При увеличении размера новые элементы получают значение по умолчанию для типа Type
+    void Resize(size_t new_size)
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает итератор на начало массива
+    // Для пустого массива может быть равен (или не равен) nullptr
+    Iterator begin() noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает итератор на элемент, следующий за последним
+    // Для пустого массива может быть равен (или не равен) nullptr
+    Iterator end() noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает константный итератор на начало массива
+    // Для пустого массива может быть равен (или не равен) nullptr
+    ConstIterator begin() const noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает итератор на элемент, следующий за последним
+    // Для пустого массива может быть равен (или не равен) nullptr
+    ConstIterator end() const noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает константный итератор на начало массива
+    // Для пустого массива может быть равен (или не равен) nullptr
+    ConstIterator cbegin() const noexcept
+    {
+        // Напишите тело самостоятельно
+    }
+
+    // Возвращает итератор на элемент, следующий за последним
+    // Для пустого массива может быть равен (или не равен) nullptr
+    ConstIterator cend() const noexcept
+    {
+        // Напишите тело самостоятельно
     }
 
 private:
-    Type *raw_ptr_ = nullptr;
+    size_t size_;
+    Type raw[0];
+    ArrayPtr<array<Type, 0u>> arr_vec;
+
 };
-
-int main()
-{
-    ArrayPtr<int> numbers(10);
-    const auto &const_numbers = numbers;
-
-    numbers[2] = 42;
-    assert(const_numbers[2] == 42);
-    assert(&const_numbers[2] == &numbers[2]);
-
-    assert(numbers.Get() == &numbers[0]);
-
-    ArrayPtr<int> numbers_2(5);
-    numbers_2[2] = 43;
-
-    numbers.swap(numbers_2);
-
-    assert(numbers_2[2] == 42);
-    assert(numbers[2] == 43);
-}
