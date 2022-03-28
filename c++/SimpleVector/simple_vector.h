@@ -5,6 +5,7 @@
 #include <array>
 #include <stdexcept>
 #include <algorithm>
+
 #include "array_ptr.h"
 
 using namespace std;
@@ -39,12 +40,19 @@ public:
     }
 
     // Создаёт вектор из std::initializer_list
-    SimpleVector(std::initializer_list<Type> init)
+    SimpleVector(initializer_list<Type> init)
         : size_(init.size()), capacity_(init.size())
     {
-
         data_ = new ArrayPtr<Type>(size_);
         std::copy(init.begin(), init.end(), begin());
+    }
+
+    SimpleVector(const SimpleVector &other)
+        : size_(other.size_), capacity_(other.capacity_)
+    {
+        assert(other.data_ != this->data_);
+        data_ = new ArrayPtr<Type>(size_);
+        copy(other.begin(), other.end(), begin());
     }
 
     SimpleVector &operator=(const SimpleVector &rhs)
@@ -53,6 +61,94 @@ public:
         SimpleVector<Type> rhs_copy(rhs);
         swap(rhs_copy);
         return *this;
+    }
+
+    // Добавляет элемент в конец вектора
+    // При нехватке места увеличивает вдвое вместимость вектора
+    void PushBack(const Type &item)
+    {
+        if (size_ + 1 > capacity_)
+        {
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
+            copy(data_->Get(), data_->Get() + size_, data_var->Get());
+            (*data_var)[size_] = item;
+            data_->swap(*data_var);
+            size_++;
+            capacity_ = size_ * 2;
+        }
+        else
+        {
+            (*data_)[size_] = item;
+            size_++;
+        }
+        // Напишите тело самостоятельно
+    }
+
+    // Вставляет значение value в позицию pos.
+    // Возвращает итератор на вставленное значение
+    // Если перед вставкой значения вектор был заполнен полностью,
+    // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
+    Iterator Insert(ConstIterator pos, const Type &value)
+    {
+        Type *begin_data_ = data_->Get();
+        if (size_ > 0 && size_ >= capacity_)
+        {
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
+            Type *begin_data_var = data_var->Get();
+            Type *begin_data_ = data_->Get();
+
+            copy_backward(begin_data_, begin_data_ + *pos, begin_data_var);
+            (*data_var)[*pos] = value;
+            copy_backward(begin_data_ + *pos, begin_data_ + size_, begin_data_var + *pos);
+
+            data_->swap(*data_var);
+            size_++;
+            capacity_ = size_ * 2;
+        }
+        else if (size_ == 0)
+        {
+            (*data_)[*pos] = value;
+            size_++;
+        }
+        else
+        {
+            copy(begin_data_ + *pos, begin_data_ + size_, begin_data_ + *pos + 1);
+            (*data_)[*pos] = value;
+            size_++;
+        }
+        return begin_data_ + *pos;
+    }
+
+    // "Удаляет" последний элемент вектора. Вектор не должен быть пустым
+    void PopBack() noexcept
+    {
+        if (!IsEmpty())
+        {
+            size_--;
+        }
+    }
+
+    // Удаляет элемент вектора в указанной позиции
+    Iterator Erase(ConstIterator pos)
+    {
+
+        size_t index_pos = distance(this->begin(), const_cast<Type *>(pos));
+
+        for (size_t i = index_pos + 1; i < size_; ++i)
+        {
+            data_->Get()[i - 1] = data_->Get()[i];
+        }
+        --size_;
+
+        return Iterator(data_->Get() + index_pos);
+    }
+
+    // Обменивает значение с другим вектором
+    void swap(SimpleVector &other) noexcept
+    {
+        data_->swap(*other.data_);
+        std::swap(this->size_, other.size_);
+        std::swap(this->capacity_, other.capacity_);
     }
 
     // Возвращает количество элементов в массиве
@@ -94,7 +190,7 @@ public:
         }
         else
         {
-            throw out_of_range("Exception: Index out of range!");
+            throw out_of_range("Index out of range!");
         }
         return *data_->Get();
     }
@@ -109,7 +205,7 @@ public:
         }
         else
         {
-            throw out_of_range("Exception: Index out of range!");
+            throw out_of_range("Index out of range!");
         }
         return *data_->Get();
     }
@@ -189,3 +285,39 @@ private:
     size_t capacity_ = 0;
     ArrayPtr<Type> *data_ = nullptr;
 };
+
+template <typename Type>
+bool operator==(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return (std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()) && (lhs.GetSize() == rhs.GetSize()));
+}
+
+template <typename Type>
+bool operator!=(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return (!(lhs == rhs));
+}
+
+template <typename Type>
+bool operator<(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+template <typename Type>
+bool operator<=(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return (!(lhs > rhs));
+}
+
+template <typename Type>
+bool operator>(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return (rhs < lhs);
+}
+
+template <typename Type>
+bool operator>=(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
+{
+    return !(lhs < rhs);
+}
