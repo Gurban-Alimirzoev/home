@@ -67,7 +67,7 @@ public:
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(const Type &item)
     {
-        if (size_ + 1 > capacity_)
+        if (capacity_ < size_ + 1 && capacity_ > 0)
         {
             ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
             copy(data_->Get(), data_->Get() + size_, data_var->Get());
@@ -76,10 +76,18 @@ public:
             size_++;
             capacity_ = size_ * 2;
         }
+        else if (capacity_ == 0)
+        {
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(2);
+            (*data_var)[0] = item;
+            data_->swap(*data_var);
+            size_ = 1;
+            capacity_ = size_ * 2;
+        }
         else
         {
-            (*data_)[size_] = item;
             size_++;
+            (*data_)[size_] = item;
         }
         // Напишите тело самостоятельно
     }
