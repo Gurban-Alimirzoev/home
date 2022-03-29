@@ -67,7 +67,7 @@ public:
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(const Type &item)
     {
-        if (capacity_ < size_ + 1 && capacity_ > 0)
+        if (capacity_ <= size_ && capacity_ > 0)
         {
             ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
             copy(data_->Get(), data_->Get() + size_, data_var->Get());
