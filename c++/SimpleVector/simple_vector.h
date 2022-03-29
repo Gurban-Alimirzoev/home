@@ -51,44 +51,67 @@ public:
         : size_(other.size_), capacity_(other.capacity_)
     {
         assert(other.data_ != this->data_);
+
+        /*ArrayPtr<Type> *data_var = new ArrayPtr<Type>(other.size_);
+        copy(other.data_->Get(), other.data_->Get() + other.size_, data_var->Get());
+
+        data_->swap(*data_var);
+
+
+        data_ = new ArrayPtr<Type>(other.size_);
+        copy(data_var->Get(), data_var->Get() + other.size_, data_->Get());
+
+        size_ = other.size_;
+        capacity_ = other.capacity_;
+        */
+
         data_ = new ArrayPtr<Type>(size_);
         copy(other.begin(), other.end(), begin());
     }
 
     SimpleVector &operator=(const SimpleVector &rhs)
     {
-        assert(*this != rhs);
-        SimpleVector<Type> rhs_copy(rhs);
-        swap(rhs_copy);
-        return *this;
+        if (*this != rhs)
+        {
+            SimpleVector<Type> rhs_copy(rhs);
+            swap(rhs_copy);
+            return *this;
+        }
+        else
+        {
+            return *this;
+        }
     }
 
     // Добавляет элемент в конец вектора
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(const Type &item)
     {
-        if (capacity_ <= size_ && capacity_ > 0)
-        {
-            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
-            copy(data_->Get(), data_->Get() + size_, data_var->Get());
-            (*data_var)[size_] = item;
-            data_->swap(*data_var);
-            size_++;
-            capacity_ = size_ * 2;
-        }
-        else if (capacity_ == 0)
+        if (capacity_ == 0)
         {
             data_ = new ArrayPtr<Type>(1);
             data_->Get()[0] = item;
             size_++;
             capacity_++;
         }
+        else if (capacity_ <= size_)
+        {
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
+            auto begin_data_ = data_->Get();
+            auto begin_data_var = data_var->Get();
+
+            copy(begin_data_, begin_data_ + size_, begin_data_var);
+
+            begin_data_var[size_] = item;
+            data_->swap(*data_var);
+            size_++;
+            capacity_ = size_ * 2;
+        }
         else
         {
             (*data_)[size_] = item;
             size_++;
         }
-        // Напишите тело самостоятельно
     }
 
     // Вставляет значение value в позицию pos.
@@ -97,21 +120,30 @@ public:
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, const Type &value)
     {
-        assert(pos <= end());
         Iterator iter = const_cast<Iterator>(pos);
         auto dist = distance(begin(), iter);
-        if (capacity_ == 0 || capacity_ > size_)
+        if (capacity_ == 0)
         {
             PushBack(value);
             return begin();
         }
+        else if (capacity_ > size_)
+        {
+            copy(begin() + dist, end(), begin() + dist + 1u);
+            (*data_)[dist] = value;
+            size_++;
+            return begin() + dist;
+        }
         else
         {
             size_t new_size_ = size_ + 1;
-            Resize(size_ * 2);
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(new_size_);
 
-            copy_backward(begin() + dist, end(), end() + 1);
-            fill(begin() + dist, begin() + dist + 1, value);
+            copy(begin(), begin() + dist, data_var->Get());
+            copy_backward(begin() + dist, end(), data_var->Get() + new_size_);
+            (*data_var)[dist] = value;
+
+            data_->swap(*data_var);
 
             size_ = new_size_;
             return begin() + dist;
@@ -130,16 +162,14 @@ public:
     // Удаляет элемент вектора в указанной позиции
     Iterator Erase(ConstIterator pos)
     {
+        Iterator iter = const_cast<Iterator>(pos);
+        auto dist = distance(begin(), iter);
 
-        size_t index_pos = distance(this->begin(), const_cast<Type *>(pos));
+        copy(begin() + dist + 1, end(), begin() + dist);
 
-        for (size_t i = index_pos + 1; i < size_; ++i)
-        {
-            data_->Get()[i - 1] = data_->Get()[i];
-        }
         --size_;
 
-        return Iterator(data_->Get() + index_pos);
+        return Iterator(begin() + dist);
     }
 
     // Обменивает значение с другим вектором
@@ -221,10 +251,10 @@ public:
     {
         if (new_size > size_)
         {
-            auto new_array = new ArrayPtr<Type>(new_size);
+            ArrayPtr<Type> *new_array = new ArrayPtr<Type>(new_size);
 
             fill(new_array->Get(), new_array->Get() + new_size, Type());
-            copy(begin(), begin() + size_, new_array->Get());
+            copy(data_->Get(), data_->Get() + size_, new_array->Get());
 
             data_ = new_array;
 

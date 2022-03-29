@@ -1,4 +1,5 @@
 #include "simple_vector.h"
+#include "array_ptr.h"
 
 // Tests
 #include "tests.h"
