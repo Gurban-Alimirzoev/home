@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 inline void Test1() {
     // Инициализация конструктором по умолчанию

@@ -78,16 +78,15 @@ public:
         }
         else if (capacity_ == 0)
         {
-            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(2);
-            (*data_var)[0] = item;
-            data_->swap(*data_var);
-            size_ = 1;
-            capacity_ = size_ * 2;
+            data_ = new ArrayPtr<Type>(1);
+            data_->Get()[0] = item;
+            size_++;
+            capacity_++;
         }
         else
         {
-            size_++;
             (*data_)[size_] = item;
+            size_++;
         }
         // Напишите тело самостоятельно
     }
@@ -98,33 +97,25 @@ public:
     // вместимость вектора должна увеличиться вдвое, а для вектора вместимостью 0 стать равной 1
     Iterator Insert(ConstIterator pos, const Type &value)
     {
-        Type *begin_data_ = data_->Get();
-        if (size_ > 0 && size_ >= capacity_)
+        assert(pos <= end());
+        Iterator iter = const_cast<Iterator>(pos);
+        auto dist = distance(begin(), iter);
+        if (capacity_ == 0 || capacity_ > size_)
         {
-            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
-            Type *begin_data_var = data_var->Get();
-            Type *begin_data_ = data_->Get();
-
-            copy_backward(begin_data_, begin_data_ + *pos, begin_data_var);
-            (*data_var)[*pos] = value;
-            copy_backward(begin_data_ + *pos, begin_data_ + size_, begin_data_var + *pos);
-
-            data_->swap(*data_var);
-            size_++;
-            capacity_ = size_ * 2;
-        }
-        else if (size_ == 0)
-        {
-            (*data_)[*pos] = value;
-            size_++;
+            PushBack(value);
+            return begin();
         }
         else
         {
-            copy(begin_data_ + *pos, begin_data_ + size_, begin_data_ + *pos + 1);
-            (*data_)[*pos] = value;
-            size_++;
+            size_t new_size_ = size_ + 1;
+            Resize(size_ * 2);
+
+            copy_backward(begin() + dist, end(), end() + 1);
+            fill(begin() + dist, begin() + dist + 1, value);
+
+            size_ = new_size_;
+            return begin() + dist;
         }
-        return begin_data_ + *pos;
     }
 
     // "Удаляет" последний элемент вектора. Вектор не должен быть пустым
