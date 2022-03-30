@@ -11,6 +11,9 @@
 using namespace std;
 
 template <typename Type>
+class ReserveProxyObj;
+
+template <typename Type>
 class SimpleVector
 {
 public:
@@ -48,25 +51,19 @@ public:
     }
 
     SimpleVector(const SimpleVector &other)
-        : size_(other.size_), capacity_(other.capacity_)
+        : size_(other.size_), capacity_(other.size_)
     {
-        assert(other.data_ != this->data_);
+        // assert(other.data_ != this->data_);
+        if (other.data_ != this->data_)
+        {
+            data_ = new ArrayPtr<Type>(other.size_);
+            copy(other.begin(), other.end(), begin());
+        }
+    }
 
-        /*ArrayPtr<Type> *data_var = new ArrayPtr<Type>(other.size_);
-        copy(other.data_->Get(), other.data_->Get() + other.size_, data_var->Get());
-
-        data_->swap(*data_var);
-
-
-        data_ = new ArrayPtr<Type>(other.size_);
-        copy(data_var->Get(), data_var->Get() + other.size_, data_->Get());
-
-        size_ = other.size_;
-        capacity_ = other.capacity_;
-        */
-
-        data_ = new ArrayPtr<Type>(size_);
-        copy(other.begin(), other.end(), begin());
+    SimpleVector(ReserveProxyObj var))
+    {
+        Reserve(var.cap);
     }
 
     SimpleVector &operator=(const SimpleVector &rhs)
@@ -75,12 +72,8 @@ public:
         {
             SimpleVector<Type> rhs_copy(rhs);
             swap(rhs_copy);
-            return *this;
         }
-        else
-        {
-            return *this;
-        }
+        return *this;
     }
 
     // Добавляет элемент в конец вектора
@@ -94,7 +87,7 @@ public:
             size_++;
             capacity_++;
         }
-        else if (capacity_ <= size_)
+        else if (capacity_ == size_)
         {
             ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
             auto begin_data_ = data_->Get();
@@ -146,6 +139,7 @@ public:
             data_->swap(*data_var);
 
             size_ = new_size_;
+            capacity_ = new_size_;
             return begin() + dist;
         }
     }
@@ -172,10 +166,25 @@ public:
         return Iterator(begin() + dist);
     }
 
+    void Reserve(size_t new_capacity)
+    {
+        if (new_capacity > capacity_)
+        {
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(new_capacity);
+            auto begin_data_ = data_->Get();
+            auto begin_data_var = data_var->Get();
+
+            copy(begin_data_, begin_data_ + size_, begin_data_var);
+            data_->swap(*data_var);
+            capacity_ = new_capacity;
+        }
+    }
+
     // Обменивает значение с другим вектором
     void swap(SimpleVector &other) noexcept
     {
-        data_->swap(*other.data_);
+        // data_->swap(*other.data_);
+        std::swap(data_, other.data_);
         std::swap(this->size_, other.size_);
         std::swap(this->capacity_, other.capacity_);
     }
@@ -350,3 +359,22 @@ bool operator>=(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
 {
     return !(lhs < rhs);
 }
+
+template <typename Type>
+class ReserveProxyObj
+{
+public:
+    ReserveProxyObj() noexcept = default;
+    ReserveProxyObj(Type capacity_to_reserve)
+    {
+        ReserveProxyObj<Type> r;
+        r.cap = capacity_to_reserve;
+    }
+
+    size_t cap = 0;
+};
+
+ReserveProxyObj Reserve(size_t capacity_to_reserve)
+{
+    return ReserveProxyObj(capacity_to_reserve);
+};

@@ -218,6 +218,20 @@ inline void Test2() {
         SimpleVector<int> dst_vector{1, 2, 3, 4, 5, 6};
         dst_vector = src_vector;
         assert(dst_vector == src_vector);
+        SimpleVector<int> s;
+        SimpleVector<int> d;
+        s = d;
+        assert(s == d);
+        SimpleVector<int> su(5u);
+        SimpleVector<int> du(2u);
+        du = su;
+        assert(su == du);
+        du = s;
+        assert(s == du);
+        d = su;
+        assert(d == su);
+        
+
     }
 
     // Вставка элементов
