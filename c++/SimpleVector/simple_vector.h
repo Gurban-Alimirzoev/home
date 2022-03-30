@@ -10,11 +10,32 @@
 
 using namespace std;
 
-template <typename Type_t>
-class ReserveProxyObj;
+class ReserveProxyObj
+{
+public:
+    ReserveProxyObj() noexcept = default;
+
+    ReserveProxyObj(size_t capacity_to_reserve)
+        : ReserveProxyObj()
+    {
+        cap = capacity_to_reserve;
+    }
+
+    size_t GetSize() const
+    {
+        return cap;
+    }
+
+    size_t cap = 0;
+};
+
+ReserveProxyObj Reserve(size_t capacity_to_reserve)
+{
+    return ReserveProxyObj(capacity_to_reserve);
+}
 
 template <typename Type>
-class SimpleVector 
+class SimpleVector
 {
 public:
     using Iterator = Type *;
@@ -61,7 +82,7 @@ public:
         }
     }
 
-    SimpleVector(ReserveProxyObj<int> res)
+    SimpleVector(ReserveProxyObj res)
     {
         Reserve(res.cap);
     }
@@ -365,50 +386,4 @@ template <typename Type>
 bool operator>=(const SimpleVector<Type> &lhs, const SimpleVector<Type> &rhs)
 {
     return !(lhs < rhs);
-}
-
-template <typename Type_t>
-class ReserveProxyObj
-{
-public:
-    ReserveProxyObj() noexcept = default;
-
-    ReserveProxyObj<Type_t>(Type_t capacity_to_reserve)
-        : ReserveProxyObj()
-    {
-        cap = capacity_to_reserve;
-    }
-
-    size_t GetSize() const
-    {
-        return cap;
-    }
-
-    size_t cap = 0;
-};
-
-template <>
-class ReserveProxyObj<int>
-{
-public:
-    ReserveProxyObj() noexcept = default;
-
-    ReserveProxyObj<int>(int capacity_to_reserve)
-        : ReserveProxyObj()
-    {
-        cap = capacity_to_reserve;
-    }
-
-    size_t GetSize() const
-    {
-        return cap;
-    }
-
-    size_t cap = 0;
-};
-
-template <typename Type_t>
-ReserveProxyObj<Type_t> Reserve(Type_t capacity_to_reserve)
-{
-    return ReserveProxyObj(capacity_to_reserve);
 }
