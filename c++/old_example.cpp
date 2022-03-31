@@ -1,149 +1,102 @@
-#pragma once
-
 #include <cassert>
-#include <initializer_list>
-#include <array>
-#include "array_ptr.cpp"
+#include <iostream>
+#include <numeric>
+#include <vector>
+#include <list>
 
 using namespace std;
 
-template <typename Type>
-class SimpleVector
+template <typename RandomIt>
+void MakeJosephusPermutation(RandomIt range_begin, RandomIt range_end, uint32_t step_size)
 {
-public:
-    using Iterator = Type *;
-    using ConstIterator = const Type *;
+    vector<typename RandomIt::value_type> pool;
+    for (auto it = range_begin; it != range_end; ++it)
+        pool.push_back(move(*it));
 
-    SimpleVector() noexcept = default;
-
-    // Создаёт вектор из size элементов, инициализированных значением по умолчанию
-    explicit SimpleVector(size_t size) : size_(size)
+    size_t cur_pos = 0;
+    while (!pool.empty())
     {
-        Type var[size_];
-        var.fill(NULL);
-        auto varPtr = ArrayPtr(&var);
-        swap(arr_vec, varPtr);
+        *(range_begin++) = move(pool[cur_pos]);
+        pool.erase(pool.begin() + cur_pos);
+        if (pool.empty())
+        {
+            break;
+        }
+        cur_pos = move((cur_pos + step_size - 1) % pool.size());
     }
+}
 
-    // Создаёт вектор из size элементов, инициализированных значением value
-    SimpleVector(size_t size, const Type &value) : size_(size)
+vector<int> MakeTestVector()
+{
+    vector<int> numbers(10);
+    iota(begin(numbers), end(numbers), 0);
+    return numbers;
+}
+
+void TestIntVector()
+{
+    const vector<int> numbers = MakeTestVector();
     {
-        Type raw[size_];
-        raw.fill(value);
-        arr_vec = ArrayPtr(&raw);
+        vector<int> numbers_copy = numbers;
+        MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 1);
+        assert(numbers_copy == numbers);
     }
-
-    // Создаёт вектор из std::initializer_list
-    SimpleVector(std::initializer_list<Type> init) : size_(size)
     {
-        Type raw[size_] = {init};
-        arr_vec = ArrayPtr(&raw);
+        vector<int> numbers_copy = numbers;
+        MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 3);
+        assert(numbers_copy == vector<int>({0, 3, 6, 9, 4, 8, 5, 2, 7, 1}));
     }
+}
 
-    // Возвращает количество элементов в массиве
-    size_t GetSize() const noexcept
-    {
-        // Напишите тело самостоятельно
-        return size_;
-    }
+// Это специальный тип, который поможет вам убедиться, что ваша реализация
+// функции MakeJosephusPermutation не выполняет копирование объектов.
+// Сейчас вы, возможно, не понимаете как он устроен, однако мы расскажем
+// об этом далее в нашем курсе
 
-    // Возвращает вместимость массива
-    size_t GetCapacity() const noexcept
-    {
-        // Напишите тело самостоятельно
-        return (arr_vec.Get())->max_size();
-    }
+struct NoncopyableInt
+{
+    int value;
 
-    // Сообщает, пустой ли массив
-    bool IsEmpty() const noexcept
-    {
-        return true;
-    }
+    NoncopyableInt(const NoncopyableInt &) = delete;
+    NoncopyableInt &operator=(const NoncopyableInt &) = delete;
 
-    // Возвращает ссылку на элемент с индексом index
-    Type &operator[](size_t index) noexcept
-    {
-        return 
-    }
-
-    // Возвращает константную ссылку на элемент с индексом index
-    const Type &operator[](size_t index) const noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает константную ссылку на элемент с индексом index
-    // Выбрасывает исключение std::out_of_range, если index >= size
-    Type &At(size_t index)
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает константную ссылку на элемент с индексом index
-    // Выбрасывает исключение std::out_of_range, если index >= size
-    const Type &At(size_t index) const
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Обнуляет размер массива, не изменяя его вместимость
-    void Clear() noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Изменяет размер массива.
-    // При увеличении размера новые элементы получают значение по умолчанию для типа Type
-    void Resize(size_t new_size)
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает итератор на начало массива
-    // Для пустого массива может быть равен (или не равен) nullptr
-    Iterator begin() noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает итератор на элемент, следующий за последним
-    // Для пустого массива может быть равен (или не равен) nullptr
-    Iterator end() noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает константный итератор на начало массива
-    // Для пустого массива может быть равен (или не равен) nullptr
-    ConstIterator begin() const noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает итератор на элемент, следующий за последним
-    // Для пустого массива может быть равен (или не равен) nullptr
-    ConstIterator end() const noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает константный итератор на начало массива
-    // Для пустого массива может быть равен (или не равен) nullptr
-    ConstIterator cbegin() const noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-    // Возвращает итератор на элемент, следующий за последним
-    // Для пустого массива может быть равен (или не равен) nullptr
-    ConstIterator cend() const noexcept
-    {
-        // Напишите тело самостоятельно
-    }
-
-private:
-    size_t size_;
-    Type raw[0];
-    ArrayPtr<array<Type, 0u>> arr_vec;
-
+    NoncopyableInt(NoncopyableInt &&) = default;
+    NoncopyableInt &operator=(NoncopyableInt &&) = default;
 };
+
+bool operator==(const NoncopyableInt &lhs, const NoncopyableInt &rhs)
+{
+    return lhs.value == rhs.value;
+}
+
+ostream &operator<<(ostream &os, const NoncopyableInt &v)
+{
+    return os << v.value;
+}
+
+void TestAvoidsCopying()
+{
+    vector<NoncopyableInt> numbers;
+    numbers.push_back({1});
+    numbers.push_back({2});
+    numbers.push_back({3});
+    numbers.push_back({4});
+    numbers.push_back({5});
+
+    MakeJosephusPermutation(begin(numbers), end(numbers), 2);
+
+    vector<NoncopyableInt> expected;
+    expected.push_back({1});
+    expected.push_back({3});
+    expected.push_back({5});
+    expected.push_back({4});
+    expected.push_back({2});
+
+    assert(numbers == expected);
+}
+
+int main()
+{
+    TestIntVector();
+    TestAvoidsCopying();
+}
