@@ -7,34 +7,36 @@
 using namespace std;
 
 template <typename RandomIt>
-void MakeJosephusPermutation(RandomIt range_begin, RandomIt range_end, uint32_t step_size)
-{
+void MakeJosephusPermutation(RandomIt range_begin, RandomIt range_end, uint32_t step_size){
     vector<typename RandomIt::value_type> pool;
     for (auto it = range_begin; it != range_end; ++it)
         pool.push_back(move(*it));
-
+ 
     size_t cur_pos = 0;
-    while (!pool.empty())
-    {
+    while (!pool.empty()) {
         *(range_begin++) = move(pool[cur_pos]);
-        pool.erase(pool.begin() + cur_pos);
-        if (pool.empty())
-        {
+        
+        vector<typename RandomIt::value_type> poolVar(pool.size() - 1); 
+        
+        copy_backward(pool.begin() + cur_pos + 1, pool.end(), poolVar.end());
+        copy(pool.begin(), pool.begin() + cur_pos, poolVar.begin());
+        
+        pool.pop_back();
+        //pool.erase(pool.begin() + cur_pos);
+        if (pool.empty()) {
             break;
         }
         cur_pos = move((cur_pos + step_size - 1) % pool.size());
     }
 }
 
-vector<int> MakeTestVector()
-{
+vector<int> MakeTestVector() {
     vector<int> numbers(10);
     iota(begin(numbers), end(numbers), 0);
     return numbers;
 }
 
-void TestIntVector()
-{
+void TestIntVector() {
     const vector<int> numbers = MakeTestVector();
     {
         vector<int> numbers_copy = numbers;
@@ -53,29 +55,25 @@ void TestIntVector()
 // Сейчас вы, возможно, не понимаете как он устроен, однако мы расскажем
 // об этом далее в нашем курсе
 
-struct NoncopyableInt
-{
+struct NoncopyableInt {
     int value;
 
-    NoncopyableInt(const NoncopyableInt &) = delete;
-    NoncopyableInt &operator=(const NoncopyableInt &) = delete;
+    NoncopyableInt(const NoncopyableInt&) = delete;
+    NoncopyableInt& operator=(const NoncopyableInt&) = delete;
 
-    NoncopyableInt(NoncopyableInt &&) = default;
-    NoncopyableInt &operator=(NoncopyableInt &&) = default;
+    NoncopyableInt(NoncopyableInt&&) = default;
+    NoncopyableInt& operator=(NoncopyableInt&&) = default;
 };
 
-bool operator==(const NoncopyableInt &lhs, const NoncopyableInt &rhs)
-{
+bool operator==(const NoncopyableInt& lhs, const NoncopyableInt& rhs) {
     return lhs.value == rhs.value;
 }
 
-ostream &operator<<(ostream &os, const NoncopyableInt &v)
-{
+ostream& operator<<(ostream& os, const NoncopyableInt& v) {
     return os << v.value;
 }
 
-void TestAvoidsCopying()
-{
+void TestAvoidsCopying() {
     vector<NoncopyableInt> numbers;
     numbers.push_back({1});
     numbers.push_back({2});
@@ -95,8 +93,7 @@ void TestAvoidsCopying()
     assert(numbers == expected);
 }
 
-int main()
-{
+int main() {
     TestIntVector();
     TestAvoidsCopying();
 }
