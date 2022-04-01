@@ -1,99 +1,88 @@
+#include <algorithm>
 #include <cassert>
-#include <iostream>
-#include <numeric>
+#include <string>
 #include <vector>
-#include <list>
 
 using namespace std;
 
-template <typename RandomIt>
-void MakeJosephusPermutation(RandomIt range_begin, RandomIt range_end, uint32_t step_size){
-    vector<typename RandomIt::value_type> pool;
-    for (auto it = range_begin; it != range_end; ++it)
-        pool.push_back(move(*it));
- 
-    size_t cur_pos = 0;
-    while (!pool.empty()) {
-        *(range_begin++) = move(pool[cur_pos]);
-        
-        vector<typename RandomIt::value_type> poolVar(pool.size() - 1); 
-        
-        copy_backward(pool.begin() + cur_pos + 1, pool.end(), poolVar.end());
-        copy(pool.begin(), pool.begin() + cur_pos, poolVar.begin());
-        
-        pool.pop_back();
-        //pool.erase(pool.begin() + cur_pos);
-        if (pool.empty()) {
-            break;
+// Объявляем Sentence<Token> для произвольного типа Token
+// синонимом vector<Token>.
+// Благодаря этому в качестве возвращаемого значения
+// функции можно указать не малопонятный вектор векторов,
+// а вектор предложений — vector<Sentence<Token>>.
+template <typename Token>
+using Sentence = vector<Token>;
+
+template <typename TokenForwardIt>
+TokenForwardIt FindSentenceEnd(TokenForwardIt tokens_begin, TokenForwardIt tokens_end) {
+    const TokenForwardIt before_sentence_end
+        = adjacent_find(tokens_begin, tokens_end, [](const auto& left_token, const auto& right_token) {
+              return left_token.IsEndSentencePunctuation() && !right_token.IsEndSentencePunctuation();
+          });
+    return before_sentence_end == tokens_end ? tokens_end : next(before_sentence_end);
+}
+
+// Класс Token имеет метод bool IsEndSentencePunctuation() const
+template <typename Token>
+vector<Sentence<Token>> SplitIntoSentences(vector<Token> tokens) {
+    vector<Sentence<Token>> result;
+    Sentence<Token> oneSentence;
+    
+    auto firstSentenceEnd = FindSentenceEnd(tokens.begin(), tokens.end());
+    auto oldIter = firstSentenceEnd;
+    auto resultNewBegin = oneSentence.begin();
+    
+    move(tokens.begin(), firstSentenceEnd, resultNewBegin);
+    result.push_back(move(oneSentence));
+    while( firstSentenceEnd != tokens.end()) {
+        while ((*firstSentenceEnd).IsEndSentencePunctuation()) {
+            firstSentenceEnd = next(firstSentenceEnd, 1);
         }
-        cur_pos = move((cur_pos + step_size - 1) % pool.size());
+        
+        move(oldIter, firstSentenceEnd, resultNewBegin);
+        result.push_back(move(oneSentence));
+        oneSentence.clear();
+        
+        firstSentenceEnd = FindSentenceEnd(firstSentenceEnd, tokens.end());
     }
+    return result;
+    // Напишите реализацию функции, не копируя объекты типа Token
 }
 
-vector<int> MakeTestVector() {
-    vector<int> numbers(10);
-    iota(begin(numbers), end(numbers), 0);
-    return numbers;
-}
+struct TestToken {
+    string data;
+    bool is_end_sentence_punctuation = false;
 
-void TestIntVector() {
-    const vector<int> numbers = MakeTestVector();
-    {
-        vector<int> numbers_copy = numbers;
-        MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 1);
-        assert(numbers_copy == numbers);
+    bool IsEndSentencePunctuation() const {
+        return is_end_sentence_punctuation;
     }
-    {
-        vector<int> numbers_copy = numbers;
-        MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 3);
-        assert(numbers_copy == vector<int>({0, 3, 6, 9, 4, 8, 5, 2, 7, 1}));
+    bool operator==(const TestToken& other) const {
+        return data == other.data && is_end_sentence_punctuation == other.is_end_sentence_punctuation;
     }
-}
-
-// Это специальный тип, который поможет вам убедиться, что ваша реализация
-// функции MakeJosephusPermutation не выполняет копирование объектов.
-// Сейчас вы, возможно, не понимаете как он устроен, однако мы расскажем
-// об этом далее в нашем курсе
-
-struct NoncopyableInt {
-    int value;
-
-    NoncopyableInt(const NoncopyableInt&) = delete;
-    NoncopyableInt& operator=(const NoncopyableInt&) = delete;
-
-    NoncopyableInt(NoncopyableInt&&) = default;
-    NoncopyableInt& operator=(NoncopyableInt&&) = default;
 };
 
-bool operator==(const NoncopyableInt& lhs, const NoncopyableInt& rhs) {
-    return lhs.value == rhs.value;
+ostream& operator<<(ostream& stream, const TestToken& token) {
+    return stream << token.data;
 }
 
-ostream& operator<<(ostream& os, const NoncopyableInt& v) {
-    return os << v.value;
-}
+// Тест содержит копирования объектов класса TestToken.
+// Для проверки отсутствия копирований в функции SplitIntoSentences
+// необходимо написать отдельный тест.
+void TestSplitting() {
+    assert(SplitIntoSentences(vector<TestToken>({{"Split"s}, {"into"s}, {"sentences"s}, {"!"s}}))
+           == vector<Sentence<TestToken>>({{{"Split"s}, {"into"s}, {"sentences"s}, {"!"s}}}));
 
-void TestAvoidsCopying() {
-    vector<NoncopyableInt> numbers;
-    numbers.push_back({1});
-    numbers.push_back({2});
-    numbers.push_back({3});
-    numbers.push_back({4});
-    numbers.push_back({5});
+    assert(SplitIntoSentences(vector<TestToken>({{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}}))
+           == vector<Sentence<TestToken>>({{{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}}}));
 
-    MakeJosephusPermutation(begin(numbers), end(numbers), 2);
-
-    vector<NoncopyableInt> expected;
-    expected.push_back({1});
-    expected.push_back({3});
-    expected.push_back({5});
-    expected.push_back({4});
-    expected.push_back({2});
-
-    assert(numbers == expected);
+    assert(SplitIntoSentences(vector<TestToken>(
+               {{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}, {"!"s, true}, {"Without"s}, {"copies"s}, {"."s, true}}))
+           == vector<Sentence<TestToken>>({
+               {{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}, {"!"s, true}},
+               {{"Without"s}, {"copies"s}, {"."s, true}},
+           }));
 }
 
 int main() {
-    TestIntVector();
-    TestAvoidsCopying();
+    TestSplitting();
 }
