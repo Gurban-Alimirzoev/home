@@ -14,10 +14,12 @@ public:
     // Если size == 0, поле raw_ptr_ должно быть равно nullptr
     explicit ArrayPtr(size_t size)
     {
-        if (size == 0u) {
+        if (size == 0u)
+        {
             raw_ptr_ = nullptr;
         }
-        else {
+        else
+        {
             raw_ptr_ = new Type[size]{};
         }
     }
@@ -30,6 +32,13 @@ public:
     // Запрещаем копирование
     ArrayPtr(const ArrayPtr &) = delete;
 
+    ArrayPtr(ArrayPtr &&other) noexcept
+
+    {
+        raw_ptr_ = other.raw_ptr_;
+        other.raw_ptr_ = nullptr;
+    }
+
     ~ArrayPtr()
     {
         delete[] raw_ptr_;
@@ -38,18 +47,24 @@ public:
     // Запрещаем присваивание
     ArrayPtr &operator=(const ArrayPtr &) = delete;
 
+    ArrayPtr &operator=(ArrayPtr &&other)
+    {
+        raw_ptr_ = exchange(other.raw_ptr_, nullptr);
+        return *this;
+    }
+
     // Прекращает владением массивом в памяти, возвращает значение адреса массива
     // После вызова метода указатель на массив должен обнулиться
     [[nodiscard]] Type *Release() noexcept
     {
-        Type* var = raw_ptr_;
+        Type *var = raw_ptr_;
         raw_ptr_ = nullptr;
         return var;
     }
 
     // Возвращает ссылку на элемент массива с индексом index
     Type &operator[](size_t index) noexcept
-    {        
+    {
         return raw_ptr_[index];
     }
 
@@ -62,8 +77,8 @@ public:
     // Возвращает true, если указатель ненулевой, и false в противном случае
     explicit operator bool() const
     {
-        bool result = raw_ptr_ == nullptr ? 0 : 1;
-        return result;
+        return raw_ptr_ == nullptr ? 0 : 1;
+        ;
     }
 
     // Возвращает значение сырого указателя, хранящего адрес начала массива
@@ -73,7 +88,8 @@ public:
     }
 
     // Обменивается значениям указателя на массив с объектом other
-    void swap(ArrayPtr& other) noexcept {
+    void swap(ArrayPtr &other) noexcept
+    {
         auto var = other.raw_ptr_;
         other.raw_ptr_ = raw_ptr_;
         raw_ptr_ = var;

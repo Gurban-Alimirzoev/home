@@ -68,18 +68,27 @@ public:
         : size_(init.size()), capacity_(init.size())
     {
         data_ = new ArrayPtr<Type>(size_);
-        std::copy(init.begin(), init.end(), begin());
+        copy(init.begin(), init.end(), begin());
     }
 
     SimpleVector(const SimpleVector &other)
         : size_(other.size_), capacity_(other.size_)
     {
-        // assert(other.data_ != this->data_);
         if (other.data_ != this->data_)
         {
             data_ = new ArrayPtr<Type>(other.size_);
             copy(other.begin(), other.end(), begin());
         }
+    }
+
+    SimpleVector(SimpleVector &&other)
+        : size_(other.GetSize()), capacity_(other.GetSize())
+    {
+        this->data_ = move(other.data_);
+
+        other.size_ = 0;
+        other.capacity_ = 0;
+        other.data_ = nullptr;
     }
 
     SimpleVector(ReserveProxyObj res)
@@ -101,31 +110,12 @@ public:
     // При нехватке места увеличивает вдвое вместимость вектора
     void PushBack(const Type &item)
     {
-        if (capacity_ == 0)
-        {
-            data_ = new ArrayPtr<Type>(1);
-            data_->Get()[0] = item;
-            size_++;
-            capacity_++;
-        }
-        else if (capacity_ == size_)
-        {
-            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(size_ * 2);
-            auto begin_data_ = data_->Get();
-            auto begin_data_var = data_var->Get();
+        Insert(end(), item);
+    }
 
-            copy(begin_data_, begin_data_ + size_, begin_data_var);
-
-            begin_data_var[size_] = item;
-            data_->swap(*data_var);
-            size_++;
-            capacity_ = size_ * 2;
-        }
-        else
-        {
-            (*data_)[size_] = item;
-            size_++;
-        }
+    void PushBack(const Type &&item)
+    {
+        Insert(end(), item);
     }
 
     // Вставляет значение value в позицию pos.
@@ -136,15 +126,58 @@ public:
     {
         Iterator iter = const_cast<Iterator>(pos);
         auto dist = distance(begin(), iter);
+
         if (capacity_ == 0)
         {
-            PushBack(value);
+            
+            data_ = new ArrayPtr<Type>(1);
+            data_->Get()[0] = move(const_cast<Type &>(value));
+            size_++;
+            capacity_++;
             return begin();
         }
         else if (capacity_ > size_)
         {
-            copy(begin() + dist, end(), begin() + dist + 1u);
-            (*data_)[dist] = value;
+            move(begin() + dist, end(), begin() + dist + 1u);
+            data_->Get()[dist] = move(const_cast<Type &>(value));
+            size_++;
+            return begin() + dist;
+        }
+        else
+        {
+
+            size_t new_size_ = size_ + 1;
+            size_t new_capacity_ = size_ * 2;
+            ArrayPtr<Type> *data_var = new ArrayPtr<Type>(new_capacity_);
+
+            move(begin(), begin() + dist, data_var->Get());
+            move_backward(begin() + dist, end(), data_var->Get() + new_size_);
+            data_var->Get()[dist] = move(const_cast<Type &>(value));
+
+            data_->swap(*data_var);
+
+            size_ = new_size_;
+            capacity_ = new_capacity_;
+            return begin() + dist;
+        }
+    }
+
+    Iterator Insert(ConstIterator pos, const Type &&value)
+    {
+        Iterator iter = const_cast<Iterator>(pos);
+        auto dist = distance(begin(), iter);
+        if (capacity_ == 0)
+        {
+            data_ = new ArrayPtr<Type>(1);
+            data_->Get()[0] = move(const_cast<Type &&>(value));
+            size_++;
+            capacity_++;
+            return begin();
+        }
+        else if (capacity_ > size_)
+        {
+            move(begin() + dist, end(), begin() + dist + 1u);
+            (*data_)[dist] = move(const_cast<Type &&>(value));
             size_++;
             return begin() + dist;
         }
@@ -153,9 +186,10 @@ public:
             size_t new_size_ = size_ + 1;
             ArrayPtr<Type> *data_var = new ArrayPtr<Type>(new_size_);
 
-            copy(begin(), begin() + dist, data_var->Get());
-            copy_backward(begin() + dist, end(), data_var->Get() + new_size_);
-            (*data_var)[dist] = value;
+            move(begin(), begin() + dist, data_var->Get());
+            move_backward(begin() + dist, end(), data_var->Get() + new_size_);
+
+            (*data_var)[dist] = move(const_cast<Type &&>(value));
 
             data_->swap(*data_var);
 
@@ -180,7 +214,7 @@ public:
         Iterator iter = const_cast<Iterator>(pos);
         auto dist = distance(begin(), iter);
 
-        copy(begin() + dist + 1, end(), begin() + dist);
+        move(begin() + dist + 1, end(), begin() + dist);
 
         --size_;
 
@@ -199,10 +233,9 @@ public:
         if (new_capacity > capacity_)
         {
             ArrayPtr<Type> *data_var = new ArrayPtr<Type>(new_capacity);
-            // auto begin_data_ = data_->Get();
             auto begin_data_var = data_var->Get();
 
-            copy(begin(), end(), begin_data_var);
+            copy(make_move_iterator(begin()), make_move_iterator(end()), begin_data_var);
             data_->swap(*data_var);
             capacity_ = new_capacity;
         }
@@ -290,8 +323,10 @@ public:
         {
             ArrayPtr<Type> *new_array = new ArrayPtr<Type>(new_size);
 
-            fill(new_array->Get(), new_array->Get() + new_size, Type());
-            copy(data_->Get(), data_->Get() + size_, new_array->Get());
+            generate(new_array->Get(), new_array->Get() + new_size, []()
+                     { return Type{}; });
+
+            copy(make_move_iterator(data_->Get()), make_move_iterator(data_->Get() + size_), new_array->Get());
 
             data_ = new_array;
 
