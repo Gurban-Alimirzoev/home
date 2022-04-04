@@ -1,99 +1,53 @@
 #include <algorithm>
-#include <cassert>
+#include <iostream>
+#include <random>
 #include <string>
-#include <vector>
+#include <string_view>
+#include <execution>
+
+#include "log_duration.h"
 
 using namespace std;
 
-// Объявляем Sentence<Token> для произвольного типа Token
-// синонимом vector<Token>.
-// Благодаря этому в качестве возвращаемого значения
-// функции можно указать не малопонятный вектор векторов,
-// а вектор предложений — vector<Sentence<Token>>.
-template <typename Token>
-using Sentence = vector<Token>;
-
-template <typename TokenForwardIt>
-TokenForwardIt FindSentenceEnd(TokenForwardIt tokens_begin, TokenForwardIt tokens_end)
-{
-    const TokenForwardIt before_sentence_end = adjacent_find(tokens_begin, tokens_end, [](const auto &left_token, const auto &right_token)
-                                                             { return left_token.IsEndSentencePunctuation() && !right_token.IsEndSentencePunctuation(); });
-    return before_sentence_end == tokens_end ? tokens_end : next(before_sentence_end);
-}
-
-// Класс Token имеет метод bool IsEndSentencePunctuation() const
-template <typename Token>
-vector<Sentence<Token>> SplitIntoSentences(vector<Token> tokens)
-{
-    vector<Sentence<Token>> result;
-    Sentence<Token> oneSentence;
-
-    auto firstSentenceEnd = tokens.begin();
-    auto oldIter = firstSentenceEnd;
-
-    while (firstSentenceEnd != tokens.end())
-    {
-        firstSentenceEnd = FindSentenceEnd(oldIter, tokens.end());
-        if (firstSentenceEnd != tokens.end())
-        {
-            for (auto i = oldIter; i < firstSentenceEnd; i++)
-            {
-                oneSentence.push_back((*i));
-            }
+string GenerateQuery(mt19937& generator, int max_length, int space_rate) {
+    const int length = uniform_int_distribution(1, max_length)(generator);
+    string query(length, ' ');
+    for (char& c : query) {
+        const int rnd = uniform_int_distribution(0, space_rate - 1)(generator);
+        if (rnd > 0) {
+            c = 'a' + (rnd - 1);
         }
-        else
-        {
-            for (auto i = oldIter; i < firstSentenceEnd; i++)
-            {
-                oneSentence.push_back((*i));
-            }
-        }
-        result.push_back(move(oneSentence));
-        oneSentence.clear();
-
-        oldIter = firstSentenceEnd;
     }
-    return result;
-    // Напишите реализацию функции, не копируя объекты типа Token
+    return query;
 }
 
-struct TestToken
-{
-    string data;
-    bool is_end_sentence_punctuation = false;
-
-    bool IsEndSentencePunctuation() const
+template <typename Solver>
+void Test(string_view mark, string_view s, Solver solver) {
+    int result;
     {
-        return is_end_sentence_punctuation;
+        LOG_DURATION(mark);
+        result = solver(s);
     }
-    bool operator==(const TestToken &other) const
-    {
-        return data == other.data && is_end_sentence_punctuation == other.is_end_sentence_punctuation;
-    }
-};
-
-ostream &operator<<(ostream &stream, const TestToken &token)
-{
-    return stream << token.data;
+    cout << result << endl;
 }
 
-// Тест содержит копирования объектов класса TestToken.
-// Для проверки отсутствия копирований в функции SplitIntoSentences
-// необходимо написать отдельный тест.
-void TestSplitting()
-{
-    assert(SplitIntoSentences(vector<TestToken>({{"Split"s}, {"into"s}, {"sentences"s}, {"!"s}})) == vector<Sentence<TestToken>>({{{"Split"s}, {"into"s}, {"sentences"s}, {"!"s}}}));
+#define TEST(solver) Test(#solver, s, solver)
 
-    assert(SplitIntoSentences(vector<TestToken>({{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}})) == vector<Sentence<TestToken>>({{{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}}}));
-
-    assert(SplitIntoSentences(vector<TestToken>(
-               {{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}, {"!"s, true}, {"Without"s}, {"copies"s}, {"."s, true}})) == vector<Sentence<TestToken>>({
-                                                                                                                                     {{"Split"s}, {"into"s}, {"sentences"s}, {"!"s, true}, {"!"s, true}},
-                                                                                                                                     {{"Without"s}, {"copies"s}, {"."s, true}},
-                                                                                                                                 }));
+int CountWords(string_view str) {
+    auto i = count(execution::par, str.begin(), str.end(), ' ');
+    return ++i;
+    // подсчитайте количество слов
 }
 
-int main()
-{
-    TestSplitting();
+int main() {
+    // должно вывести 3
+    cout << CountWords("pretty little octopus"sv) << endl;
+
+    mt19937 generator;
+
+    const string s = GenerateQuery(generator, 50'000'000, 4);
+
+    TEST(CountWords);
+
+    return 0;
 }
