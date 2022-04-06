@@ -8,6 +8,7 @@ vector<vector<Document>> ProcessQueries(
 {
 	vector<vector<Document>> result(queries.size());
 	transform(
+		execution::par,
 		queries.begin(), queries.end(),
 		result.begin(),
 		[&search_server](const string& query)

@@ -5,12 +5,13 @@
 #include "read_input_functions.h"
 #include "request_queue.h"
 #include "log_duration.h"
-//#include "remove_duplicates"
+#include "remove_duplicates.h"
 #include "process_queries.h"
-
+#include "test_example_functions.h"
 
 
 int main() {
+    TestSearchServer();
     SearchServer search_server("and with"s);
 
     int id = 0;
