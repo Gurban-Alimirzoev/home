@@ -6,8 +6,8 @@ SearchServer::SearchServer()
 {
 }
 
-SearchServer::SearchServer(const string &stop_words_text)
-    : SearchServer(SplitIntoWords(stop_words_text))
+SearchServer::SearchServer(const string& stop_words_text)
+: SearchServer(SplitIntoWords(stop_words_text))
 {
 }
 
