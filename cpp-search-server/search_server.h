@@ -7,6 +7,7 @@
 #include <cmath>
 #include <numeric>
 #include <stdexcept>
+#include <execution>
 #include "string_processing.h"
 #include "document.h"
 #include "log_duration.h"
@@ -30,7 +31,7 @@ public:
         }
     }
 
-    explicit SearchServer(const std::string& stop_words_text);
+    explicit SearchServer(const std::string &stop_words_text);
 
     void AddDocument(int document_id, const std::string &document, DocumentStatus status, const std::vector<int> &ratings);
 
@@ -43,6 +44,9 @@ public:
     const std::map<std::string, double> &GetWordFrequencies(int document_id) const;
 
     void RemoveDocument(int document_id);
+    void RemoveDocument(std::execution::parallel_policy policy, int document_id);
+    void RemoveDocument(std::execution::sequenced_policy policy, int document_id);
+
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string &raw_query, int document_id) const;
 
     std::set<int>::const_iterator begin() const;

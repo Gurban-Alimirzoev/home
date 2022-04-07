@@ -6,8 +6,8 @@ SearchServer::SearchServer()
 {
 }
 
-SearchServer::SearchServer(const string& stop_words_text)
-: SearchServer(SplitIntoWords(stop_words_text))
+SearchServer::SearchServer(const string &stop_words_text)
+    : SearchServer(SplitIntoWords(stop_words_text))
 {
 }
 
@@ -67,6 +67,47 @@ const std::map<std::string, double> &SearchServer::GetWordFrequencies(int docume
 }
 
 void SearchServer::RemoveDocument(int document_id)
+{
+    RemoveDocument(execution::seq, document_id);
+}
+void SearchServer::RemoveDocument(execution::parallel_policy policy, int document_id)
+{
+    {
+        if (!binary_search(document_ids_.begin(), document_ids_.end(), document_id))
+        {
+            return;
+        }
+        auto word_freq = document_to_word_freqs_.at(document_id);
+        set<std::string> words;
+
+        vector<const string *> var(word_freq.size());
+
+        transform(
+            execution::par,
+            word_freq.begin(), word_freq.end(),
+            var.begin(),
+            [](const auto word_and_its_freq)
+            { return &(word_and_its_freq.first); });
+
+        /*std::transform(
+            exec_pol,
+            var.begin(), var.end(),
+            words.begin(),
+            [](const auto *word_and_its_freq)
+            { return &(word_and_its_freq.first); });*/
+
+        for_each(
+            execution::par,
+            var.begin(), var.end(),
+            [&document_id, *this](const string* word)
+            { word_to_document_freqs_.at(*word).erase(document_id); });
+
+        documents_.erase(document_id);
+        document_to_word_freqs_.erase(document_id);
+        document_ids_.erase(document_id);
+    }
+}
+void SearchServer::RemoveDocument(std::execution::sequenced_policy policy, int document_id)
 {
     if (!binary_search(document_ids_.begin(), document_ids_.end(), document_id))
     {
