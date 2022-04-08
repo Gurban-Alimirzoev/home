@@ -1,10 +1,3 @@
 ﻿  search_server.cpp
 D:\git\Home\cpp-search-server\search_server.cpp(45,29): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
-D:\git\Home\cpp-search-server\search_server.cpp(103,48): error C2663: std::_Tree<std::_Tmap_traits<_Kty,_Ty,_Pr,_Alloc,false>>::erase: для 3 перегрузок нет допустимого преобразования для указателя "this"
-          with
-          [
-              _Kty=int,
-              _Ty=double,
-              _Pr=std::less<int>,
-              _Alloc=std::allocator<std::pair<const int,double>>
-          ]
+  search_server_VS.vcxproj -> D:\git\Home\cpp-search-server\search_server_VS\x64\Debug\search_server_VS.exe

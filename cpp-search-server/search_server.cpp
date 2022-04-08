@@ -78,16 +78,17 @@ void SearchServer::RemoveDocument(execution::parallel_policy policy, int documen
             return;
         }
         auto word_freq = document_to_word_freqs_.at(document_id);
-        set<std::string> words;
+        //set<std::string> words;
+        vector<const string*> var(word_freq.size());
 
-        vector<const string *> var(word_freq.size());
+        //vector<string *> var(&(*(word_freq.begin())).first, &( *(next(word_freq.end(), -1))).first);
 
         transform(
             execution::par,
             word_freq.begin(), word_freq.end(),
             var.begin(),
-            [](const auto word_and_its_freq)
-            { return &(word_and_its_freq.first); });
+            [](const auto& word)
+            { return &(word.first); });
 
         /*std::transform(
             exec_pol,
@@ -99,8 +100,8 @@ void SearchServer::RemoveDocument(execution::parallel_policy policy, int documen
         for_each(
             execution::par,
             var.begin(), var.end(),
-            [&document_id, *this](const string* word)
-            { word_to_document_freqs_.at(*word).erase(document_id); });
+            [&document_id, this](const string* word)
+            {  word_to_document_freqs_.find(*word)->second.erase(document_id); });
 
         documents_.erase(document_id);
         document_to_word_freqs_.erase(document_id);
