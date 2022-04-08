@@ -78,10 +78,10 @@ void SearchServer::RemoveDocument(execution::parallel_policy policy, int documen
             return;
         }
         auto word_freq = document_to_word_freqs_.at(document_id);
-        //set<std::string> words;
+
         vector<const string*> var(word_freq.size());
 
-        //vector<string *> var(&(*(word_freq.begin())).first, &( *(next(word_freq.end(), -1))).first);
+        //move(word_freq.begin(), word_freq.end(), var.begin());
 
         transform(
             execution::par,

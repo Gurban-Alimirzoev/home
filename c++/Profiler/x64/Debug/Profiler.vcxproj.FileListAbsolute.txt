@@ -1,1 +1,0 @@
-E:\git\Home\c++\Profiler\x64\Debug\NativeCodeAnalysis.read.1.tlog
