@@ -167,31 +167,23 @@ tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(execution::par
         }
     }*/
     vector<string> matched_words;
-    for (const string &word : query.minus_words)
+
+    for (const auto [word, second] : (documents_.at(document_id)).freqs)
     {
-        if (word_to_document_freqs_.count(word) == 0)
+        if (query.minus_words.count(word))
         {
-            continue;
-        }
-        if (word_to_document_freqs_.at(word).count(document_id))
-        {
-            return {matched_words, documents_.at(document_id).status};    
+            return {matched_words, documents_.at(document_id).status};
         }
     }
 
-    for (const string &word : query.plus_words)
+    for (const auto [word, second] : (documents_.at(document_id)).freqs)
     {
-        if (word_to_document_freqs_.count(word) == 0)
-        {
-            continue;
-        }
-        if (word_to_document_freqs_.at(word).count(document_id))
+        if (query.plus_words.count(word))
         {
             matched_words.push_back(word);
         }
     }
     return {matched_words, documents_.at(document_id).status};
-
 }
 
 tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(execution::sequenced_policy policy, const string &raw_query, int document_id) const
