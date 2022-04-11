@@ -2,6 +2,7 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <list>
 #include <map>
 #include <algorithm>
 #include <cmath>
@@ -48,6 +49,8 @@ public:
     void RemoveDocument(std::execution::sequenced_policy policy, int document_id);
 
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(const std::string &raw_query, int document_id) const;
+    std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::sequenced_policy policy, const std::string& raw_query, int document_id) const;
+    std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(std::execution::parallel_policy policy, const std::string& raw_query, int document_id) const;
 
     std::set<int>::const_iterator begin() const;
     std::set<int>::const_iterator end() const;
@@ -57,6 +60,7 @@ private:
     {
         int rating;
         DocumentStatus status;
+        std::map<std::string, double> freqs;
     };
     struct QueryWord
     {
@@ -73,7 +77,6 @@ private:
 
     const std::set<std::string> stop_words_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
-    std::map<int, std::map<std::string, double>> document_to_word_freqs_;
     std::map<int, DocumentData> documents_;
     std::set<int> document_ids_;
 
