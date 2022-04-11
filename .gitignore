@@ -2,3 +2,4 @@
 .vscode/
 *.exe
 !mingw-w64-install.exe
+cpp-search-server/search_server_VS/*
