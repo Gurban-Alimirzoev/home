@@ -131,7 +131,54 @@ tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(execution::par
 {
     const auto query = ParseQuery(raw_query);
 
-    /*vector<string> matched_words;
+    /*vector<const string *> var_matched_words_with_zero(query.plus_words.size());
+
+    transform(
+        execution::par,
+        query.plus_words.begin(), query.plus_words.end(),
+        var_matched_words_with_zero.begin(),
+        [&](const string &word)
+        {
+            return ((word_to_document_freqs_.count(word) != 0) && (word_to_document_freqs_.at(word).count(document_id))) ? &word : nullptr;
+        });
+
+    auto lambda = [](const string *word)
+        {
+            return word != nullptr;
+        };
+
+    auto count_out_size = for_each(
+        execution::par,
+        var_matched_words_with_zero.begin(), var_matched_words_with_zero.end(),
+        lambda);
+
+    auto count_out_size = count_if(var_matched_words_with_zero.begin(), var_matched_words_with_zero.end(), [&](const string *word) {
+        return word != nullptr;
+    });
+
+    vector<string> var_matched_words(count_out_size);
+    int count_var = 0;
+    for (int i = 0; i < var_matched_words_with_zero.size(); i++)
+    {
+        if (var_matched_words_with_zero[i] != nullptr)
+        {
+            var_matched_words[count_var] = move(*var_matched_words_with_zero[i]);
+            count_var++;
+        }
+    }*/
+    vector<string> matched_words;
+    for (const string &word : query.minus_words)
+    {
+        if (word_to_document_freqs_.count(word) == 0)
+        {
+            continue;
+        }
+        if (word_to_document_freqs_.at(word).count(document_id))
+        {
+            return {matched_words, documents_.at(document_id).status};    
+        }
+    }
+
     for (const string &word : query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
@@ -142,42 +189,9 @@ tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(execution::par
         {
             matched_words.push_back(word);
         }
-    }*/
-
-    vector<string> var_matched_words_with_zero(query.plus_words.size());
-
-    transform(
-        execution::par,
-        query.plus_words.begin(), query.plus_words.end(),
-        var_matched_words_with_zero.begin(),
-        [&](string word)
-        {
-            return ((word_to_document_freqs_.count(word) != 0) && (word_to_document_freqs_.at(word).count(document_id))) ? word : "";
-        });
-
-    vector<string> var_matched_words(query.plus_words.size());
-    int var_matched_words_count = 0;
-        for ( int i = 0; i < var_matched_words_with_zero.size(); i++) {
-            if (var_matched_words_with_zero[i] != "")
-            {
-                var_matched_words[var_matched_words_count] = move(var_matched_words_with_zero[i]);
-                var_matched_words_count++;
-            } 
-        }
-
-    for (const string &word : query.minus_words)
-    {
-        if (word_to_document_freqs_.count(word) == 0)
-        {
-            continue;
-        }
-        if (word_to_document_freqs_.at(word).count(document_id))
-        {
-            var_matched_words.clear();
-            break;
-        }
     }
-    return {var_matched_words, documents_.at(document_id).status};
+    return {matched_words, documents_.at(document_id).status};
+
 }
 
 tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(execution::sequenced_policy policy, const string &raw_query, int document_id) const
