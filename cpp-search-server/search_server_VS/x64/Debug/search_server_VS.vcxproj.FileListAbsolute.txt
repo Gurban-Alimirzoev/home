@@ -1,1 +1,0 @@
-D:\git\Home\cpp-search-server\search_server_VS\x64\Debug\search_server_VS.exe
