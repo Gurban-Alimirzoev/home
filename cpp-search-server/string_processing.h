@@ -6,7 +6,7 @@
 template <typename StringContainer>
 std::set<std::string_view> MakeUniqueNonEmptyStrings(const StringContainer &strings)
 {
-    std::set<std::string_view> non_empty_strings;
+    set<string, less<>> non_empty_strings;
     for (const auto& str : strings)
     {
         if (!str.empty())

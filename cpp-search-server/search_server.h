@@ -77,7 +77,7 @@ private:
         std::set<std::string_view> minus_words;
     };
 
-    const std::set<std::string_view> stop_words_;
+    const std::set<std::string, std::less<>> stop_words_;
     std::map<std::string_view, std::map<int, double>> word_to_document_freqs_;
     std::map<int, DocumentData> documents_;
     std::set<int> document_ids_;
