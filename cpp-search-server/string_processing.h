@@ -4,10 +4,10 @@
 #include <string>
 
 template <typename StringContainer>
-std::set<std::string> MakeUniqueNonEmptyStrings(const StringContainer &strings)
+std::set<std::string_view> MakeUniqueNonEmptyStrings(const StringContainer &strings)
 {
-    std::set<std::string> non_empty_strings;
-    for (const std::string& str : strings)
+    std::set<std::string_view> non_empty_strings;
+    for (const auto& str : strings)
     {
         if (!str.empty())
         {
@@ -17,4 +17,4 @@ std::set<std::string> MakeUniqueNonEmptyStrings(const StringContainer &strings)
     return non_empty_strings;
 }
 
-std::vector<std::string> SplitIntoWords(const std::string &text);
+std::vector<std::string_view> SplitIntoWords(const std::string_view &text);

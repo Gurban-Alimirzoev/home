@@ -1,0 +1,93 @@
+﻿  main.cpp
+D:\git\Home\cpp-search-server\string_processing.h(10,42): error C2440: инициализация: невозможно преобразовать "const _Elem" в "const std::string &"
+          with
+          [
+              _Elem=char
+          ]
+D:\git\Home\cpp-search-server\string_processing.h(11,1): message : Причина: невозможно преобразовать "const _Elem" в "const std::string"
+          with
+          [
+              _Elem=char
+          ]
+D:\git\Home\cpp-search-server\string_processing.h(11,1): message : Ни один конструктор не смог принять исходный тип, либо разрешение перегрузки конструктора неоднозначно
+D:\git\Home\cpp-search-server\search_server.h(29): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::set<std::string_view,std::less<std::string_view>,std::allocator<std::string_view>> MakeUniqueNonEmptyStrings<StringContainer>(const StringContainer &)"
+          with
+          [
+              StringContainer=std::string
+          ]
+D:\git\Home\cpp-search-server\main.cpp(15): message : выполняется компиляция ссылки на экземпляр шаблон функции "SearchServer::SearchServer<std::string>(const StringContainer &)"
+          with
+          [
+              StringContainer=std::string
+          ]
+  process_queries.cpp
+D:\git\Home\cpp-search-server\process_queries.cpp(27,34): warning C4267: +=: преобразование из "size_t" в "int"; возможна потеря данных
+  remove_duplicates.cpp
+  request_queue.cpp
+D:\git\Home\cpp-search-server\request_queue.cpp(24,20): warning C4244: return: преобразование "__int64" в "int", возможна потеря данных
+  search_server.cpp
+D:\git\Home\cpp-search-server\search_server.cpp(47,29): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
+D:\git\Home\cpp-search-server\string_processing.h(10,42): error C2440: инициализация: невозможно преобразовать "const std::basic_string_view<char,std::char_traits<char>>" в "const std::string &"
+D:\git\Home\cpp-search-server\string_processing.h(11,1): message : Причина: невозможно преобразовать "const std::basic_string_view<char,std::char_traits<char>>" в "const std::string"
+D:\git\Home\cpp-search-server\string_processing.h(10,42): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
+D:\git\Home\cpp-search-server\search_server.h(29): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::set<std::string_view,std::less<std::string_view>,std::allocator<std::string_view>> MakeUniqueNonEmptyStrings<StringContainer>(const StringContainer &)"
+          with
+          [
+              StringContainer=std::vector<std::string_view,std::allocator<std::string_view>>
+          ]
+D:\git\Home\cpp-search-server\search_server.cpp(11): message : выполняется компиляция ссылки на экземпляр шаблон функции "SearchServer::SearchServer<std::vector<std::string_view,std::allocator<std::string_view>>>(const StringContainer &)"
+          with
+          [
+              StringContainer=std::vector<std::string_view,std::allocator<std::string_view>>
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\algorithm(3031,1): error C2440: =: невозможно преобразовать "_Ty1 *" в "const std::basic_string<char,std::char_traits<char>,std::allocator<char>> *"
+          with
+          [
+              _Ty1=const std::string_view
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\algorithm(3031,24): message : Типы, на которые указывают указатели, не связаны; для преобразования требуется reinterpret_cast, приведение в стиле С или приведение в стиле функции в круглых скобках
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\execution(2327): message : выполняется компиляция ссылки на экземпляр шаблон функции "_OutIt std::transform<std::_Tree_unchecked_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const std::string_view,double>>>>,const std::basic_string<char,std::char_traits<char>,std::allocator<char>>**,_Fn>(const _InIt,const _InIt,_OutIt,_Fn)"
+          with
+          [
+              _OutIt=const std::basic_string<char,std::char_traits<char>,std::allocator<char>> **,
+              _Fn=SearchServer::RemoveDocument::<lambda_6b33598315003ea9f1d5ce76ccd60168>,
+              _InIt=std::_Tree_unchecked_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const std::string_view,double>>>>
+          ]
+D:\git\Home\cpp-search-server\search_server.cpp(86): message : выполняется компиляция ссылки на экземпляр шаблон функции "_FwdIt2 std::transform<const std::execution::parallel_policy&,std::_Tree_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const std::string_view,double>>>>,std::_Vector_iterator<std::_Vector_val<std::_Simple_types<_Ty>>>,SearchServer::RemoveDocument::<lambda_6b33598315003ea9f1d5ce76ccd60168>,0>(_ExPo,const _FwdIt1,const _FwdIt1,_FwdIt2,_Fn) noexcept"
+          with
+          [
+              _FwdIt2=std::_Vector_iterator<std::_Vector_val<std::_Simple_types<const std::basic_string<char,std::char_traits<char>,std::allocator<char>> *>>>,
+              _Ty=const std::string *,
+              _ExPo=const std::execution::parallel_policy &,
+              _FwdIt1=std::_Tree_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const std::string_view,double>>>>,
+              _Fn=SearchServer::RemoveDocument::<lambda_6b33598315003ea9f1d5ce76ccd60168>
+          ]
+  string_processing.cpp
+  test_example_functions.cpp
+D:\git\Home\cpp-search-server\test_example_functions.cpp(171,105): error C2679: бинарный "=": не найден оператор, принимающий правый операнд типа "std::tuple<std::vector<std::string_view,std::allocator<std::string_view>>,DocumentStatus>" (или приемлемое преобразование отсутствует)
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(592,12): message : может быть "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =(volatile const std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &)"
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(609,25): message : или       "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =<std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>,std::vector<std::string,std::allocator<std::string>>&,0>(_Myself &&) noexcept(<expr>)"
+          with
+          [
+              _Myself=std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(598,25): message : или       "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =<std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>,std::vector<std::string,std::allocator<std::string>>&,0>(const _Myself &) noexcept(<expr>)"
+          with
+          [
+              _Myself=std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>
+          ]
+D:\git\Home\cpp-search-server\test_example_functions.cpp(171,105): message : при попытке сопоставить список аргументов "(std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>, std::tuple<std::vector<std::string_view,std::allocator<std::string_view>>,DocumentStatus>)"
+D:\git\Home\cpp-search-server\test_example_functions.cpp(172,111): error C2679: бинарный "=": не найден оператор, принимающий правый операнд типа "std::tuple<std::vector<std::string_view,std::allocator<std::string_view>>,DocumentStatus>" (или приемлемое преобразование отсутствует)
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(592,12): message : может быть "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =(volatile const std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &)"
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(609,25): message : или       "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =<std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>,std::vector<std::string,std::allocator<std::string>>&,0>(_Myself &&) noexcept(<expr>)"
+          with
+          [
+              _Myself=std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>
+          ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\tuple(598,25): message : или       "std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &> &std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>::operator =<std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>,std::vector<std::string,std::allocator<std::string>>&,0>(const _Myself &) noexcept(<expr>)"
+          with
+          [
+              _Myself=std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>
+          ]
+D:\git\Home\cpp-search-server\test_example_functions.cpp(172,111): message : при попытке сопоставить список аргументов "(std::tuple<std::vector<std::string,std::allocator<std::string>> &,DocumentStatus &>, std::tuple<std::vector<std::string_view,std::allocator<std::string_view>>,DocumentStatus>)"
+  Создание кода...

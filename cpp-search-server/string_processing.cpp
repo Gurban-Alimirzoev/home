@@ -2,9 +2,9 @@
 
 using namespace std;
 
-vector<string> SplitIntoWords(const string &text)
+vector<string_view> SplitIntoWords(const string_view &text)
 {
-    vector<string> words;
+    vector<string_view> words;
     string word;
     for (const char c : text)
     {

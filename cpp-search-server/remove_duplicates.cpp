@@ -4,13 +4,13 @@ using namespace std;
 
 void RemoveDuplicates(SearchServer &search_server)
 {
-    set<set<string>> all_words;
+    set<set<string_view>> all_words;
     vector<int> dubl_doc;
     int compareDocId = 0;
     for (const int document_id : search_server)
     {
         auto tmp = search_server.GetWordFrequencies(document_id);
-        set<string> words;
+        set<string_view> words;
         for (auto word_freqs : tmp)
         {
             words.insert(word_freqs.first);

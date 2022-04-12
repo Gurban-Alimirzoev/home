@@ -5,9 +5,9 @@
 #include "read_input_functions.h"
 #include "request_queue.h"
 #include "log_duration.h"
-#include "remove_duplicates.h"
+//#include "remove_duplicates.h"
 #include "process_queries.h"
-#include "test_example_functions.h"
+//#include "test_example_functions.h"
 
 using namespace std;
 
