@@ -25,7 +25,7 @@ public:
     SearchServer();
 
     template <typename StringContainer>
-    SearchServer(const StringContainer &stop_words)
+    explicit SearchServer(const StringContainer &stop_words)
         : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
     {
         if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord))
@@ -35,6 +35,8 @@ public:
     }
 
     explicit SearchServer(const std::string_view &stop_words_text);
+    explicit SearchServer(const std::string& stop_words_text);
+
 
     void AddDocument(int document_id, const std::string_view &document, DocumentStatus status, const std::vector<int> &ratings);
 
@@ -77,7 +79,7 @@ private:
         std::set<std::string_view> minus_words;
     };
 
-    const std::set<std::string, std::less<>> stop_words_;
+    const std::set<std::string> stop_words_;
     std::map<std::string_view, std::map<int, double>> word_to_document_freqs_;
     std::map<int, DocumentData> documents_;
     std::set<int> document_ids_;

@@ -4,10 +4,10 @@
 #include <string>
 
 template <typename StringContainer>
-std::set<std::string_view> MakeUniqueNonEmptyStrings(const StringContainer &strings)
+const std::set<std::string, std::less<>> MakeUniqueNonEmptyStrings(const StringContainer &strings)
 {
-    set<string, less<>> non_empty_strings;
-    for (const auto& str : strings)
+    const std::set<std::string, std::less<>> non_empty_strings;
+    for (const std::string& str : strings)
     {
         if (!str.empty())
         {

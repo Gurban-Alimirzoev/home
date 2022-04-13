@@ -11,6 +11,11 @@ SearchServer::SearchServer(const string_view &stop_words_text)
 {
 }
 
+SearchServer::SearchServer(const string& stop_words_text)
+    : SearchServer(SplitIntoWords(stop_words_text))
+{
+}
+
 void SearchServer::AddDocument(int document_id, const string_view &document, DocumentStatus status, const vector<int> &ratings)
 {
     if ((document_id < 0) || (documents_.count(document_id) > 0))
@@ -185,7 +190,7 @@ tuple<vector<string_view>, DocumentStatus> SearchServer::MatchDocument(execution
 
 bool SearchServer::IsStopWord(const string_view &word) const
 {
-    return stop_words_.count(word) > 0;
+    return stop_words_.count(string(word)) > 0;
 }
 
 bool SearchServer::IsValidWord(const string_view &word)
