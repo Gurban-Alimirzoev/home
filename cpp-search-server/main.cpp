@@ -30,12 +30,6 @@ int main() {
     const string query = "curly and funny -not"s;
 
     {
-        const auto [words, status] = search_server.MatchDocument(execution::par, query, 1);
-        cout << words.size() << " words for document 3"s << endl;
-        // 0 words for document 3
-    }
-
-    {
         const auto [words, status] = search_server.MatchDocument(query, 1);
         cout << words.size() << " words for document 1"s << endl;
         // 1 words for document 1
@@ -47,5 +41,10 @@ int main() {
         // 2 words for document 2
     }
 
+    {
+        const auto [words, status] = search_server.MatchDocument(execution::par, query, 4);
+        cout << words.size() << " words for document 3"s << endl;
+        // 0 words for document 3
+    }
     return 0;
 } 

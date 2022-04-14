@@ -1,19 +1,2 @@
-﻿  main.cpp
-  process_queries.cpp
-D:\git\Home\cpp-search-server\process_queries.cpp(27,34): warning C4267: +=: преобразование из "size_t" в "int"; возможна потеря данных
-  remove_duplicates.cpp
-  request_queue.cpp
-D:\git\Home\cpp-search-server\request_queue.cpp(24,20): warning C4244: return: преобразование "__int64" в "int", возможна потеря данных
-  search_server.cpp
-D:\git\Home\cpp-search-server\search_server.cpp(52,29): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
-D:\git\Home\cpp-search-server\search_server.h(29,22): error C2664: "std::set<std::string,std::less<std::string>,std::allocator<std::string>>::set(const std::allocator<std::string> &)": невозможно преобразовать аргумент 1 из "const std::set<std::string,std::less<void>,std::allocator<std::string>>" в "const std::allocator<std::string> &"
-D:\git\Home\cpp-search-server\search_server.h(30,1): message : Причина: невозможно преобразовать "const std::set<std::string,std::less<void>,std::allocator<std::string>>" в "const std::allocator<std::string>"
-D:\git\Home\cpp-search-server\search_server.h(29,48): message : Для выполнения данного преобразования нет доступного оператора преобразования, определенного пользователем, или вызов оператора невозможен
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\set(84,5): message : см. объявление "std::set<std::string,std::less<std::string>,std::allocator<std::string>>::set"
-D:\git\Home\cpp-search-server\search_server.cpp(11): message : выполняется компиляция ссылки на экземпляр шаблон функции "SearchServer::SearchServer<std::vector<std::string_view,std::allocator<std::string_view>>>(const StringContainer &)"
-          with
-          [
-              StringContainer=std::vector<std::string_view,std::allocator<std::string_view>>
-          ]
-  string_processing.cpp
-  Создание кода...
+﻿  string_processing.cpp
+  ss_test.vcxproj -> D:\git\Home\cpp-search-server\ss_test\x64\Debug\ss_test.exe

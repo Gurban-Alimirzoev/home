@@ -37,6 +37,7 @@ public:
     explicit SearchServer(const std::string_view stop_words_text);
     explicit SearchServer(const std::string& stop_words_text);
 
+    std::string_view AddUniqueWord(const std::string& word);
 
     void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
 
@@ -46,7 +47,7 @@ public:
     std::vector<Document> FindTopDocuments(const std::string_view raw_query) const;
 
     int GetDocumentCount() const;
-    const std::map<std::string, double>& GetWordFrequencies(int document_id) const;
+    const std::map<std::string_view, double>& GetWordFrequencies(int document_id) const;
 
     void RemoveDocument(int document_id);
     void RemoveDocument(std::execution::parallel_policy policy, int document_id);
@@ -64,22 +65,23 @@ private:
     {
         int rating;
         DocumentStatus status;
-        std::vector<std::string> data;
-        std::map<std::string, double> freqs;
+        std::unordered_set<std::string_view> words;
+        std::map<std::string_view, double> freqs;
+
     };
     struct QueryWord
     {
-        std::string data;
+        std::string_view data;
         bool is_minus;
         bool is_stop;
     };
-    QueryWord ParseQueryWord(const std::string text) const;
     struct Query
     {
-        std::unordered_set<std::string_view> plus_words;
-        std::set<std::string_view> minus_words;
+        std::deque<std::string_view> plus_words;
+        std::deque<std::string_view> minus_words;
     };
 
+    std::set<std::string> data;
     const std::set<std::string, std::less<>> stop_words_;
     std::map<std::string_view, std::map<int, double>> word_to_document_freqs_;
     std::map<int, DocumentData> documents_;
@@ -88,7 +90,8 @@ private:
     bool IsStopWord(const std::string& word) const;
     static bool IsValidWord(const std::string& word);
 
-    std::vector<std::string> SplitIntoWordsNoStop(const std::string_view text) const;
+    std::deque<std::string_view> SplitIntoWordsNoStop(const std::string_view text) const;
+    QueryWord ParseQueryWord(const std::string_view text) const;
     Query ParseQuery(const std::string_view text) const;
 
     static int ComputeAverageRating(const std::vector<int>& ratings);
