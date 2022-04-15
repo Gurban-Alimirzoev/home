@@ -79,7 +79,7 @@ private:
         std::deque<std::string_view> minus_words;
     };
 
-    const std::set<std::string> stop_words_;
+    const std::set<std::string, std::less<>> stop_words_;
     const std::string stop_words_constr;
     std::map<int, std::vector<std::string>> all_doc_word;
 
@@ -93,14 +93,15 @@ private:
     std::set<int> document_ids_;
 
     bool IsStopWord(const std::string& word) const;
+
     static bool IsValidWord(const std::string& word);
 
     std::deque<std::string_view> SplitIntoWordsNoStop(const std::string_view text) const;
     Query ParseQuery(const std::string_view text) const;
-    QueryWord ParseQueryWord(const std::string_view& text) const;
+    QueryWord ParseQueryWord(const std::string_view text) const;
 
     static int ComputeAverageRating(const std::vector<int>& ratings);
-    double ComputeWordInverseDocumentFreq(const std::string_view& word) const;
+    double ComputeWordInverseDocumentFreq(const std::string_view word) const;
 
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const;
