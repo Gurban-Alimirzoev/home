@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<string> SplitIntoWords(const string& text)
+vector<string> SplitIntoWords(const string &text)
 {
 	vector<string> words;
 	string word;
@@ -29,14 +29,16 @@ vector<string> SplitIntoWords(const string& text)
 	return words;
 }
 
-vector<string_view> SplitIntoWords(const string_view text) {
+vector<string_view> SplitIntoWords(const string_view text)
+{
 
 	vector<string_view> words;
 
 	string word;
 	auto pos = text.find(' ');
 	size_t first = 0;
-	while (pos != text.npos) {
+	while (pos != text.npos)
+	{
 		words.push_back(text.substr(first, pos - first));
 		first = pos + 1;
 		pos = text.find(' ', first);
