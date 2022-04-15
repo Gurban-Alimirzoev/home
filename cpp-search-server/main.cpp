@@ -23,8 +23,8 @@ int main() {
             "pet with rat and rat and rat"s,
             "nasty rat with curly hair"s,
         }
-    ) {
-        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, {1, 2});
+        ) {
+        search_server.AddDocument(++id, text, DocumentStatus::ACTUAL, { 1, 2 });
     }
 
     const string query = "curly and funny -not"s;
@@ -42,9 +42,10 @@ int main() {
     }
 
     {
-        const auto [words, status] = search_server.MatchDocument(execution::par, query, 4);
+        const auto [words, status] = search_server.MatchDocument(execution::par, query, 3);
         cout << words.size() << " words for document 3"s << endl;
         // 0 words for document 3
     }
+
     return 0;
-} 
+}

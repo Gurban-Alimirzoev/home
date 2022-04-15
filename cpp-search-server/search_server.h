@@ -2,8 +2,10 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <string_view>
 #include <list>
 #include <map>
+#include <deque>
 #include <algorithm>
 #include <cmath>
 #include <numeric>
@@ -25,7 +27,7 @@ public:
     SearchServer();
 
     template <typename StringContainer>
-    explicit SearchServer(const StringContainer& stop_words)
+    SearchServer(const StringContainer& stop_words)
         : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
     {
         if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord))
@@ -34,10 +36,8 @@ public:
         }
     }
 
-    explicit SearchServer(const std::string_view stop_words_text);
     explicit SearchServer(const std::string& stop_words_text);
-
-    std::string_view AddUniqueWord(const std::string& word);
+    explicit SearchServer(const std::string_view stop_words_text);
 
     void AddDocument(int document_id, const std::string_view document, DocumentStatus status, const std::vector<int>& ratings);
 
@@ -66,12 +66,10 @@ private:
         int rating;
         DocumentStatus status;
         std::unordered_set<std::string_view> words;
-        std::map<std::string_view, double> freqs;
-
     };
     struct QueryWord
     {
-        std::string_view data;
+        std::string data;
         bool is_minus;
         bool is_stop;
     };
@@ -81,9 +79,16 @@ private:
         std::deque<std::string_view> minus_words;
     };
 
-    std::set<std::string> data;
-    const std::set<std::string, std::less<>> stop_words_;
+    const std::set<std::string> stop_words_;
+    const std::string stop_words_constr;
+    std::map<int, std::vector<std::string>> all_doc_word;
+
+    std::unordered_set<std::string> unique_words;
+    std::string_view AddUniqueWord(const std::string& word);
+
     std::map<std::string_view, std::map<int, double>> word_to_document_freqs_;
+    std::map<int, std::map<std::string_view, double>> document_to_word_freqs_;
+
     std::map<int, DocumentData> documents_;
     std::set<int> document_ids_;
 
@@ -91,11 +96,11 @@ private:
     static bool IsValidWord(const std::string& word);
 
     std::deque<std::string_view> SplitIntoWordsNoStop(const std::string_view text) const;
-    QueryWord ParseQueryWord(const std::string_view text) const;
     Query ParseQuery(const std::string_view text) const;
+    QueryWord ParseQueryWord(const std::string_view& text) const;
 
     static int ComputeAverageRating(const std::vector<int>& ratings);
-    double ComputeWordInverseDocumentFreq(const std::string word) const;
+    double ComputeWordInverseDocumentFreq(const std::string_view& word) const;
 
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const;
@@ -104,7 +109,8 @@ private:
 template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindTopDocuments(const std::string_view raw_query, DocumentPredicate document_predicate) const
 {
-    const auto query = ParseQuery(raw_query);
+    const std::string var(raw_query);
+    const auto query = ParseQuery(var);
 
     auto matched_documents = FindAllDocuments(query, document_predicate);
 
@@ -128,13 +134,13 @@ template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindAllDocuments(const Query& query, DocumentPredicate document_predicate) const
 {
     std::map<int, double> document_to_relevance;
-    for (const std::string_view& word : query.plus_words)
+    for (const std::string_view word : query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
         {
             continue;
         }
-        const double inverse_document_freq = ComputeWordInverseDocumentFreq(std::string(word));
+        const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
         for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word))
         {
             const auto& document_data = documents_.at(document_id);
@@ -145,7 +151,7 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query& query, Documen
         }
     }
 
-    for (const std::string_view& word : query.minus_words)
+    for (const std::string_view word : query.minus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
         {
