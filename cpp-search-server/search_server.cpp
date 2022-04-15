@@ -258,7 +258,7 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(const string_view text) con
         throw invalid_argument("Query word is empty"s);
     }
 
-    string word(text);
+    auto word = text;
 
     bool is_minus = false;
 
@@ -268,23 +268,24 @@ SearchServer::QueryWord SearchServer::ParseQueryWord(const string_view text) con
         word = word.substr(1);
     }
 
-    if (word.empty() || word[0] == '-' || !IsValidWord(word))
+    if (word.empty() || word[0] == '-' || !IsValidWord(string(word)))
     {
-        throw invalid_argument("Query word "s + word + " is invalid");
+        throw invalid_argument("Query word "s + string(word) + " is invalid");
     }
 
-    return {text.data(), is_minus, IsStopWord(word)};
+    return {text.data(), is_minus, IsStopWord(string(word))};
 }
 
 SearchServer::Query SearchServer::ParseQuery(const std::string_view text) const
 {
-    deque<string_view> words = SplitIntoWordsNoStop(text);
+    /*deque<string_view> words = SplitIntoWordsNoStop(text);
     deque<string_view> plus_words = words;
     deque<string_view> minus_words = words;
 
     plus_words.erase(std::remove_if(plus_words.begin(), plus_words.end(), [](auto word)
                                     { return word[0] == '-'; }),
                      plus_words.end());
+
     minus_words.erase(std::remove_if(minus_words.begin(), minus_words.end(), [](auto word)
                                      { return word[0] != '-'; }),
                       minus_words.end());
@@ -292,7 +293,25 @@ SearchServer::Query SearchServer::ParseQuery(const std::string_view text) const
     std::transform(minus_words.begin(), minus_words.end(), minus_words.begin(), [](auto word)
                    { return word.substr(1); });
 
-    return {plus_words, minus_words};
+    return {plus_words, minus_words};*/
+
+    SearchServer::Query result;
+    for (const auto word : SplitIntoWords(text))
+    {
+        const auto query_word = ParseQueryWord(word);
+        if (!query_word.is_stop)
+        {
+            if (query_word.is_minus)
+            {
+                result.minus_words.push_back(query_word.data);
+            }
+            else
+            {
+                result.plus_words.push_back(query_word.data);
+            }
+        }
+    }
+    return result;
 }
 
 double SearchServer::ComputeWordInverseDocumentFreq(const string_view word) const

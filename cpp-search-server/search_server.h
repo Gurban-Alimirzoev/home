@@ -80,7 +80,6 @@ private:
     };
 
     const std::set<std::string, std::less<>> stop_words_;
-    const std::string stop_words_constr;
     std::map<int, std::vector<std::string>> all_doc_word;
 
     std::unordered_set<std::string> unique_words;
