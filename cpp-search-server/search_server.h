@@ -3,12 +3,14 @@
 #include <vector>
 #include <string>
 #include <string_view>
+#include <sstream>
 #include <list>
 #include <map>
 #include <deque>
 #include <algorithm>
 #include <cmath>
 #include <numeric>
+#include <utility>
 #include <functional>
 #include <stdexcept>
 #include <execution>
@@ -18,7 +20,7 @@
 #include "log_duration.h"
 
 using namespace std::string_literals;
-const double precision = 1e-6;
+const double precision = 1e-10;
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
 class SearchServer
@@ -69,7 +71,7 @@ private:
     };
     struct QueryWord
     {
-        std::string data;
+        std::string_view data;
         bool is_minus;
         bool is_stop;
     };
@@ -80,7 +82,6 @@ private:
     };
 
     const std::set<std::string, std::less<>> stop_words_;
-    std::map<int, std::vector<std::string>> all_doc_word;
 
     std::unordered_set<std::string> unique_words;
     std::string_view AddUniqueWord(const std::string &word);
@@ -96,6 +97,7 @@ private:
     static bool IsValidWord(const std::string &word);
 
     std::deque<std::string_view> SplitIntoWordsNoStop(const std::string_view text) const;
+
     Query ParseQuery(const std::string_view text) const;
     QueryWord ParseQueryWord(const std::string_view text) const;
 
@@ -109,8 +111,15 @@ private:
 template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindTopDocuments(const std::string_view raw_query, DocumentPredicate document_predicate) const
 {
-    const std::string var(raw_query);
-    const auto query = ParseQuery(var);
+    Query query = ParseQuery(raw_query);
+
+    std::sort(query.plus_words.begin(), query.plus_words.end());
+    auto last_plus = std::unique(query.plus_words.begin(), query.plus_words.end());
+    query.plus_words.erase(last_plus, query.plus_words.end());
+
+    std::sort(query.minus_words.begin(), query.minus_words.end());
+    auto last_minus = std::unique(query.minus_words.begin(), query.minus_words.end());
+    query.minus_words.erase(last_minus, query.minus_words.end());
 
     auto matched_documents = FindAllDocuments(query, document_predicate);
 
@@ -122,6 +131,7 @@ std::vector<Document> SearchServer::FindTopDocuments(const std::string_view raw_
             else {
                 return lhs.relevance > rhs.relevance;
             } });
+
     if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT)
     {
         matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
@@ -134,6 +144,7 @@ template <typename DocumentPredicate>
 std::vector<Document> SearchServer::FindAllDocuments(const Query &query, DocumentPredicate document_predicate) const
 {
     std::map<int, double> document_to_relevance;
+
     for (const std::string_view word : query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
@@ -141,6 +152,7 @@ std::vector<Document> SearchServer::FindAllDocuments(const Query &query, Documen
             continue;
         }
         const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
+
         for (const auto [document_id, term_freq] : word_to_document_freqs_.at(word))
         {
             const auto &document_data = documents_.at(document_id);

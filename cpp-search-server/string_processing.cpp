@@ -1,6 +1,7 @@
 #include "string_processing.h"
 
 using namespace std;
+using namespace std::literals;
 
 vector<string> SplitIntoWords(const string &text)
 {
@@ -43,5 +44,6 @@ vector<string_view> SplitIntoWords(const string_view text)
 		first = pos + 1;
 		pos = text.find(' ', first);
 	}
+	words.push_back(text.substr(first, pos - first));
 	return words;
 }
