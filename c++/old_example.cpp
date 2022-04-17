@@ -1,53 +1,89 @@
-#include <algorithm>
+#include <functional>
 #include <iostream>
-#include <random>
+#include <map>
+#include <set>
+#include <deque>
+#include <list>
+#include <sstream>
 #include <string>
-#include <string_view>
+#include <future>
 #include <execution>
-
-#include "log_duration.h"
-
+#include <utility>
+#include <string_view>
 using namespace std;
 
-string GenerateQuery(mt19937& generator, int max_length, int space_rate) {
-    const int length = uniform_int_distribution(1, max_length)(generator);
-    string query(length, ' ');
-    for (char& c : query) {
-        const int rnd = uniform_int_distribution(0, space_rate - 1)(generator);
-        if (rnd > 0) {
-            c = 'a' + (rnd - 1);
+using KeyWords = set<string, less<>>;
+
+struct Stats
+{
+    map<string, int> word_frequences;
+
+    Stats &operator+=(const Stats &other)
+    {
+        for (const auto &p : other.word_frequences)
+        {
+            word_frequences[p.first] += p.second;
+        }
+        return *this;
+    }
+};
+
+Stats GetStatsWords(const KeyWords &key_words, const string str)
+{
+    Stats result;
+    stringstream streamData(str);
+    string word;
+    list<string> vec_text;
+    while (getline(streamData, word, ' '))
+    {
+        vec_text.push_front(move(word));
+    }
+
+    for (auto &text : vec_text)
+    {
+        if (key_words.count(text) != 0u)
+        {
+            result.word_frequences[text] += 1;
         }
     }
-    return query;
+    return result;
 }
 
-template <typename Solver>
-void Test(string_view mark, string_view s, Solver solver) {
-    int result;
+using KeyWords = set<string, less<>>;
+
+Stats ExploreKeyWords(const KeyWords &key_words, istream &input)
+{
+    list<future<Stats>> vec_stat;
+    //vec_stat.reserve(50);
+    Stats result;
+    string text;
+    while (input)
     {
-        LOG_DURATION(mark);
-        result = solver(s);
+        getline(input, text);
+        vec_stat.push_front(async(GetStatsWords, cref(key_words), move(text)));
     }
-    cout << result << endl;
+    for (auto &vec : vec_stat)
+    {
+        result += vec.get();
+    }
+    return result;
 }
 
-#define TEST(solver) Test(#solver, s, solver)
+int main()
+{
+    const KeyWords key_words = {"yangle", "rocks", "sucks", "all"};
 
-int CountWords(string_view str) {
-    auto i = count(execution::par, str.begin(), str.end(), ' ');
-    return ++i;
-    // подсчитайте количество слов
-}
+    stringstream ss;
+    ss << "this new yangle service really rocks\n";
+    ss << "It sucks when yangle isn't available\n";
+    ss << "10 reasons why yangle is the best IT company\n";
+    ss << "yangle rocks others suck\n";
+    ss << "Goondex really sucks, but yangle rocks. Use yangle\n";
 
-int main() {
-    // должно вывести 3
-    cout << CountWords("pretty little octopus"sv) << endl;
-
-    mt19937 generator;
-
-    const string s = GenerateQuery(generator, 50'000'000, 4);
-
-    TEST(CountWords);
+    for (const auto &[word, frequency] : ExploreKeyWords(key_words, ss).word_frequences)
+    {
+        cout << word << " " << frequency << endl;
+    }
 
     return 0;
 }
