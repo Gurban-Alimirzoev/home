@@ -1,2 +1,4 @@
 ﻿  old_example.cpp
-  old_example.vcxproj -> E:\git\Home\c++\old_example\x64\Debug\old_example.exe
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\random(1919,5): error C2338: invalid template argument for uniform_int_distribution: N4659 29.6.1.1 [rand.req.genl]/1e requires one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long
+D:\git\Home\c++\old_example.cpp(21): message : выполняется компиляция ссылки на экземпляр класс шаблон функции "std::uniform_int_distribution<char>"
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\random(1919,5): error C2338: note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed
