@@ -1,4 +1,40 @@
 ﻿  old_example.cpp
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\random(1919,5): error C2338: invalid template argument for uniform_int_distribution: N4659 29.6.1.1 [rand.req.genl]/1e requires one of short, int, long, long long, unsigned short, unsigned int, unsigned long, or unsigned long long
-D:\git\Home\c++\old_example.cpp(21): message : выполняется компиляция ссылки на экземпляр класс шаблон функции "std::uniform_int_distribution<char>"
-C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.31.31103\include\random(1919,5): error C2338: note: char, signed char, unsigned char, char8_t, int8_t, and uint8_t are not allowed
+D:\vs\VC\Tools\MSVC\14.30.30705\include\type_traits(1488,67): warning C4244: аргумент: преобразование "_Ty1" в "int", возможна потеря данных
+          with
+          [
+              _Ty1=unsigned __int64
+          ]
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1435): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::invoke<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,unsigned __int64,>(_Callable &&,_Ty1 &&) noexcept(false)"
+          with
+          [
+              _Callable=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,
+              _Ty1=unsigned __int64
+          ]
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1441): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::_Invoke_stored_explicit<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,unsigned __int64,0,1>(std::tuple<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,unsigned __int64> &&,std::integer_sequence<size_t,0,1>)"
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1467): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::_Invoke_stored<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,unsigned __int64>(std::tuple<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>,unsigned __int64> &&)"
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1467): message : во время компиляции функции-члена класс шаблон "void std::_Fake_no_copy_callable_adapter<_Fty,size_t &>::operator ()(void)"
+          with
+          [
+              _Fty=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67> &
+          ]
+D:\vs\VC\Tools\MSVC\14.30.30705\include\type_traits(1478): message : выполняется компиляция ссылки на экземпляр шаблон функции "void std::_Fake_no_copy_callable_adapter<_Fty,size_t &>::operator ()(void)"
+          with
+          [
+              _Fty=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67> &
+          ]
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1489): message : выполняется компиляция ссылки на экземпляр класс шаблон функции "std::_Fake_no_copy_callable_adapter<_Fty,size_t &>"
+          with
+          [
+              _Fty=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67> &
+          ]
+D:\vs\VC\Tools\MSVC\14.30.30705\include\future(1501): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::future<void> std::async<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>&,size_t&>(std::launch,_Fty,size_t &)"
+          with
+          [
+              _Fty=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67> &
+          ]
+E:\git\Home\c++\old_example.cpp(70): message : выполняется компиляция ссылки на экземпляр шаблон функции "std::future<void> std::async<RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67>&,size_t&>(_Fty,size_t &)"
+          with
+          [
+              _Fty=RunConcurrentUpdates::<lambda_ff0b1e8cb3488446cf1b437fb3051c67> &
+          ]
+  old_example.vcxproj -> E:\git\Home\c++\old_example\x64\Debug\old_example.exe

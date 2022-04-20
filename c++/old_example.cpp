@@ -1,169 +1,140 @@
 #include <algorithm>
-#include <execution>
-#include <iostream>
-#include <list>
+#include <cstdlib>
+#include <future>
+#include <map>
+#include <numeric>
 #include <random>
 #include <string>
-#include <string_view>
-#include <type_traits>
 #include <vector>
-#include <future>
-#include <iterator>
-#include <type_traits>
 
 #include "log_duration.h"
+#include "test_framework.h"
 
-using namespace std;
+using namespace std::string_literals;
 
-string GenerateWord(mt19937 &generator, int max_length)
-{
-    const int length = uniform_int_distribution(1, max_length)(generator);
-    string word;
-    word.reserve(length);
-    for (int i = 0; i < length; ++i)
-    {
-        word.push_back(uniform_int_distribution('a', 'z')(generator));
-    }
-    return word;
-}
+template <typename Key, typename Value>
+class ConcurrentMap {
+public:
+    static_assert(std::is_integral_v<Key>, "ConcurrentMap supports only integer keys"s);
 
-template <template <typename> typename Container>
-Container<string> GenerateDictionary(mt19937 &generator, int word_count, int max_length)
-{
-    vector<string> words;
-    words.reserve(word_count);
-    for (int i = 0; i < word_count; ++i)
-    {
-        words.push_back(GenerateWord(generator, max_length));
-    }
-    return Container(words.begin(), words.end());
-}
+    struct Access {
+        std::lock_guard<std::mutex> guard;
+        Value& ref_to_value;
 
-struct Reverser
-{
-    void operator()(string &value) const
-    {
-        reverse(value.begin(), value.end());
-    }
-};
+        Access(Value& value, std::mutex& mut) : guard(mut), ref_to_value(value) {}
+    };
 
-template <typename Container, typename Function>
-void Test(string_view mark, Container keys, Function function)
-{
-    LOG_DURATION(mark);
-    function(keys, Reverser{});
-}
+    explicit ConcurrentMap(size_t bucket_count) : map_buckets_(bucket_count), mutex_buckets_(bucket_count) {}
 
-#define TEST(function) Test(#function, keys, function<remove_const_t<decltype(keys)>, Reverser>)
-
-template <typename Iterator>
-struct is_random_access_iterator
-    : std::is_same<
-          typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>
-{
-};
-
-template <typename Container>
-struct has_random_access_iterator
-    : is_random_access_iterator<typename Container::iterator>
-{
-};
-
-template <typename ForwardRange, typename Function>
-void ForEach(execution::parallel_policy policy, ForwardRange &range, Function function)
-{
-    // ускорьте эту реализацию
-    // for_each(execution::par, range.begin(), range.end(), function);
-
-    if (has_random_access_iterator<ForwardRange>::value)
-    {
-        for_each(policy, range.begin(), range.end(), function);
-    }
-    else
-    {
-
-        const int threads = 2;              // количество задач/потоков
-        auto count_elements = range.size(); // количество элементов в исходном контейнере
-        // размер части массива для одной асинхронной задачи
-        // если количество элементов не кратно количеству потоков то увеличиваем на 1 чтобы было кратное число
-        size_t count_tasks = count_elements / threads + (count_elements % threads > 0 ? 1 : 0);
-        auto begin_range = range.begin(); // начало части массива
-        auto end_range = range.end();     // конец части массива
-        // auto mid = next(begin_range, count_tasks);
-
-        auto left_task = [function](auto iterF, auto iterL)
+    Access operator[](const Key& key) {
+        uint64_t bucket_index = static_cast<uint64_t>(key) % map_buckets_.size();
         {
-            for (; iterF != iterL; iterF++)
-            {
-                function(*iterF);
-            }
-        };
-
-        auto left_future = async([&function, left_task, begin_range, count_tasks]
-                                 { left_task(begin_range, next(begin_range, count_tasks)); });
-        auto right_future = async([&function, left_task, begin_range, count_tasks, end_range]
-                                  { left_task(next(begin_range, count_tasks), end_range); });
+            std::lock_guard<std::mutex> guard(mutex_buckets_[bucket_index]);
+            map_buckets_[bucket_index][key];
+        }
+        return Access(map_buckets_[bucket_index][key], mutex_buckets_[bucket_index]);
     }
-}
 
-template <typename ForwardRange, typename Function>
-void ForEach(execution::sequenced_policy policy, ForwardRange &range, Function function)
-{
-    for_each(policy, range.begin(), range.end(), function);
-}
+    std::map<Key, Value> BuildOrdinaryMap() {
 
-template <typename ForwardRange, typename Function>
-void ForEach(ForwardRange &range, Function function)
-{
-    ForEach(execution::seq, range, function);
-}
+        std::map<Key, Value> result;
+        for (size_t i = 0; i < map_buckets_.size(); ++i) {
+            std::lock_guard<std::mutex> quard(mutex_buckets_[i]);
+            result.insert(map_buckets_[i].begin(), map_buckets_[i].end());
+        }
+        return result;
+    }
+
+private:
+    std::vector<std::map<Key, Value>> map_buckets_;
+    std::vector<std::mutex> mutex_buckets_;
+};
 
 using namespace std;
 
-template <typename Strings>
-void PrintStrings(const Strings &strings)
-{
-    for (string_view s : strings)
-    {
-        cout << s << " ";
+void RunConcurrentUpdates(ConcurrentMap<int, int>& cm, size_t thread_count, int key_count) {
+    auto kernel = [&cm, key_count](int seed) {
+        vector<int> updates(key_count);
+        iota(begin(updates), end(updates), -key_count / 2);
+        shuffle(begin(updates), end(updates), mt19937(seed));
+
+        for (int i = 0; i < 2; ++i) {
+            for (auto key : updates) {
+                ++cm[key].ref_to_value;
+            }
+        }
+    };
+
+    vector<future<void>> futures;
+    for (size_t i = 0; i < thread_count; ++i) {
+        futures.push_back(async(kernel, i));
     }
-    cout << endl;
 }
 
-int main()
-{
-    auto reverser = [](string &s)
-    { reverse(s.begin(), s.end()); };
+void TestConcurrentUpdate() {
+    constexpr size_t THREAD_COUNT = 3;
+    constexpr size_t KEY_COUNT = 50000;
 
-    list<string> strings_list = {"cat", "dog", "code"};
+    ConcurrentMap<int, int> cm(THREAD_COUNT);
+    RunConcurrentUpdates(cm, THREAD_COUNT, KEY_COUNT);
 
-    ForEach(strings_list, reverser);
-    PrintStrings(strings_list);
-    // tac god edoc
+    const auto result = cm.BuildOrdinaryMap();
+    ASSERT_EQUAL(result.size(), KEY_COUNT);
+    for (auto& [k, v] : result) {
+        AssertEqual(v, 6, "Key = " + to_string(k));
+    }
+}
 
-    ForEach(execution::seq, strings_list, reverser);
-    PrintStrings(strings_list);
-    // cat dog code
+void TestReadAndWrite() {
+    ConcurrentMap<size_t, string> cm(5);
 
-    // единственный из вызовов, где должна работать ваша версия
-    // из предыдущего задания
-    ForEach(execution::par, strings_list, reverser);
-    PrintStrings(strings_list);
-    // tac god edoc
+    auto updater = [&cm] {
+        for (size_t i = 0; i < 50000; ++i) {
+            cm[i].ref_to_value.push_back('a');
+        }
+    };
+    auto reader = [&cm] {
+        vector<string> result(50000);
+        for (size_t i = 0; i < result.size(); ++i) {
+            result[i] = cm[i].ref_to_value;
+        }
+        return result;
+    };
 
-    vector<string> strings_vector = {"cat", "dog", "code"};
+    auto u1 = async(updater);
+    auto r1 = async(reader);
+    auto u2 = async(updater);
+    auto r2 = async(reader);
 
-    ForEach(strings_vector, reverser);
-    PrintStrings(strings_vector);
-    // tac god edoc
+    u1.get();
+    u2.get();
 
-    ForEach(execution::seq, strings_vector, reverser);
-    PrintStrings(strings_vector);
-    // cat dog code
+    for (auto f : { &r1, &r2 }) {
+        auto result = f->get();
+        ASSERT(all_of(result.begin(), result.end(), [](const string& s) {
+            return s.empty() || s == "a" || s == "aa";
+            }));
+    }
+}
 
-    ForEach(execution::par, strings_vector, reverser);
-    PrintStrings(strings_vector);
-    // tac god edoc
+void TestSpeedup() {
+    {
+        ConcurrentMap<int, int> single_lock(1);
 
-    return 0;
+        LOG_DURATION("Single lock");
+        RunConcurrentUpdates(single_lock, 4, 50000);
+    }
+    {
+        ConcurrentMap<int, int> many_locks(100);
+
+        LOG_DURATION("100 locks");
+        RunConcurrentUpdates(many_locks, 4, 50000);
+    }
+}
+
+int main() {
+    TestRunner tr;
+    RUN_TEST(tr, TestConcurrentUpdate);
+    RUN_TEST(tr, TestReadAndWrite);
+    RUN_TEST(tr, TestSpeedup);
 }
