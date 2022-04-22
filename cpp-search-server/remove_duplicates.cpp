@@ -26,7 +26,8 @@ void RemoveDuplicates(SearchServer &search_server)
             {
                 dubl_doc.push_back(document_id);
             }
-            else {
+            else
+            {
                 dubl_doc.push_back(compareDocId);
             }
         }
