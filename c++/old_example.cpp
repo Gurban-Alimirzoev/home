@@ -1,140 +1,87 @@
-#include <algorithm>
-#include <cstdlib>
-#include <future>
-#include <map>
-#include <numeric>
-#include <random>
-#include <string>
-#include <vector>
-
-#include "log_duration.h"
-#include "test_framework.h"
-
-using namespace std::string_literals;
-
-template <typename Key, typename Value>
-class ConcurrentMap {
+//Definition for singly-linked list.
+  struct ListNode {
+      int val;
+      ListNode *next;
+      ListNode() : val(0), next(nullptr) {}
+      ListNode(int x) : val(x), next(nullptr) {}
+      ListNode(int x, ListNode *next) : val(x), next(next) {}
+  };
+ 
+class Solution {
 public:
-    static_assert(std::is_integral_v<Key>, "ConcurrentMap supports only integer keys"s);
-
-    struct Access {
-        std::lock_guard<std::mutex> guard;
-        Value& ref_to_value;
-
-        Access(Value& value, std::mutex& mut) : guard(mut), ref_to_value(value) {}
-    };
-
-    explicit ConcurrentMap(size_t bucket_count) : map_buckets_(bucket_count), mutex_buckets_(bucket_count) {}
-
-    Access operator[](const Key& key) {
-        uint64_t bucket_index = static_cast<uint64_t>(key) % map_buckets_.size();
+    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {
+        ListNode var1 = *list1;
+        ListNode var2 = *list2;
+        if (var1.next == nullptr && var2.next == nullptr) 
         {
-            std::lock_guard<std::mutex> guard(mutex_buckets_[bucket_index]);
-            map_buckets_[bucket_index][key];
+            return list1;
         }
-        return Access(map_buckets_[bucket_index][key], mutex_buckets_[bucket_index]);
-    }
-
-    std::map<Key, Value> BuildOrdinaryMap() {
-
-        std::map<Key, Value> result;
-        for (size_t i = 0; i < map_buckets_.size(); ++i) {
-            std::lock_guard<std::mutex> quard(mutex_buckets_[i]);
-            result.insert(map_buckets_[i].begin(), map_buckets_[i].end());
+        if (var1.next == nullptr)
+        {
+            return list2;
         }
-        return result;
-    }
-
-private:
-    std::vector<std::map<Key, Value>> map_buckets_;
-    std::vector<std::mutex> mutex_buckets_;
-};
-
-using namespace std;
-
-void RunConcurrentUpdates(ConcurrentMap<int, int>& cm, size_t thread_count, int key_count) {
-    auto kernel = [&cm, key_count](int seed) {
-        vector<int> updates(key_count);
-        iota(begin(updates), end(updates), -key_count / 2);
-        shuffle(begin(updates), end(updates), mt19937(seed));
-
-        for (int i = 0; i < 2; ++i) {
-            for (auto key : updates) {
-                ++cm[key].ref_to_value;
+        if (var2.next == nullptr)
+        {
+            return list1;
+        }
+        while (var1.next != nullptr && var2.next != nullptr)
+        {
+            if (var1.val > var2.val) 
+            {
+                PushFront(var2.val);
+                PopFront(var2);
             }
+            else
+            {
+                PushFront(var1.val);
+                PopFront(var1);
+            }              
         }
-    };
-
-    vector<future<void>> futures;
-    for (size_t i = 0; i < thread_count; ++i) {
-        futures.push_back(async(kernel, i));
-    }
-}
-
-void TestConcurrentUpdate() {
-    constexpr size_t THREAD_COUNT = 3;
-    constexpr size_t KEY_COUNT = 50000;
-
-    ConcurrentMap<int, int> cm(THREAD_COUNT);
-    RunConcurrentUpdates(cm, THREAD_COUNT, KEY_COUNT);
-
-    const auto result = cm.BuildOrdinaryMap();
-    ASSERT_EQUAL(result.size(), KEY_COUNT);
-    for (auto& [k, v] : result) {
-        AssertEqual(v, 6, "Key = " + to_string(k));
-    }
-}
-
-void TestReadAndWrite() {
-    ConcurrentMap<size_t, string> cm(5);
-
-    auto updater = [&cm] {
-        for (size_t i = 0; i < 50000; ++i) {
-            cm[i].ref_to_value.push_back('a');
+        if (var1.next == nullptr)
+        {
+            PushFront(var1.val);
         }
-    };
-    auto reader = [&cm] {
-        vector<string> result(50000);
-        for (size_t i = 0; i < result.size(); ++i) {
-            result[i] = cm[i].ref_to_value;
+        if (var2.next == nullptr)
+        {
+            PushFront(var2.val);
         }
-        return result;
-    };
-
-    auto u1 = async(updater);
-    auto r1 = async(reader);
-    auto u2 = async(updater);
-    auto r2 = async(reader);
-
-    u1.get();
-    u2.get();
-
-    for (auto f : { &r1, &r2 }) {
-        auto result = f->get();
-        ASSERT(all_of(result.begin(), result.end(), [](const string& s) {
-            return s.empty() || s == "a" || s == "aa";
-            }));
+        while(var1.next != nullptr) 
+        {
+            PushFront(var1.val);
+            PopFront(var1);
+        }
+        while(var2.next != nullptr) 
+        {
+            PushFront(var2.val);            
+            PopFront(var2);
+        }
+        
+        /*ListNode *result_head = new ListNode;
+        while(head->next != nullptr) {
+            PushFront(*result_head, head->val);   
+            PopFront(*head);
+        }
+        return result_head;*/
+        return head;
     }
-}
-
-void TestSpeedup() {
+    
+    void PopFront(ListNode &denis)
     {
-        ConcurrentMap<int, int> single_lock(1);
-
-        LOG_DURATION("Single lock");
-        RunConcurrentUpdates(single_lock, 4, 50000);
+        //assert(head.next != nullptr);
+        ListNode *must_be_del_node = denis.next;
+        denis.next = must_be_del_node->next;  
+        delete must_be_del_node;
     }
+    void PushFront(int new_elem)
     {
-        ConcurrentMap<int, int> many_locks(100);
-
-        LOG_DURATION("100 locks");
-        RunConcurrentUpdates(many_locks, 4, 50000);
+        ListNode *var = new ListNode(new_elem, head);
+        //head = new ListNode(new_elem, var);
+        //delete head;
+        head = var;
+        
+        //head->next = new ListNode(new_elem, head->next);
+        
     }
-}
-
-int main() {
-    TestRunner tr;
-    RUN_TEST(tr, TestConcurrentUpdate);
-    RUN_TEST(tr, TestReadAndWrite);
-    RUN_TEST(tr, TestSpeedup);
-}
+    
+    ListNode *head = new ListNode;
+};
