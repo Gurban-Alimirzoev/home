@@ -1,3 +1,0 @@
-﻿  search_server.cpp
-D:\git\Home\cpp-search-server\search_server.cpp(67,29): warning C4267: return: преобразование из "size_t" в "int"; возможна потеря данных
-  ss_test.vcxproj -> D:\git\Home\cpp-search-server\ss_test\x64\Debug\ss_test.exe
