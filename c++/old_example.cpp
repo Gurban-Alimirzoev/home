@@ -7,9 +7,13 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
+using namespace chrono;
+using namespace literals;
 
 class VehiclePlate {
 private:
@@ -82,34 +86,99 @@ public:
 
     // запарковать машину с указанным номером
     void Park(VehiclePlate car) {
+        if (now_parked_.count(car)) 
+        { 
+            throw ParkingException(); 
+        }
         now_parked_[car] = Clock::now();
     }
 
     // забрать машину с указанным номером
     void Withdraw(const VehiclePlate& car) {
+        if (!(now_parked_.count(car))) 
+        { 
+            throw ParkingException(); 
+        }
         auto end_time = Clock::now();
-        complete_parks_[car] = std::chrono::duration_cast<chrono::seconds>(Duration(end_time, now_parked_[car]));
-        now_parked_[car] = 0;
+        complete_parks_[car] = (Duration(end_time - now_parked_[car]));
+        now_parked_.erase(car);
     }
 
     // получить счёт за конкретный автомобиль
     int64_t GetCurrentBill(const VehiclePlate& car) const {
-        return cost_per_second_ * complete_parks_.at(car) + cost_per_second_ * now_parked_.at(car);
+
+        auto end_time = Clock::now();
+        Duration all_time;
+        //TimePoint zer = {};
+        if (now_parked_.count(car) != 0 && complete_parks_.count(car) != 0)
+        {
+            Duration now_res = Duration(end_time - now_parked_.at(car));
+            all_time = duration_cast<seconds>(complete_parks_.at(car) + now_res);
+        }
+        else if (now_parked_.count(car) != 0)
+        {
+            Duration now_res = Duration(end_time - now_parked_.at(car));
+            all_time = duration_cast<seconds>(now_res);
+        }
+        else if (complete_parks_.count(car) != 0)
+        {
+            all_time = duration_cast<seconds>(complete_parks_.at(car));
+        }
+        else
+        {
+            return 0;
+        }
+        return cost_per_second_ * duration_cast<seconds>(all_time).count();
     }
 
     // завершить расчётный период
     // те машины, которые находятся на парковке на данный момент, должны 
     // остаться на парковке, но отсчёт времени для них начинается с нуля
     unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> EndPeriodAndGetBills() {
+
         unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> result;
-        for_each (
+
+        unordered_set<VehiclePlate, VehiclePlateHasher> var;
+
+        for_each(
             complete_parks_.begin(),
             complete_parks_.end(),
-            [&result](VehiclePlate car)
+            [&var, this](auto info)
             {
-                result.insert( {car, GetCurrentBill(car), VehiclePlateHasher(car)} );
+                var.insert(info.first);
             }
         );
+
+        for_each(
+            now_parked_.begin(),
+            now_parked_.end(),
+            [&var, this](auto info)
+            {
+                var.insert(info.first);
+            }
+        );
+
+        for_each (
+            var.begin(),
+            var.end(),
+            [&result, this](const auto info)
+            {
+                result.insert( { info, GetCurrentBill(info)} );
+            }
+        );
+
+        auto end_time = Clock::now();
+        complete_parks_.clear();
+
+        for_each(
+            now_parked_.begin(),
+            now_parked_.end(),
+            [&end_time, this](auto info)
+            {
+                now_parked_[info.first] = end_time;
+            }
+        );
+
         return result;
     }
 
