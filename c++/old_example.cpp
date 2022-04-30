@@ -1,284 +1,122 @@
-#include <array>
-#include <cassert>
-#include <chrono>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <tuple>
-#include <unordered_map>
-#include <unordered_set>
-#include <vector>
-#include <algorithm>
+#include <cassert>
 
 using namespace std;
-using namespace chrono;
-using namespace literals;
 
-class VehiclePlate {
-private:
-    auto AsTuple() const {
-        return tie(letters_, digits_, region_);
-    }
-
-public:
-    bool operator==(const VehiclePlate& other) const {
-        return AsTuple() == other.AsTuple();
-    }
-
-    VehiclePlate(char l0, char l1, int digits, char l2, int region)
-        : letters_{l0, l1, l2}
-        , digits_(digits)
-        , region_(region) {
-    }
-
-    string ToString() const {
-        ostringstream out;
-        out << letters_[0] << letters_[1];
-
-        // чтобы дополнить цифровую часть номера слева нулями
-        // до трёх цифр, используем подобные манипуляторы:
-        // setfill задаёт символ для заполнения,
-        // right задаёт выравнивание по правому краю,
-        // setw задаёт минимальное желаемое количество знаков
-        out << setfill('0') << right << setw(3) << digits_;
-        out << letters_[2] << setw(2) << region_;
-
-        return out.str();
-    }
-
-private:
-    array<char, 3> letters_;
-    int digits_;
-    int region_;
+template <class T>
+struct TreeNode {
+    T value;
+    TreeNode* parent = nullptr;
+    TreeNode* left = nullptr;
+    TreeNode* right = nullptr;
 };
 
-ostream& operator<<(ostream& out, VehiclePlate plate) {
-    out << plate.ToString();
+template <class T>
+void DeleteTree(TreeNode<T>* node) {
+    if (!node) {
+        return;
+    }
+    DeleteTree(node->left);
+    DeleteTree(node->right);
+    delete node;
+}
+
+template <class T>
+void PrintTree(const TreeNode<T>* root, ostream& out = cout) {
+    out << " ( "s;
+    out << root->value;
+    if (root->left || root->right) {
+        if (root->left) {
+            PrintTree(root->left, out);
+        } else {
+            out << "*"s;
+        }
+        if (root->right) {
+            PrintTree(root->right, out);
+        } else {
+            out << "*"s;
+        }
+    }
+    out << " ) "s;
+}
+
+template <class T>
+ostream& operator << (ostream& out, const TreeNode<T>* node) {
+    PrintTree(node, out);
     return out;
 }
 
-class VehiclePlateHasher {
-public:
-    size_t operator()(const VehiclePlate& plate) const {
-        // измените эту функцию, чтобы она учитывала все данные номера
-        // рекомендуется использовать метод ToString() и существующий 
-        // класс hash<string>
-        
-        return hasher_(plate.ToString());
+template <class T>
+TreeNode<T>* begin(TreeNode<T>* node) {
+    auto parent_maybe = node->parent;
+    auto var = parent_maybe;
+    while (parent_maybe->parent != nullptr)
+    {
+        var = parent_maybe;
+        parent_maybe = var->parent;
     }
-    
-    hash<string> hasher_;
-};
+    return parent_maybe;
+}
 
-// выбросьте это исключение в случае ошибки парковки
-struct ParkingException {};
-
-template <typename Clock>
-class Parking {
-    // при обращении к типу внутри шаблонного параметра мы обязаны использовать 
-    // typename; чтобы этого избежать, объявим псевдонимы для нужных типов
-    using Duration = typename Clock::duration;
-    using TimePoint = typename Clock::time_point;
-
-public:
-    Parking(int cost_per_second) : cost_per_second_(cost_per_second) {}
-
-    // запарковать машину с указанным номером
-    void Park(VehiclePlate car) {
-        if (now_parked_.count(car)) 
-        { 
-            throw ParkingException(); 
-        }
-        now_parked_[car] = Clock::now();
+template <class T>
+TreeNode<T>* next(TreeNode<T>* node) {
+    if (node->right != nullptr) 
+    {
+        return minimum(node->right);
     }
-
-    // забрать машину с указанным номером
-    void Withdraw(const VehiclePlate& car) {
-        if (!(now_parked_.count(car))) 
-        { 
-            throw ParkingException(); 
-        }
-        auto end_time = Clock::now();
-        complete_parks_[car] = (Duration(end_time - now_parked_[car]));
-        now_parked_.erase(car);
+    auto var = node->parent;
+    while (var != nullptr && node != var->right)
+    {
+        node = var;
+        var = var->parent;
     }
+    return var;
+}
 
-    // получить счёт за конкретный автомобиль
-    int64_t GetCurrentBill(const VehiclePlate& car) const {
+template <class T>
+TreeNode<T>* minimum(TreeNode<T>* node)
+{
+  if (node->left == nullptr)
+  {
+     return node;
+  }
+  return minimum(node->left);
+}
 
-        auto end_time = Clock::now();
-        Duration all_time;
-        //TimePoint zer = {};
-        if (now_parked_.count(car) != 0 && complete_parks_.count(car) != 0)
-        {
-            Duration now_res = Duration(end_time - now_parked_.at(car));
-            all_time = duration_cast<seconds>(complete_parks_.at(car) + now_res);
-        }
-        else if (now_parked_.count(car) != 0)
-        {
-            Duration now_res = Duration(end_time - now_parked_.at(car));
-            all_time = duration_cast<seconds>(now_res);
-        }
-        else if (complete_parks_.count(car) != 0)
-        {
-            all_time = duration_cast<seconds>(complete_parks_.at(car));
-        }
-        else
-        {
-            return 0;
-        }
-        return cost_per_second_ * duration_cast<seconds>(all_time).count();
+template <class T>
+TreeNode<T>* maximum(TreeNode<T>* node)
+{
+  if (node->right == nullptr)
+     return node;
+  return maximum(node->right);      
+}
+      
+// функция создаёт новый узел с заданным значением и потомками
+TreeNode<int>* N(int val, TreeNode<int>* left = nullptr, TreeNode<int>* right = nullptr) {
+    auto res = new TreeNode<int>{val, nullptr, left, right};
+    if (left) {
+        left->parent = res;
+    }
+    if (right) {
+        right->parent = res;
     }
 
-    // завершить расчётный период
-    // те машины, которые находятся на парковке на данный момент, должны 
-    // остаться на парковке, но отсчёт времени для них начинается с нуля
-    unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> EndPeriodAndGetBills() {
-
-        unordered_map<VehiclePlate, int64_t, VehiclePlateHasher> result;
-
-        unordered_set<VehiclePlate, VehiclePlateHasher> var;
-
-        for_each(
-            complete_parks_.begin(),
-            complete_parks_.end(),
-            [&var, this](auto info)
-            {
-                var.insert(info.first);
-            }
-        );
-
-        for_each(
-            now_parked_.begin(),
-            now_parked_.end(),
-            [&var, this](auto info)
-            {
-                var.insert(info.first);
-            }
-        );
-
-        for_each (
-            var.begin(),
-            var.end(),
-            [&result, this](const auto info)
-            {
-                result.insert( { info, GetCurrentBill(info)} );
-            }
-        );
-
-        auto end_time = Clock::now();
-        complete_parks_.clear();
-
-        for_each(
-            now_parked_.begin(),
-            now_parked_.end(),
-            [&end_time, this](auto info)
-            {
-                now_parked_[info.first] = end_time;
-            }
-        );
-
-        return result;
-    }
-
-    // не меняйте этот метод
-    auto& GetNowParked() const {
-        return now_parked_;
-    }
-
-    // не меняйте этот метод
-    auto& GetCompleteParks() const {
-        return complete_parks_;
-    }
-
-private:
-    int cost_per_second_;
-    unordered_map<VehiclePlate, TimePoint, VehiclePlateHasher> now_parked_;
-    unordered_map<VehiclePlate, Duration, VehiclePlateHasher> complete_parks_;
-};
-
-// эти часы удобно использовать для тестирования
-// они покажут столько времени, сколько вы задали явно
-class TestClock {
-public:
-    using time_point = chrono::system_clock::time_point;
-    using duration = chrono::system_clock::duration;
-
-    static void SetNow(int seconds) {
-        current_time_ = seconds;
-    }
-
-    static time_point now() {
-        return start_point_ + chrono::seconds(current_time_);
-    }
-
-private:
-    inline static time_point start_point_ = chrono::system_clock::now();
-    inline static int current_time_ = 0;
-};
+    return res;
+}
 
 int main() {
-    Parking<TestClock> parking(10);
+    using T = TreeNode<int>;
 
-    TestClock::SetNow(10);
-    parking.Park({'A', 'A', 111, 'A', 99});
+    T* root = N(6, N(4, N(3), N(5)), N(8, N(7)));
+    cout << root << endl;
 
-    TestClock::SetNow(20);
-    parking.Withdraw({'A', 'A', 111, 'A', 99});
-    parking.Park({'B', 'B', 222, 'B', 99});
+    T* iter = begin(root);
 
-    TestClock::SetNow(40);
-    assert(parking.GetCurrentBill({'A', 'A', 111, 'A', 99}) == 100);
-    assert(parking.GetCurrentBill({'B', 'B', 222, 'B', 99}) == 200);
-    parking.Park({'A', 'A', 111, 'A', 99});
-
-    TestClock::SetNow(50);
-    assert(parking.GetCurrentBill({'A', 'A', 111, 'A', 99}) == 200);
-    assert(parking.GetCurrentBill({'B', 'B', 222, 'B', 99}) == 300);
-    assert(parking.GetCurrentBill({'C', 'C', 333, 'C', 99}) == 0);
-    parking.Withdraw({'B', 'B', 222, 'B', 99});
-
-    TestClock::SetNow(70);
-    {
-        // проверим счёт
-        auto bill = parking.EndPeriodAndGetBills();
-
-        // так как внутри макроса используется запятая,
-        // нужно заключить его аргумент в дополнительные скобки
-        assert((bill
-                == unordered_map<VehiclePlate, int64_t, VehiclePlateHasher>{
-                   {{'A', 'A', 111, 'A', 99}, 400},
-                   {{'B', 'B', 222, 'B', 99}, 300},
-               }));
+    while (iter) {
+        cout << iter->value << " "s;
+        iter = next(iter);
     }
+    cout << endl;
 
-    TestClock::SetNow(80);
-    {
-        // проверим счёт
-        auto bill = parking.EndPeriodAndGetBills();
-
-        // так как внутри макроса используется запятая,
-        // нужно заключить его аргумент в дополнительные скобки
-        assert((bill
-                == unordered_map<VehiclePlate, int64_t, VehiclePlateHasher>{
-                   {{'A', 'A', 111, 'A', 99}, 100},
-               }));
-    }
-
-    try {
-        parking.Park({'A', 'A', 111, 'A', 99});
-        assert(false);
-    }
-    catch (ParkingException) {
-    }
-
-    try {
-        parking.Withdraw({'B', 'B', 222, 'B', 99});
-        assert(false);
-    }
-    catch (ParkingException) {
-    }
-
-    cout << "Success!"s << endl;
+    DeleteTree(root);
 }
