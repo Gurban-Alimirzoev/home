@@ -13,9 +13,8 @@ namespace ini
 
     const Section& Document::GetSection(const string& name) const
     {
-        //unordered_map<string, Section> zero;
-        static const Section n;
-        if (sections_.at(name) != n)
+        static const Section n = {};
+        if (sections_.count(name))
         {
             return sections_.at(name);
         }
@@ -29,33 +28,59 @@ namespace ini
 
     Document Load(std::istream& input)
     {
-        //Section invis;
-        //Section& sec_ref = invis;
         string sec_name;
         Document doc;
         for (string line; getline(input, line) && line[0] != '/';)
         {
-            line.erase(remove_if(line.begin(),
-                line.end(),
-                [](auto x) {return isspace(x); }),
-                line.end());
-
-            auto pos_sec = line.find('[');
+            if (line.empty())
+            {
+                continue;
+            }
+            size_t pos_sec = line.find('[');
+            size_t pos_sec_end = line.find(']');
             if (pos_sec != string::npos)
             {
-                string sec_name = line.substr(pos_sec + 1, line.find_last_not_of(']'));
-                Section& sec_ref = doc.Document::AddSection(sec_name);
+                sec_name = line.substr(pos_sec + 1, pos_sec_end - pos_sec - 1);
+                doc.Document::AddSection(sec_name);
                 continue;
             }
 
-            Section& sec_ref = doc.Document::GetSection(sec_name);
-            auto pos_key = line.find('=');
+            Section& sec_ref = doc.Document::AddSection(sec_name);
+            size_t pos_key = line.find('=');
 
-            string key_name = line.substr(0, pos_key);
+            string key_with_n = line.substr(0, pos_key);
+            size_t key_fpos = 0;
+            if (isspace(key_with_n[key_fpos]))
+            {
+                key_fpos = key_with_n.find_first_not_of(' ');;
+            }
 
-            auto pos_value = line.find_last_not_of("\n");
-            string value = line.substr(pos_key + 1, pos_value);
-            if (!value.empty())
+            size_t key_epos = key_with_n.size();
+            if (isspace(key_with_n[key_epos - 1]))
+            {
+                key_epos = key_with_n.find_last_not_of(' ');
+            }
+
+            string key_name = key_with_n.substr(key_fpos, key_epos - key_fpos + 1);
+
+
+
+            string value_with_n = line.substr(pos_key + 1, line.size());
+
+            size_t value_fpos = 0;
+            if (isspace(value_with_n[value_fpos]))
+            {
+                value_fpos = value_with_n.find_first_not_of(' ');;
+            }
+
+            size_t value_epos = value_with_n.size();
+            if (isspace(value_with_n[value_epos - 1]))
+            {
+                value_epos = value_with_n.find_last_not_of(' ');
+            }
+
+            string value = value_with_n.substr(value_fpos, value_epos - value_fpos + 1);
+            if (!value.empty() && !key_name.empty())
             {
                 sec_ref.insert({ key_name, value });
             }
