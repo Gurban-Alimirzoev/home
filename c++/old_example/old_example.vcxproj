@@ -141,9 +141,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\old_example.cpp" />
+    <ClCompile Include="..\ini_read\ini.cpp" />
+    <ClCompile Include="..\ini_read\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\ini_read\ini.h" />
     <ClInclude Include="..\log_duration.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

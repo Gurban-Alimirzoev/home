@@ -21,6 +21,7 @@ int main() {
         "guest2_name =  Vasilisa Premudraya\n"
         "[guest black list]"};
     ini::Document doc = ini::Load(input);
+    cout << doc.GetSectionCount();
     assert(doc.GetSectionCount() == 3);
     assert((doc.GetSection("vegetables"s)
             == ini::Section{
