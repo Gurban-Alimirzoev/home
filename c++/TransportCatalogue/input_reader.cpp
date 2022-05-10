@@ -74,6 +74,15 @@ TransportCatalogue InputReader::ParseInputData()
 
 				bus = bus.substr(next_sym + 1);
 			}
+
+			vector<string> reverse_result(result.begin(), result.end());
+			reverse_result.pop_back();
+			reverse(reverse_result.begin(), reverse_result.end());
+			for (string stop_rev : reverse_result)
+			{
+				result.push_back(stop_rev);
+			}
+
 		}
 		else
 		{

@@ -14,7 +14,12 @@ void StatReader::OutStatReader(TransportCatalogue cat)
 {
 	for (string name : names)
 	{
-		pair<int, double_t> unique_and_distance = cat.GetBusInfo(name);
+		if (cat.FindBus(name).bus.empty())
+		{
+			cout << "Bus " << name << ": not found" << endl;
+			continue;
+		}
+
 		cout << "Bus " << name << ": "
 			<< cat.FindBus(name).bus.size() << " stops on route, "
 			<< cat.GetBusInfo(name).first << " unique stops, "

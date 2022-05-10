@@ -8,18 +8,21 @@ void TransportCatalogue::AddStop(string name, Coordinates coor)
 	stops.push_back({ name, coor });
 	stopname_to_stop.insert({ stops.back().name_stop, &(stops.back()) });
 
-	size_t count = 0;
-	Stop stop2 = stops[count];
-	while (stop2.name_stop != stops.back().name_stop)
+	Stop &stop1 = stops.back();
+
+	for (size_t i = 0; i < stops.size() - 1; i++)
 	{
-		stops_distance.insert({ { &stop2 , &stops.back()}, ComputeDistance(stop2.coor, stops.back().coor) });
-		stops_distance.insert({ { &stops.back(), &stop2 }, ComputeDistance(stops.back().coor, stop2.coor) });
-		stop2 = stops[count++];
+		stops_distance.insert({ { &(stops[i]) , &stop1}, ComputeDistance((stops[i]).coor, stop1.coor)});
+		stops_distance.insert({ { &stop1, &(stops[i]) }, ComputeDistance(stop1.coor, (stops[i]).coor) });
 	}
 }
 
 const Stop TransportCatalogue::FindStop(string name)
 {
+	if (stopname_to_stop.find(name) == stopname_to_stop.end())
+	{
+		return {};
+	}
 	return *stopname_to_stop.at(name);
 }
 
@@ -36,6 +39,10 @@ void TransportCatalogue::AddBus(string name, vector<string> bus)
 
 const Bus TransportCatalogue::FindBus(string name)
 {
+	if (busname_to_bus.find(name) == busname_to_bus.end())
+	{
+		return {};
+	}
 	return *busname_to_bus.at(name);
 }
 
@@ -49,21 +56,11 @@ pair<int, double_t> TransportCatalogue::GetBusInfo(string name)
 	set<Stop*> unique_bus(bus.begin(), bus.end());
 
 	double_t bus_distance = 0;
-	bool flag = true;
 	Stop* first_stop = bus[0];
-	for (Stop* i : bus)
+	for (size_t i = 1; i < bus.size(); i++)
 	{
-		if (flag)
-		{
-			//size_t hash = PairStopStopHasher({ bus[0], bus[1] });
-			bus_distance += stops_distance[{ bus[0], bus[1] }];
-			flag = false;
-		}
-		else
-		{
-			bus_distance += stops_distance[{first_stop, i}];
-			first_stop = i;
-		}
+		bus_distance += stops_distance[{first_stop, bus[i]}];
+		first_stop = bus[i];
 	}
 	return { unique_bus.size(), bus_distance };
 }
