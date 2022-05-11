@@ -28,10 +28,23 @@ const Stop TransportCatalogue::FindStop(string name)
 
 void TransportCatalogue::AddBus(string name, vector<string> bus)
 {
-	vector<Stop*> bus_ptr;
+	vector<Stop*> bus_ptr(bus.size());
+
+	/*transform(
+		bus.begin(), bus.end(),
+		bus_ptr.begin(), bus_ptr.end(),
+		[this](string i)
+		{
+			auto var = stopname_to_stop[i];
+			return var;
+		}
+	);*/
+	Stop* var;
 	for (string i : bus)
 	{
-		bus_ptr.push_back(stopname_to_stop[i]);
+
+		var = stopname_to_stop[string_view(i)];
+		bus_ptr.push_back(var);
 	}
 	buses.push_back({ name, bus_ptr });
 	busname_to_bus.insert({ buses.back().name_bus ,& (buses.back()) });
@@ -48,7 +61,8 @@ const Bus TransportCatalogue::FindBus(string name)
 
 pair<int, double_t> TransportCatalogue::GetBusInfo(string name)
 {
-	if (busname_to_bus.find(name) == busname_to_bus.end())
+	auto iter = busname_to_bus.find(name);
+	if (iter == busname_to_bus.end())
 	{
 		return {};
 	}

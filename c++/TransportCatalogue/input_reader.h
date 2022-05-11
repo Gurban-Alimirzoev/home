@@ -17,10 +17,12 @@ class InputReader
 public:
 	void MakeVectorFromInput(std::string line);
 
-	TransportCatalogue ParseInputData();
+	TransportCatalogue ParseInputData(TransportCatalogue cat);
+
+	//std::string MakeWithoutSymbol(std::string line, std::string symbol);
 private:
 	std::vector<std::string> lines_stop;
 	std::vector<std::string> lines_bus;
-
+	//std::vector<std::string_view> result;
 
 };

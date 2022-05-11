@@ -10,9 +10,9 @@ void InputReader::MakeVectorFromInput(string line)
 		lines_stop.push_back(line);
 }
 
-TransportCatalogue InputReader::ParseInputData()
+TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
 {
-	TransportCatalogue cat;
+	//TransportCatalogue cat;
 
 	for (string line_stop : lines_stop)
 	{
@@ -56,7 +56,7 @@ TransportCatalogue InputReader::ParseInputData()
 		string bus = line_bus.substr(colon + 1);
 		size_t del = bus.find('-');
 
-		vector<string> result;
+		std::vector<std::string> result;
 		string one_stop;
 		if (del != string::npos)
 		{
@@ -70,7 +70,7 @@ TransportCatalogue InputReader::ParseInputData()
 				size_t stop_end = one_stop.find_last_not_of(' ');
 				one_stop = one_stop.substr(0, stop_end + 1);
 
-				result.push_back(one_stop);
+				result.push_back(move(one_stop));
 
 				bus = bus.substr(next_sym + 1);
 			}
@@ -80,7 +80,7 @@ TransportCatalogue InputReader::ParseInputData()
 			reverse(reverse_result.begin(), reverse_result.end());
 			for (string stop_rev : reverse_result)
 			{
-				result.push_back(stop_rev);
+				result.push_back(move(stop_rev));
 			}
 
 		}
@@ -96,12 +96,13 @@ TransportCatalogue InputReader::ParseInputData()
 				size_t stop_end = one_stop.find_last_not_of(' ');
 				one_stop = one_stop.substr(0, stop_end + 1);
 
-				result.push_back(one_stop);
+				result.push_back(move(one_stop));
 
 				bus = bus.substr(next_sym + 1);
 			}
 		}
-		cat.AddBus(bus_number, result);
+		cat.AddBus(bus_number, move(result));
+		result.clear();
 	}
 	return cat;
 }

@@ -6,7 +6,7 @@
 #include <string_view>
 #include <set>
 #include <functional>
-
+#include <algorithm>
 #include "geo.h"
 
 struct Stop
@@ -47,6 +47,7 @@ public:
 
 private:
 	std::deque <Stop> stops;
+	//std::unordered_map <std::string_view, Stop> stopname_to_stop;
 	std::unordered_map <std::string_view, Stop*> stopname_to_stop;
 	std::deque <Bus> buses;
 	std::unordered_map <std::string_view, Bus*> busname_to_bus;

@@ -5,11 +5,13 @@
 
 #include <sstream>
 #include <cassert>
+#include <iostream>
+#include <fstream>
 
 using namespace std;
 
 int main() {
-	istringstream input{
+	/*istringstream input{
 		"10\n"
 		"Stop Tolstopaltsevo : 55.611087 , 37.208290 \n"
 		"Stop Marushkino : 55.595884, 37.209755\n"
@@ -25,8 +27,8 @@ int main() {
 		"Bus 256\n"
 		"Bus 750\n"
 		"Bus 751\n" 
-	};
-
+	};*/
+	ifstream input("D:/git/Home/c++/TransportCatalogue/tsA_case1_input.txt");
 	string line;
 	getline(input, line);
 	InputReader input_reader;
@@ -36,7 +38,8 @@ int main() {
 		getline(input, line);
 		input_reader.MakeVectorFromInput(line);
 	}
-	TransportCatalogue cat = input_reader.ParseInputData();
+	TransportCatalogue cat;
+	cat = input_reader.ParseInputData(cat);
 
 	getline(input, line);
 	StatReader stat_reader;
