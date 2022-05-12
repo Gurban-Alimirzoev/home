@@ -12,97 +12,104 @@ void InputReader::MakeVectorFromInput(string line)
 
 TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
 {
-	//TransportCatalogue cat;
-
-	for (string line_stop : lines_stop)
-	{
-		size_t first_word_name = line_stop.find_first_not_of("Stop ");
-		size_t two_point_place = line_stop.find(':');
-		size_t size_name = two_point_place - 6u;
-		string name_stop = line_stop.substr(first_word_name, size_name);
-
-		string coor = line_stop.substr(two_point_place + 1);
-		size_t comma = coor.find(",");
-
-		size_t lat_begin = coor.find_first_not_of(' ');
-		string lat = coor.substr(lat_begin, comma - lat_begin);
-		size_t lat_end = lat.find(' ');
-		lat = lat.substr(0, lat_end);
-
-
-		string lng = coor.substr(comma + 1);
-		size_t lng_begin = coor.find_first_not_of(' ');
-		lng = lng.substr(lng_begin);
-		size_t lng_end = lng.find(' ');
-		lng = lng.substr(0, lng_end);
-
-		cat.AddStop(name_stop, { atof(lat.c_str()), atof(lng.c_str()) });
-	}
-
-	for (string line_bus : lines_bus)
-	{
-		size_t first_space = line_bus.find(' ');
-		line_bus = line_bus.substr(first_space);
-
-		size_t number_begin = line_bus.find_first_not_of(' ');
-		line_bus = line_bus.substr(number_begin);
-
-		size_t colon = line_bus.find(':');
-		string bus_number = line_bus.substr(0, colon);
-
-		size_t bus_number_end = bus_number.find_last_not_of(' ');
-		bus_number = bus_number.substr(0, bus_number_end + 1);
-
-		string bus = line_bus.substr(colon + 1);
-		size_t del = bus.find('-');
-
-		std::vector<std::string> result;
-		string one_stop;
-		if (del != string::npos)
+	for_each(
+		lines_stop.begin(), lines_stop.end(),
+		[this, &cat](string line_stop)
 		{
-			size_t next_sym = bus.find('-');
-			while (next_sym != string::npos)
-			{
-				next_sym = bus.find('-');
-				one_stop = bus.substr(0, next_sym - 1);
-				size_t stop_begin = one_stop.find_first_not_of(' ');
-				one_stop = one_stop.substr(stop_begin);
-				size_t stop_end = one_stop.find_last_not_of(' ');
-				one_stop = one_stop.substr(0, stop_end + 1);
+			size_t first_space = line_stop.find_first_not_of("Stop");
+			line_stop = line_stop.substr(first_space);
 
-				result.push_back(move(one_stop));
+			size_t colon = line_stop.find(":");
+			string stop_name = MakeWithoutSpace(line_stop, colon);
 
-				bus = bus.substr(next_sym + 1);
-			}
+			string coor = line_stop.substr(colon + 1);
 
-			vector<string> reverse_result(result.begin(), result.end());
-			reverse_result.pop_back();
-			reverse(reverse_result.begin(), reverse_result.end());
-			for (string stop_rev : reverse_result)
-			{
-				result.push_back(move(stop_rev));
-			}
+			size_t comma = coor.find(",");
+			string lat = MakeWithoutSpace(coor, comma);
 
+			string lng = MakeWithoutSpace(coor.substr(comma + 1), coor.substr(comma + 1).size());
+
+			cat.AddStop(stop_name, { atof(lat.c_str()), atof(lng.c_str()) });
 		}
-		else
+	);
+
+	vector<string> result(lines_bus.size());
+	for_each(
+		lines_bus.begin(), lines_bus.end(),
+		[this, &cat](string line_bus)
 		{
-			size_t next_sym = bus.find('>');
-			while (next_sym != string::npos)
+			size_t first_space = line_bus.find_first_not_of("Bus");
+			line_bus = line_bus.substr(first_space);
+
+			size_t colon = line_bus.find(":");
+			string bus_number = MakeWithoutSpace(line_bus, colon);
+
+			string bus = line_bus.substr(colon + 1);
+
+			size_t del = bus.find('-');
+			string one_stop;
+			deque<string> result;
+
+			if (del != string::npos)
 			{
-				next_sym = bus.find('>');
-				one_stop = bus.substr(0, next_sym - 1);
-				size_t stop_begin = one_stop.find_first_not_of(' ');
-				one_stop = one_stop.substr(stop_begin);
-				size_t stop_end = one_stop.find_last_not_of(' ');
-				one_stop = one_stop.substr(0, stop_end + 1);
+				size_t next_sym = bus.find('-');
+				while (next_sym != string::npos)
+				{
+					next_sym = bus.find("-");
 
-				result.push_back(move(one_stop));
+					one_stop = MakeWithoutSpace(bus.substr(0, next_sym - 1), next_sym);
 
-				bus = bus.substr(next_sym + 1);
+					result.push_back(move(one_stop));
+
+					bus = bus.substr(next_sym + 1);
+				}
+
+				vector<string> reverse_result(result.begin(), result.end());
+				reverse_result.pop_back();
+				reverse(reverse_result.begin(), reverse_result.end());
+				for (string stop_rev : reverse_result)
+				{
+					result.push_back(move(stop_rev));
+				}
+
 			}
+			else
+			{
+				size_t next_sym = bus.find(">");
+				while (next_sym != string::npos)
+				{
+					next_sym = bus.find(">");
+
+					one_stop = MakeWithoutSpace(bus.substr(0, next_sym - 1), next_sym);
+
+					result.push_back(move(one_stop));
+
+					bus = bus.substr(next_sym + 1);
+				}
+			}
+			cat.AddBus(bus_number, move(result));
+			result.clear();
 		}
-		cat.AddBus(bus_number, move(result));
-		result.clear();
-	}
+	);
 	return cat;
+}
+
+
+string InputReader::MakeWithoutSpace(string line, size_t symbol)
+{
+	if (line[0] == ' ')
+	{
+		size_t first_space = line.find_first_not_of(' ');
+		line = line.substr(first_space);
+	}
+
+	line = line.substr(0, symbol - 1);
+
+	if (line.back() == ' ')
+	{
+		size_t number_begin = line.find_last_not_of(' ');
+		line = line.substr(0, number_begin + 1);
+	}
+
+	return line;
 }

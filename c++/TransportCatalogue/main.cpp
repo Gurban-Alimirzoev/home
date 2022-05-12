@@ -28,7 +28,7 @@ int main() {
 		"Bus 750\n"
 		"Bus 751\n" 
 	};*/
-	ifstream input("D:/git/Home/c++/TransportCatalogue/tsA_case1_input.txt");
+	ifstream input("D:/git/Home/c++/TransportCatalogue/tsA_case2_input.txt");
 	string line;
 	getline(input, line);
 	InputReader input_reader;

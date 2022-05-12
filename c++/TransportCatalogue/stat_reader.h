@@ -17,6 +17,8 @@ public:
 
 	void OutStatReader(TransportCatalogue cat);
 private:
+	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
+
 	std::vector<std::string> names;
 };
 

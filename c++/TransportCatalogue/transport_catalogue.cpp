@@ -17,44 +17,38 @@ void TransportCatalogue::AddStop(string name, Coordinates coor)
 	}
 }
 
-const Stop TransportCatalogue::FindStop(string name)
+Stop* TransportCatalogue::FindStop(string name)
 {
 	if (stopname_to_stop.find(name) == stopname_to_stop.end())
 	{
-		return {};
+		static Stop s;
+		return &s;
 	}
-	return *stopname_to_stop.at(name);
+	return stopname_to_stop.at(name);
 }
 
-void TransportCatalogue::AddBus(string name, vector<string> bus)
+void TransportCatalogue::AddBus(string name, deque<string> bus)
 {
 	vector<Stop*> bus_ptr(bus.size());
 
-	/*transform(
+	transform(
 		bus.begin(), bus.end(),
-		bus_ptr.begin(), bus_ptr.end(),
+		bus_ptr.begin(),
 		[this](string i)
 		{
-			auto var = stopname_to_stop[i];
-			return var;
+			return stopname_to_stop[i];
 		}
-	);*/
-	Stop* var;
-	for (string i : bus)
-	{
-
-		var = stopname_to_stop[string_view(i)];
-		bus_ptr.push_back(var);
-	}
+	);
 	buses.push_back({ name, bus_ptr });
 	busname_to_bus.insert({ buses.back().name_bus ,& (buses.back()) });
 }
 
-const Bus TransportCatalogue::FindBus(string name)
+Bus TransportCatalogue::FindBus(string name)
 {
 	if (busname_to_bus.find(name) == busname_to_bus.end())
 	{
-		return {};
+		static Bus b;
+		return b;
 	}
 	return *busname_to_bus.at(name);
 }

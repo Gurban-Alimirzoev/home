@@ -25,24 +25,26 @@ class PairStopStopHasher {
 public: 
 	size_t operator()(const std::pair< Stop*, Stop*> pair_stops) const
 	{
-		size_t first_hash_lat = coor_hasher(pair_stops.first->coor.lat);
+		/*size_t first_hash_lat = coor_hasher(pair_stops.first->coor.lat);
 		size_t first_hash_lng = coor_hasher(pair_stops.first->coor.lng);
 		size_t second_hash_lat = coor_hasher(pair_stops.second->coor.lat);
 		size_t second_hash_lng = coor_hasher(pair_stops.second->coor.lng);
 
-		return first_hash_lat * 37 + first_hash_lng * 37 * 37 + second_hash_lat * 37 * 37 + second_hash_lng * 37 * 37;
+		return first_hash_lat * 37 + first_hash_lng * 37 * 37 + second_hash_lat * 37 * 37 + second_hash_lng * 37 * 37;*/
+		return coor_hasher(pair_stops.first) + coor_hasher(pair_stops.second);
 	}
 
-	std::hash<double> coor_hasher;
+	//std::hash<double> coor_hasher;
+	std::hash<const void*> coor_hasher;
 };
 
 class TransportCatalogue {
 
 public:
 	void AddStop(std::string name, Coordinates coor);
-	const Stop FindStop(std::string name);
-	void AddBus(std::string name, std::vector<std::string> bus);
-	const Bus FindBus(std::string name);
+	Stop* FindStop(std::string name);
+	void AddBus(std::string name, std::deque<std::string> bus);
+	Bus FindBus(std::string name);
 	std::pair<int, double> GetBusInfo(std::string name);
 
 private:

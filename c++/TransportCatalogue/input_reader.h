@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <deque>
 #include <stdlib.h>
+#include <execution>
 
 #include "transport_catalogue.h"
 
@@ -19,10 +20,11 @@ public:
 
 	TransportCatalogue ParseInputData(TransportCatalogue cat);
 
-	//std::string MakeWithoutSymbol(std::string line, std::string symbol);
 private:
 	std::vector<std::string> lines_stop;
 	std::vector<std::string> lines_bus;
+
+	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
 	//std::vector<std::string_view> result;
 
 };
