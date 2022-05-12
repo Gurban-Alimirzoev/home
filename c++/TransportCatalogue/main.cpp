@@ -28,29 +28,30 @@ int main() {
 		"Bus 750\n"
 		"Bus 751\n" 
 	};*/
-	ifstream input("D:/git/Home/c++/TransportCatalogue/tsA_case2_input.txt");
+	ifstream input("e:/git/Home/c++/TransportCatalogue/tsA_case2_input.txt");
 	string line;
 	getline(input, line);
-	InputReader input_reader;
 	int number = stoi(line);
+
+	TransportCatalogue cat;
+	InputReader input_reader;
+
 	for (int i = 0; i < number; i++)
 	{
 		getline(input, line);
-		input_reader.MakeVectorFromInput(line);
+		input_reader.ParseStopOrSaveBus(line, cat);
 	}
-	TransportCatalogue cat;
-	cat = input_reader.ParseInputData(cat);
+
+	input_reader.ParseBus(cat);
 
 	getline(input, line);
-	StatReader stat_reader;
 	number = stoi(line);
+
+	StatReader stat_reader;
+
 	for (int i = 0; i < number; i++)
 	{
 		getline(input, line);
-		stat_reader.ParseStatReader(line);
+		stat_reader.OutStatReader(line, cat);
 	}
-	stat_reader.OutStatReader(cat);
-
-	cout << "Compil";
-
 }

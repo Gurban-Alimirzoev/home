@@ -6,15 +6,18 @@ void TransportCatalogue::AddStop(string name, Coordinates coor)
 {
 
 	stops.push_back({ name, coor });
-	stopname_to_stop.insert({ stops.back().name_stop, &(stops.back()) });
 
-	Stop &stop1 = stops.back();
+	Stop& stop1 = stops.back();
 
-	for (size_t i = 0; i < stops.size() - 1; i++)
+	for (const pair<string_view, Stop*> &stop_data : stopname_to_stop)
 	{
-		stops_distance.insert({ { &(stops[i]) , &stop1}, ComputeDistance((stops[i]).coor, stop1.coor)});
-		stops_distance.insert({ { &stop1, &(stops[i]) }, ComputeDistance(stop1.coor, (stops[i]).coor) });
+		stops_distance.insert({ 
+			{ { &*stop_data.second, &stop1}, ComputeDistance((*stop_data.second).coor, stop1.coor) },
+			{ { &stop1, &*stop_data.second }, ComputeDistance(stop1.coor, (*stop_data.second).coor) } 
+			});
 	}
+
+	stopname_to_stop.insert({ stops.back().name_stop, &(stops.back()) });
 }
 
 Stop* TransportCatalogue::FindStop(string name)
@@ -27,20 +30,21 @@ Stop* TransportCatalogue::FindStop(string name)
 	return stopname_to_stop.at(name);
 }
 
-void TransportCatalogue::AddBus(string name, deque<string> bus)
+void TransportCatalogue::AddBus(string name, vector<string> bus)
 {
 	vector<Stop*> bus_ptr(bus.size());
 
 	transform(
+		//execution::par,
 		bus.begin(), bus.end(),
 		bus_ptr.begin(),
-		[this](string i)
+		[this](string_view i)
 		{
 			return stopname_to_stop[i];
 		}
 	);
 	buses.push_back({ name, bus_ptr });
-	busname_to_bus.insert({ buses.back().name_bus ,& (buses.back()) });
+	busname_to_bus.insert({ buses.back().name_bus ,&(buses.back()) });
 }
 
 Bus TransportCatalogue::FindBus(string name)
@@ -55,13 +59,12 @@ Bus TransportCatalogue::FindBus(string name)
 
 pair<int, double_t> TransportCatalogue::GetBusInfo(string name)
 {
-	auto iter = busname_to_bus.find(name);
-	if (iter == busname_to_bus.end())
+	if (busname_to_bus.find(name) == busname_to_bus.end())
 	{
 		return {};
 	}
-	vector<Stop*> bus = busname_to_bus.at(name)->bus;
-	set<Stop*> unique_bus(bus.begin(), bus.end());
+	vector<Stop*> &bus = busname_to_bus.at(name)->bus;
+	unordered_set<Stop*> unique_bus(bus.begin(), bus.end());
 
 	double_t bus_distance = 0;
 	Stop* first_stop = bus[0];

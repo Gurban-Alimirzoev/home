@@ -13,12 +13,8 @@
 class StatReader
 {
 public:
-	void ParseStatReader(std::string line);
-
-	void OutStatReader(TransportCatalogue cat);
+	void OutStatReader(std::string line, TransportCatalogue &cat);
 private:
 	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
-
-	std::vector<std::string> names;
 };
 

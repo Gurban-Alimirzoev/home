@@ -16,15 +16,13 @@
 class InputReader
 {
 public:
-	void MakeVectorFromInput(std::string line);
+	void ParseStopOrSaveBus(std::string &line, TransportCatalogue &cat);
 
-	TransportCatalogue ParseInputData(TransportCatalogue cat);
+	void ParseBus(TransportCatalogue &cat);
 
 private:
-	std::vector<std::string> lines_stop;
 	std::vector<std::string> lines_bus;
 
 	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
-	//std::vector<std::string_view> result;
 
 };

@@ -2,44 +2,36 @@
 
 using namespace std;
 
-void InputReader::MakeVectorFromInput(string line)
+void InputReader::ParseStopOrSaveBus(string &line, TransportCatalogue& cat)
 {
 	if (line[0] == 'B')
-		lines_bus.push_back(line);
+		lines_bus.push_back(move(line));
 	else
-		lines_stop.push_back(line);
+	{
+		line = line.substr(line.find_first_not_of("Stop"));
+
+		size_t colon = line.find(":");
+		string stop_name = MakeWithoutSpace(line, colon);
+
+		string coor = line.substr(colon + 1);
+
+		size_t comma = coor.find(",");
+		string lat = MakeWithoutSpace(coor, comma);
+
+		string lng = MakeWithoutSpace(coor.substr(comma + 1), coor.substr(comma + 1).size());
+
+		cat.AddStop(move(stop_name), { atof(lat.c_str()), atof(lng.c_str()) });
+	}
 }
 
-TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
+void InputReader::ParseBus(TransportCatalogue& cat)
 {
-	for_each(
-		lines_stop.begin(), lines_stop.end(),
-		[this, &cat](string line_stop)
-		{
-			size_t first_space = line_stop.find_first_not_of("Stop");
-			line_stop = line_stop.substr(first_space);
-
-			size_t colon = line_stop.find(":");
-			string stop_name = MakeWithoutSpace(line_stop, colon);
-
-			string coor = line_stop.substr(colon + 1);
-
-			size_t comma = coor.find(",");
-			string lat = MakeWithoutSpace(coor, comma);
-
-			string lng = MakeWithoutSpace(coor.substr(comma + 1), coor.substr(comma + 1).size());
-
-			cat.AddStop(stop_name, { atof(lat.c_str()), atof(lng.c_str()) });
-		}
-	);
-
-	vector<string> result(lines_bus.size());
+	vector<string> result;
 	for_each(
 		lines_bus.begin(), lines_bus.end(),
-		[this, &cat](string line_bus)
+		[this, &cat, &result](string line_bus)
 		{
-			size_t first_space = line_bus.find_first_not_of("Bus");
-			line_bus = line_bus.substr(first_space);
+			line_bus = line_bus.substr(line_bus.find_first_not_of("Bus"));
 
 			size_t colon = line_bus.find(":");
 			string bus_number = MakeWithoutSpace(line_bus, colon);
@@ -48,7 +40,6 @@ TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
 
 			size_t del = bus.find('-');
 			string one_stop;
-			deque<string> result;
 
 			if (del != string::npos)
 			{
@@ -67,6 +58,7 @@ TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
 				vector<string> reverse_result(result.begin(), result.end());
 				reverse_result.pop_back();
 				reverse(reverse_result.begin(), reverse_result.end());
+
 				for (string stop_rev : reverse_result)
 				{
 					result.push_back(move(stop_rev));
@@ -87,11 +79,10 @@ TransportCatalogue InputReader::ParseInputData(TransportCatalogue cat)
 					bus = bus.substr(next_sym + 1);
 				}
 			}
-			cat.AddBus(bus_number, move(result));
+			cat.AddBus(move(bus_number), move(result));
 			result.clear();
 		}
 	);
-	return cat;
 }
 
 

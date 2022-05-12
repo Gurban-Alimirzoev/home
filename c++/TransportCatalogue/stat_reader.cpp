@@ -4,26 +4,18 @@ using namespace std;
 
 #include "input_reader.h"
 
-void StatReader::ParseStatReader(string line)
+void StatReader::OutStatReader(string line, TransportCatalogue& cat)
 {
-	size_t first_space = line.find_first_not_of("Bus");
-	line = line.substr(first_space);
+	line = line.substr(line.find_first_not_of("Bus"));
 
-	string bus_number = MakeWithoutSpace(line, line.find(":"));
+	string name = MakeWithoutSpace(line, line.find(":"));
 
-	names.push_back(bus_number);
-}
-
-void StatReader::OutStatReader(TransportCatalogue cat)
-{
-	for (string name : names)
+	if (cat.FindBus(name).bus.empty())
 	{
-		if (cat.FindBus(name).bus.empty())
-		{
-			cout << "Bus " << name << ": not found" << endl;
-			continue;
-		}
-
+		cout << "Bus " << name << ": not found" << endl;
+	}
+	else
+	{
 		cout << "Bus " << name << ": "
 			<< cat.FindBus(name).bus.size() << " stops on route, "
 			<< cat.GetBusInfo(name).first << " unique stops, "
