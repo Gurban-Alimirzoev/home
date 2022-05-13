@@ -13,6 +13,9 @@
 
 #include "transport_catalogue.h"
 
+namespace transport_catalogue::input
+{
+
 class InputReader
 {
 public:
@@ -25,4 +28,10 @@ private:
 
 	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
 
+	std::vector<std::pair<std::string, std::string>> ParseAssocStops(std::string line);
+
+	std::pair<std::string, std::string> ParseOneAssocStop(std::string line);
+
 };
+
+}

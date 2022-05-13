@@ -1,5 +1,8 @@
 #include "input_reader.h"
 
+namespace transport_catalogue::input
+{
+
 using namespace std;
 
 void InputReader::ParseStopOrSaveBus(string &line, TransportCatalogue& cat)
@@ -9,19 +12,54 @@ void InputReader::ParseStopOrSaveBus(string &line, TransportCatalogue& cat)
 	else
 	{
 		line = line.substr(line.find_first_not_of("Stop"));
+		size_t symbol = line.find(":");
+		string stop_name = MakeWithoutSpace(line, symbol);
 
-		size_t colon = line.find(":");
-		string stop_name = MakeWithoutSpace(line, colon);
+		line = line.substr(symbol + 1);
+		symbol = line.find(",");
+		string lat = MakeWithoutSpace(line, symbol);
 
-		string coor = line.substr(colon + 1);
+		line = line.substr(symbol + 1);
+		symbol = line.find(",");
+		string lng = MakeWithoutSpace(line, symbol);
 
-		size_t comma = coor.find(",");
-		string lat = MakeWithoutSpace(coor, comma);
+		line = line.substr(symbol + 1);
+		vector<pair<string, string>> associated_stops = ParseAssocStops(line);
 
-		string lng = MakeWithoutSpace(coor.substr(comma + 1), coor.substr(comma + 1).size());
-
-		cat.AddStop(move(stop_name), { atof(lat.c_str()), atof(lng.c_str()) });
+		cat.AddStop(move(stop_name), { atof(lat.c_str()), atof(lng.c_str()) }, associated_stops);
 	}
+}
+
+vector<pair<string, string>> InputReader::ParseAssocStops(string line)
+{
+	vector<pair<string, string>> associated_stops;
+	size_t symbol = line.find(",");
+	while (symbol != string::npos)
+	{
+		auto pair_stops = ParseOneAssocStop(line);
+		associated_stops.push_back(pair_stops);
+
+		line = line.substr(symbol + 1);
+		symbol = line.find(",");
+	}
+
+	auto pair_stops = ParseOneAssocStop(line);
+	associated_stops.push_back(pair_stops);
+	return associated_stops;
+}
+
+pair<string, string> InputReader::ParseOneAssocStop(string line)
+{
+	size_t symbol = line.find(",");
+	string stop2 = MakeWithoutSpace(line, symbol);
+
+	size_t symbol_m = stop2.find("m");
+	string distance = MakeWithoutSpace(stop2, symbol_m + 1);
+
+	symbol_m = stop2.find("to");
+	string assoc_stop_name = stop2.substr(symbol_m + 3, string::npos);
+	assoc_stop_name = MakeWithoutSpace(assoc_stop_name, stop2.find(","));
+	return { assoc_stop_name , distance };
 }
 
 void InputReader::ParseBus(TransportCatalogue& cat)
@@ -103,4 +141,6 @@ string InputReader::MakeWithoutSpace(string line, size_t symbol)
 	}
 
 	return line;
+}
+
 }

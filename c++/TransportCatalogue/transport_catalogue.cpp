@@ -2,22 +2,17 @@
 
 using namespace std;
 
-void TransportCatalogue::AddStop(string name, Coordinates coor)
+namespace transport_catalogue
 {
 
+void TransportCatalogue::AddStop(string name, geo::Coordinates coor, vector<pair<string, string>> associated_stops)
+{
 	stops.push_back({ name, coor });
-
-	Stop& stop1 = stops.back();
-
-	for (const pair<string_view, Stop*> &stop_data : stopname_to_stop)
-	{
-		stops_distance.insert({ 
-			{ { &*stop_data.second, &stop1}, ComputeDistance((*stop_data.second).coor, stop1.coor) },
-			{ { &stop1, &*stop_data.second }, ComputeDistance(stop1.coor, (*stop_data.second).coor) } 
-			});
-	}
-
 	stopname_to_stop.insert({ stops.back().name_stop, &(stops.back()) });
+	for (pair<string, string> i : associated_stops)
+	{
+		SetEarthDistance({ name, move(i.first) }, atof(i.second.c_str()));
+	}
 }
 
 Stop* TransportCatalogue::FindStop(string name)
@@ -38,26 +33,36 @@ void TransportCatalogue::AddBus(string name, vector<string> bus)
 		//execution::par,
 		bus.begin(), bus.end(),
 		bus_ptr.begin(),
-		[this](string_view i)
+		[this, name](string_view i)
 		{
 			return stopname_to_stop[i];
 		}
 	);
 	buses.push_back({ name, bus_ptr });
 	busname_to_bus.insert({ buses.back().name_bus ,&(buses.back()) });
+
+	for_each(
+		//execution::par,
+		bus.begin(), bus.end(),
+		[this, name](string i)
+		{
+			all_buses_on_stops[i].insert(name);
+		}
+	);
+
 }
 
-Bus TransportCatalogue::FindBus(string name)
+Bus* TransportCatalogue::FindBus(string name)
 {
 	if (busname_to_bus.find(name) == busname_to_bus.end())
 	{
 		static Bus b;
-		return b;
+		return &b;
 	}
-	return *busname_to_bus.at(name);
+	return busname_to_bus.at(name);
 }
 
-pair<int, double_t> TransportCatalogue::GetBusInfo(string name)
+BusInfo TransportCatalogue::GetBusInfo(string name)
 {
 	if (busname_to_bus.find(name) == busname_to_bus.end())
 	{
@@ -66,12 +71,52 @@ pair<int, double_t> TransportCatalogue::GetBusInfo(string name)
 	vector<Stop*> &bus = busname_to_bus.at(name)->bus;
 	unordered_set<Stop*> unique_bus(bus.begin(), bus.end());
 
-	double_t bus_distance = 0;
-	Stop* first_stop = bus[0];
+	double geo_distance = 0;
+	double earth_distance = 0;
+
+	Stop* stop1 = bus[0];
 	for (size_t i = 1; i < bus.size(); i++)
 	{
-		bus_distance += stops_distance[{first_stop, bus[i]}];
-		first_stop = bus[i];
+		Stop* stop2 = bus[i];
+
+		if (geo_stops_distance.count({ stop1, stop2 }) == 0)
+		{
+			double distance_stop_stop = ComputeDistance(stop1->coor, stop2->coor);
+			geo_distance += distance_stop_stop;
+			geo_stops_distance.insert({ { stop1, stop2}, distance_stop_stop });
+		}
+		else 
+		{
+			geo_distance += geo_stops_distance[{ stop1, stop2 }];
+		}
+
+		earth_distance += GetEarthDistance({ stop1->name_stop, stop2->name_stop });
+
+		stop1 = stop2;
 	}
-	return { unique_bus.size(), bus_distance };
+	return { unique_bus.size(), earth_distance,  earth_distance / geo_distance };
+}
+
+set<string> TransportCatalogue::GetAllBusOnStop(string name)
+{
+	set<string> var(all_buses_on_stops[name].begin(), all_buses_on_stops[name].end());
+	return var;
+}
+
+void TransportCatalogue::SetEarthDistance(std::pair <string, string> stop_and_next_stop, double distance)
+{
+	earth_stops_distance[stop_and_next_stop] = distance;
+}
+double TransportCatalogue::GetEarthDistance(std::pair <string, string> stop_and_next_stop)
+{
+	if (earth_stops_distance.find(stop_and_next_stop) != earth_stops_distance.end())
+	{
+		return earth_stops_distance.at(stop_and_next_stop);
+	}
+	else
+	{
+		return earth_stops_distance[{stop_and_next_stop.second, stop_and_next_stop.first}];
+	}
+}
+
 }
