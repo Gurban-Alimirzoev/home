@@ -1,16 +1,18 @@
 #include "stat_reader.h"
+#include "input_reader.h"
 
 namespace transport_catalogue::stat_
 {
 
 using namespace std;
+using namespace input;
 
-void StatReader::OutStatReader(string line, TransportCatalogue& cat)
+void StatReader::OutStatReader(string_view line, TransportCatalogue& cat)
 {
 
 	line = line.substr(line.find_first_not_of(" "));
 
-	if (line[0] == 'B')
+	if (line.substr(0, 3) == "Bus")
 	{
 		ParseBusQuieries(line, cat);
 	}
@@ -20,13 +22,13 @@ void StatReader::OutStatReader(string line, TransportCatalogue& cat)
 	}
 }
 
-void StatReader::ParseBusQuieries(string line, TransportCatalogue& cat)
+void StatReader::ParseBusQuieries(string_view line, TransportCatalogue& cat)
 {
 	line = line.substr(line.find_first_not_of("Bus"));
 
-	string name = MakeWithoutSpace(line, line.find(":"));
+	string name = string(MakeWithoutSpace(line, line.find(":")));
 
-	if (cat.FindBus(name)->bus.empty())
+	if (cat.FindBus(name) == nullptr)
 	{
 		cout << "Bus " << name << ": not found" << endl;
 	}
@@ -42,15 +44,16 @@ void StatReader::ParseBusQuieries(string line, TransportCatalogue& cat)
 	}
 }
 
-void StatReader::ParseStopQuieries(string line, TransportCatalogue& cat)
+void StatReader::ParseStopQuieries(string_view line, TransportCatalogue& cat)
 {
 	line = line.substr(line.find_first_not_of("Stop"));
 
-	string name = MakeWithoutSpace(line, line.find(":"));
+	string name = string(MakeWithoutSpace(line, line.find(":")));
 	Stop zero;
 
 	set<string> buses_on_stop = cat.GetAllBusOnStop(name);
-	if (cat.FindStop(name)->name_stop.empty())
+
+	if (cat.FindStop(name) == nullptr)
 	{
 		cout << "Stop " << name << ": not found" << endl;
 	}
@@ -61,31 +64,12 @@ void StatReader::ParseStopQuieries(string line, TransportCatalogue& cat)
 	else
 	{
 		cout << "Stop " << name << ": buses";
-		for (auto i : cat.GetAllBusOnStop(name))
+		for (const string& i : cat.GetAllBusOnStop(name))
 		{
 			cout << " " << i;
 		}
 		cout << endl;
 	}
-}
-
-string StatReader::MakeWithoutSpace(string line, size_t symbol)
-{
-	if (line[0] == ' ')
-	{
-		size_t first_space = line.find_first_not_of(' ');
-		line = line.substr(first_space);
-	}
-
-	line = line.substr(0, symbol);
-
-	if (line.back() == ' ')
-	{
-		size_t number_begin = line.find_last_not_of(' ');
-		line = line.substr(0, number_begin + 1);
-	}
-
-	return line;
 }
 
 }

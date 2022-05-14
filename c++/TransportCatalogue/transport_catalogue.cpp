@@ -5,70 +5,69 @@ using namespace std;
 namespace transport_catalogue
 {
 
-void TransportCatalogue::AddStop(string name, geo::Coordinates coor, vector<pair<string, string>> associated_stops)
+void TransportCatalogue::AddStop(string name, geo::Coordinates coor, vector<pair<string, double>> &associated_stops)
 {
 	stops.push_back({ name, coor });
 	stopname_to_stop.insert({ stops.back().name_stop, &(stops.back()) });
-	for (pair<string, string> i : associated_stops)
+	for (pair<string, double> associated_stop : associated_stops)
 	{
-		SetEarthDistance({ name, move(i.first) }, atof(i.second.c_str()));
+		SetEarthDistance({ name, associated_stop.first }, associated_stop.second);
 	}
 }
 
-Stop* TransportCatalogue::FindStop(string name)
+Stop* TransportCatalogue::FindStop(string_view name) const
 {
-	if (stopname_to_stop.find(name) == stopname_to_stop.end())
+	auto iter = stopname_to_stop.find(name);
+	if (iter == stopname_to_stop.end())
 	{
-		static Stop s;
-		return &s;
+		return nullptr;
 	}
-	return stopname_to_stop.at(name);
+	return iter->second;
 }
 
-void TransportCatalogue::AddBus(string name, vector<string> bus)
+void TransportCatalogue::AddBus(string bus_name, vector<string>& bus)
 {
 	vector<Stop*> bus_ptr(bus.size());
 
 	transform(
-		//execution::par,
 		bus.begin(), bus.end(),
 		bus_ptr.begin(),
-		[this, name](string_view i)
+		[this, bus_name](string_view stop)
 		{
-			return stopname_to_stop[i];
+			return stopname_to_stop[stop];
 		}
 	);
-	buses.push_back({ name, bus_ptr });
+	buses.push_back({ bus_name, bus_ptr });
 	busname_to_bus.insert({ buses.back().name_bus ,&(buses.back()) });
 
 	for_each(
-		//execution::par,
 		bus.begin(), bus.end(),
-		[this, name](string i)
+		[this, bus_name](string stop)
 		{
-			all_buses_on_stops[i].insert(name);
+			all_buses_on_stops[stop].insert(bus_name);
 		}
 	);
 
 }
 
-Bus* TransportCatalogue::FindBus(string name)
+Bus* TransportCatalogue::FindBus(std::string_view name) const
 {
-	if (busname_to_bus.find(name) == busname_to_bus.end())
+	auto iter = busname_to_bus.find(name);
+	if (iter == busname_to_bus.end())
 	{
-		static Bus b;
-		return &b;
+		return nullptr;
 	}
-	return busname_to_bus.at(name);
+	return iter->second;
 }
 
-BusInfo TransportCatalogue::GetBusInfo(string name)
+BusInfo TransportCatalogue::GetBusInfo(const string& name)
 {
-	if (busname_to_bus.find(name) == busname_to_bus.end())
+	Bus* iter = FindBus(name);
+	if (iter == nullptr)
 	{
 		return {};
 	}
-	vector<Stop*> &bus = busname_to_bus.at(name)->bus;
+	vector<Stop*> &bus = iter->bus;
 	unordered_set<Stop*> unique_bus(bus.begin(), bus.end());
 
 	double geo_distance = 0;
@@ -87,7 +86,7 @@ BusInfo TransportCatalogue::GetBusInfo(string name)
 		}
 		else 
 		{
-			geo_distance += geo_stops_distance[{ stop1, stop2 }];
+			geo_distance += geo_stops_distance.at({ stop1, stop2 });
 		}
 
 		earth_distance += GetEarthDistance({ stop1->name_stop, stop2->name_stop });
@@ -97,21 +96,22 @@ BusInfo TransportCatalogue::GetBusInfo(string name)
 	return { unique_bus.size(), earth_distance,  earth_distance / geo_distance };
 }
 
-set<string> TransportCatalogue::GetAllBusOnStop(string name)
+set<string> TransportCatalogue::GetAllBusOnStop(string& name)
 {
 	set<string> var(all_buses_on_stops[name].begin(), all_buses_on_stops[name].end());
 	return var;
 }
 
-void TransportCatalogue::SetEarthDistance(std::pair <string, string> stop_and_next_stop, double distance)
+void TransportCatalogue::SetEarthDistance(std::pair <string_view, string_view> stop_and_next_stop, double distance)
 {
 	earth_stops_distance[stop_and_next_stop] = distance;
 }
-double TransportCatalogue::GetEarthDistance(std::pair <string, string> stop_and_next_stop)
+double TransportCatalogue::GetEarthDistance(std::pair <string_view, string_view> stop_and_next_stop) 
 {
-	if (earth_stops_distance.find(stop_and_next_stop) != earth_stops_distance.end())
+	auto iter = earth_stops_distance.find(stop_and_next_stop);
+	if (iter != earth_stops_distance.end())
 	{
-		return earth_stops_distance.at(stop_and_next_stop);
+		return iter->second;
 	}
 	else
 	{

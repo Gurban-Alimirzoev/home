@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <vector>
 #include <iomanip>
+#include <cassert>
 
 #include "transport_catalogue.h"
 
@@ -16,14 +17,12 @@ namespace transport_catalogue::stat_
 class StatReader
 {
 public:
-	void OutStatReader(std::string line, TransportCatalogue &cat);
+	void OutStatReader(std::string_view line, TransportCatalogue &cat);
 
 private:
-	void ParseBusQuieries(std::string line, TransportCatalogue& cat);
+	void ParseBusQuieries(std::string_view line, TransportCatalogue& cat);
 
-	void ParseStopQuieries(std::string line, TransportCatalogue& cat);
-
-	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
+	void ParseStopQuieries(std::string_view line, TransportCatalogue& cat);
 };
 
 }

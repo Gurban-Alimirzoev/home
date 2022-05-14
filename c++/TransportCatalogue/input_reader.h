@@ -10,8 +10,14 @@
 #include <deque>
 #include <stdlib.h>
 #include <execution>
+#include <charconv>
 
 #include "transport_catalogue.h"
+
+namespace transport_catalogue::input
+{
+std::string_view MakeWithoutSpace(std::string_view line, std::size_t symbol);
+}
 
 namespace transport_catalogue::input
 {
@@ -19,18 +25,18 @@ namespace transport_catalogue::input
 class InputReader
 {
 public:
-	void ParseStopOrSaveBus(std::string &line, TransportCatalogue &cat);
+	void ParseCommand(std::string& line, TransportCatalogue &cat);
 
-	void ParseBus(TransportCatalogue &cat);
+	void FinalizationDataRead(TransportCatalogue &cat);
 
 private:
 	std::vector<std::string> lines_bus;
 
-	std::string MakeWithoutSpace(std::string line, std::size_t symbol);
+	std::vector<std::pair<std::string, double>> ParseAssociatedStops(std::string_view line);
 
-	std::vector<std::pair<std::string, std::string>> ParseAssocStops(std::string line);
+	std::pair<std::string, double> ParseOneAssociatedStop(std::string_view line);
 
-	std::pair<std::string, std::string> ParseOneAssocStop(std::string line);
+	void ParseStopsInBus(std::vector<std::string> &stops, std::string& line, std::string symbol);
 
 };
 
