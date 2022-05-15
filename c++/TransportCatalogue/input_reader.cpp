@@ -36,27 +36,44 @@ void InputReader::ParseCommand(string &line, TransportCatalogue& cat)
 		lines_bus.push_back(move(line));
 	else
 	{
-		line = line.substr(line.find_first_not_of("Stop"));
+		string_view line_sv(line);
+		line_sv = line_sv.substr(line_sv.find_first_not_of("Stop"));
 
-		size_t symbol = line.find(":");
-		string stop_name = string(MakeWithoutSpace(line, symbol));
-		line = line.substr(symbol + 1);
+		size_t symbol = line_sv.find(":");
+		string stop_name = string(MakeWithoutSpace(line_sv, symbol));
+		line_sv = line_sv.substr(symbol + 1);
 
-		symbol = line.find(",");
-		string lat_str = string(MakeWithoutSpace(line, symbol));
-		line = line.substr(symbol + 1);
+		symbol = line_sv.find(",");
+		string lat_str = string(MakeWithoutSpace(line_sv, symbol));
+		line_sv = line_sv.substr(symbol + 1);
 
-		symbol = line.find(",");
-		string lng_str = string(MakeWithoutSpace(line, symbol));
-		line = line.substr(symbol + 1);
+		symbol = line_sv.find(",");
+		string lng_str = string(MakeWithoutSpace(line_sv, symbol));
+		line_sv = line_sv.substr(symbol + 1);
 
-		double lat = 0, lng = 0;
-		from_chars(lat_str.data(), lat_str.data() + lat_str.size(), lat);
-		from_chars(lng_str.data(), lng_str.data() + lng_str.size(), lng);
+		//double lat = 0, lng = 0;
+		//from_chars(lat_str.data(), lat_str.data() + lat_str.size(), lat);
+		//from_chars(lng_str.data(), lng_str.data() + lng_str.size(), lng);
 
-		vector<pair<string, double>> associated_stops = ParseAssociatedStops(line);
+		double lat = atof(lat_str.c_str());
+		double lng = atof(lng_str.c_str());
 
-		cat.AddStop(move(string(stop_name)), { lat, lng }, associated_stops);
+		vector<pair<string, double>> associated_stops = ParseAssociatedStops(line_sv);
+
+		buffer_distance[string(stop_name)] = associated_stops;
+
+		cat.AddStop(move(string(stop_name)), { lat, lng });
+	}
+}
+
+void InputReader::ParseDistance(TransportCatalogue& cat)
+{
+	for (pair<const string, vector<pair<string, double>>>& main_stop : buffer_distance)
+	{
+		for (const pair<string, double>& associated_stop : main_stop.second)
+		{
+			cat.SetEarthDistance({ move(main_stop.first), move(associated_stop.first) }, associated_stop.second);
+		}
 	}
 }
 
@@ -85,29 +102,29 @@ pair<string, double> InputReader::ParseOneAssociatedStop(string_view line)
 
 	size_t symbol_m = stop2.find("m");
 	string_view distance_str = MakeWithoutSpace(stop2, symbol_m + 1);
-	double distance = 0;
-	from_chars(distance_str.data(), distance_str.data() + distance_str.size(), distance);
+	//double distance = 0;
+	//from_chars(distance_str.data(), distance_str.data() + distance_str.size(), distance);
+	double distance = atof(string(distance_str).c_str());
 
 	symbol_m = stop2.find("to");
 	string_view assoc_stop_name = stop2.substr(symbol_m + 3, string::npos);
 	assoc_stop_name = MakeWithoutSpace(assoc_stop_name, stop2.find(","));
-
 	return { string(assoc_stop_name) , distance};
 }
 
 void InputReader::FinalizationDataRead(TransportCatalogue& cat)
 {
 	vector<string> result;
-	for (string line_bus : lines_bus)
+	for (string& line_bus_ : lines_bus)
 		{
+		string_view line_bus(line_bus_);
 		line_bus = line_bus.substr(line_bus.find_first_not_of("Bus"));
 
 		size_t colon = line_bus.find(":");
 		string_view bus_number = MakeWithoutSpace(line_bus, colon);
-		string bus = line_bus.substr(colon + 1);
+		string_view bus = line_bus.substr(colon + 1);
 
 		size_t del = line_bus.find("-");
-		string one_stop;
 		if (del != string::npos)
 		{
 			ParseStopsInBus(result, bus, "-");
@@ -129,7 +146,7 @@ void InputReader::FinalizationDataRead(TransportCatalogue& cat)
 	}
 }
 
-void InputReader::ParseStopsInBus(vector<string> & stops, string& line, string symbol)
+void InputReader::ParseStopsInBus(vector<string> & stops, string_view line, string symbol)
 {
 	size_t next_sym = line.find(symbol);;
 	while (next_sym != string::npos)

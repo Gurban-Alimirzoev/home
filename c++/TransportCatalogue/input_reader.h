@@ -27,16 +27,20 @@ class InputReader
 public:
 	void ParseCommand(std::string& line, TransportCatalogue &cat);
 
+	void ParseDistance(TransportCatalogue& cat);
+
 	void FinalizationDataRead(TransportCatalogue &cat);
 
 private:
 	std::vector<std::string> lines_bus;
 
+	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
+
 	std::vector<std::pair<std::string, double>> ParseAssociatedStops(std::string_view line);
 
 	std::pair<std::string, double> ParseOneAssociatedStop(std::string_view line);
 
-	void ParseStopsInBus(std::vector<std::string> &stops, std::string& line, std::string symbol);
+	void ParseStopsInBus(std::vector<std::string> &stops, std::string_view line, std::string symbol);
 
 };
 

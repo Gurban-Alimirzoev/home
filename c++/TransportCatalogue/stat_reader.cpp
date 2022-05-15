@@ -26,7 +26,7 @@ void StatReader::ParseBusQuieries(string_view line, TransportCatalogue& cat)
 {
 	line = line.substr(line.find_first_not_of("Bus"));
 
-	string name = string(MakeWithoutSpace(line, line.find(":")));
+	string_view name = MakeWithoutSpace(line, line.find(":"));
 
 	if (cat.FindBus(name) == nullptr)
 	{

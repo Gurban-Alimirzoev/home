@@ -12,6 +12,7 @@ using namespace transport_catalogue;
 
 int main() {
 	std::ifstream input("e:/git/Home/c++/TransportCatalogue/tsC_case1_input.txt");
+
 	std::string line;
 	std::getline(input, line);
 	int number = stoi(line);
@@ -24,7 +25,7 @@ int main() {
 		getline(input, line);
 		input_reader.ParseCommand(line, cat);
 	}
-
+	input_reader.ParseDistance(cat);
 	input_reader.FinalizationDataRead(cat);
 
 	getline(input, line);

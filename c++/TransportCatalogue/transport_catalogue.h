@@ -49,15 +49,6 @@ public:
 	std::hash<const void*> coor_hasher;
 };
 
-class PairString_viewString_viewHasher {
-public:
-	size_t operator()(const std::pair<std::string_view, std::string_view> pair_stops) const
-	{
-		return coor_hasher(pair_stops.first) + coor_hasher(pair_stops.second) * 11;
-	}
-	std::hash<std::string_view> coor_hasher;
-};
-
 }
 
 namespace transport_catalogue
@@ -66,26 +57,26 @@ namespace transport_catalogue
 class TransportCatalogue {
 
 public:
-	void AddStop(std::string name, geo::Coordinates coor, std::vector<std::pair<std::string, double>> &associated_stops);
-	void AddBus(std::string name, std::vector<std::string>& bus);
+	void AddStop(std::string name, geo::Coordinates coor);
+	void AddBus(std::string_view name, std::vector<std::string>& stops_on_bus);
 
 	Stop* FindStop(std::string_view name) const;
 	Bus* FindBus(std::string_view name) const;
 
-	BusInfo GetBusInfo(const std::string& name);
-	std::set<std::string> GetAllBusOnStop(std::string& name);
+	BusInfo GetBusInfo(std::string_view name);
+	std::set<std::string> GetAllBusOnStop(std::string_view name);
 
-	void SetEarthDistance(std::pair <std::string_view, std::string_view> stop_and_next_stop, double distance);
-	double GetEarthDistance(std::pair <std::string_view, std::string_view> stop_and_next_stop);
+	void SetEarthDistance(std::pair <std::string, std::string> stop_and_next_stop, double distance);
+	double GetEarthDistance(std::pair < Stop*, Stop* > stop_and_next_stop);
 
 private:
 	std::deque <Stop> stops;
 	std::unordered_map <std::string_view, Stop*> stopname_to_stop;
 	std::deque <Bus> buses;
 	std::unordered_map <std::string_view, Bus*> busname_to_bus;
-	std::unordered_map <std::string, std::unordered_set<std::string>> all_buses_on_stops;
+	std::unordered_map <std::string_view, std::unordered_set<std::string>> all_buses_on_stops;
 	std::unordered_map <std::pair < Stop*, Stop*>, double, detail::PairStopStopHasher> geo_stops_distance;
-	std::unordered_map <std::pair <std::string_view, std::string_view>, double, detail::PairString_viewString_viewHasher> earth_stops_distance;
+	std::unordered_map <std::pair <Stop*, Stop*>, double, detail::PairStopStopHasher> earth_stops_distance;
 };
 
 }
