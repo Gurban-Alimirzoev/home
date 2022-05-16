@@ -48,8 +48,7 @@ void StatReader::ParseStopQuieries(string_view line, TransportCatalogue& cat)
 {
 	line = line.substr(line.find_first_not_of("Stop"));
 
-	string name = string(MakeWithoutSpace(line, line.find(":")));
-	Stop zero;
+	string_view name = MakeWithoutSpace(line, line.find(":"));
 
 	set<string> buses_on_stop = cat.GetAllBusOnStop(name);
 
@@ -64,7 +63,7 @@ void StatReader::ParseStopQuieries(string_view line, TransportCatalogue& cat)
 	else
 	{
 		cout << "Stop " << name << ": buses";
-		for (const string& i : cat.GetAllBusOnStop(name))
+		for (const string& i : buses_on_stop)
 		{
 			cout << " " << i;
 		}

@@ -55,8 +55,8 @@ void InputReader::ParseCommand(string &line, TransportCatalogue& cat)
 		//from_chars(lat_str.data(), lat_str.data() + lat_str.size(), lat);
 		//from_chars(lng_str.data(), lng_str.data() + lng_str.size(), lng);
 
-		double lat = atof(lat_str.c_str());
-		double lng = atof(lng_str.c_str());
+		double lat = stod(lat_str);
+		double lng = stod(lng_str);
 
 		vector<pair<string, double>> associated_stops = ParseAssociatedStops(line_sv);
 
@@ -104,7 +104,7 @@ pair<string, double> InputReader::ParseOneAssociatedStop(string_view line)
 	string_view distance_str = MakeWithoutSpace(stop2, symbol_m + 1);
 	//double distance = 0;
 	//from_chars(distance_str.data(), distance_str.data() + distance_str.size(), distance);
-	double distance = atof(string(distance_str).c_str());
+	double distance = stod(string(distance_str));
 
 	symbol_m = stop2.find("to");
 	string_view assoc_stop_name = stop2.substr(symbol_m + 3, string::npos);
@@ -115,7 +115,7 @@ pair<string, double> InputReader::ParseOneAssociatedStop(string_view line)
 void InputReader::FinalizationDataRead(TransportCatalogue& cat)
 {
 	vector<string> result;
-	for (string& line_bus_ : lines_bus)
+	for (const string& line_bus_ : lines_bus)
 		{
 		string_view line_bus(line_bus_);
 		line_bus = line_bus.substr(line_bus.find_first_not_of("Bus"));
