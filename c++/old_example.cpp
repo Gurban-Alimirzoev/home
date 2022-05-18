@@ -1,122 +1,138 @@
-#include <iostream>
 #include <cassert>
+#include <iostream>
+#include <memory>
+#include <string>
 
 using namespace std;
 
-template <class T>
-struct TreeNode {
-    T value;
-    TreeNode* parent = nullptr;
-    TreeNode* left = nullptr;
-    TreeNode* right = nullptr;
+struct Cat {
+    Cat(const string& name, int age)
+        : name_(name)
+        , age_(age)  //
+    {
+    }
+    const string& GetName() const noexcept {
+        return name_;
+    }
+    int GetAge() const noexcept {
+        return age_;
+    }
+    ~Cat() {
+    }
+    void Speak() const {
+        cout << "Meow!"s << endl;
+    }
+
+private:
+    string name_;
+    int age_;
 };
 
-template <class T>
-void DeleteTree(TreeNode<T>* node) {
-    if (!node) {
-        return;
+// Функция создаёт двухлетних котов
+unique_ptr<Cat> CreateCat(const string& name) {
+    return make_unique<Cat>(name, 2);
+}
+
+class Witch {
+public:
+    Witch(Witch&&) = default;
+    Witch& operator=(Witch&&) = default;
+
+    explicit Witch(const string& name)
+        : name_(name) {
     }
-    DeleteTree(node->left);
-    DeleteTree(node->right);
-    delete node;
-}
-
-template <class T>
-void PrintTree(const TreeNode<T>* root, ostream& out = cout) {
-    out << " ( "s;
-    out << root->value;
-    if (root->left || root->right) {
-        if (root->left) {
-            PrintTree(root->left, out);
-        } else {
-            out << "*"s;
-        }
-        if (root->right) {
-            PrintTree(root->right, out);
-        } else {
-            out << "*"s;
-        }
-    }
-    out << " ) "s;
-}
-
-template <class T>
-ostream& operator << (ostream& out, const TreeNode<T>* node) {
-    PrintTree(node, out);
-    return out;
-}
-
-template <class T>
-TreeNode<T>* begin(TreeNode<T>* node) {
-    auto parent_maybe = node->parent;
-    auto var = parent_maybe;
-    while (parent_maybe->parent != nullptr)
+    
+    Witch(const Witch &old)
     {
-        var = parent_maybe;
-        parent_maybe = var->parent;
+        cat_ = make_unique<Cat>(old.cat_->GetName(), old.cat_->GetAge());
     }
-    return parent_maybe;
-}
 
-template <class T>
-TreeNode<T>* next(TreeNode<T>* node) {
-    if (node->right != nullptr) 
+    Witch &operator= (const Witch &old)
     {
-        return minimum(node->right);
+        Witch var(old);
+        swap(var, *this);
+        return *this;
     }
-    auto var = node->parent;
-    while (var != nullptr && node != var->right)
+
+    const string& GetName() const noexcept {
+        return name_;
+    }
+    void SetCat(unique_ptr<Cat>&& cat) noexcept {
+        cat_ = std::move(cat);
+    }
+    unique_ptr<Cat> ReleaseCat() noexcept {
+        return std::move(cat_);
+    }
+
+private:
+    string name_;
+    unique_ptr<Cat> cat_;
+};
+
+void Test() {
+    // Объекты Witch можно перемещать
     {
-        node = var;
-        var = var->parent;
-    }
-    return var;
-}
+        Witch witch("Hermione"s);
+        auto cat = CreateCat("Crookshanks"s);
+        Cat* raw_cat = cat.get();
+        assert(raw_cat);
+        witch.SetCat(move(cat));
 
-template <class T>
-TreeNode<T>* minimum(TreeNode<T>* node)
-{
-  if (node->left == nullptr)
-  {
-     return node;
-  }
-  return minimum(node->left);
-}
-
-template <class T>
-TreeNode<T>* maximum(TreeNode<T>* node)
-{
-  if (node->right == nullptr)
-     return node;
-  return maximum(node->right);      
-}
-      
-// функция создаёт новый узел с заданным значением и потомками
-TreeNode<int>* N(int val, TreeNode<int>* left = nullptr, TreeNode<int>* right = nullptr) {
-    auto res = new TreeNode<int>{val, nullptr, left, right};
-    if (left) {
-        left->parent = res;
-    }
-    if (right) {
-        right->parent = res;
+        Witch moved_witch(std::move(witch));
+        auto released_cat = moved_witch.ReleaseCat();
+        assert(released_cat.get() == raw_cat);  // Кот переместился от witch к moved_witch
     }
 
-    return res;
+    // Можно использовать перемещающий оператор присваивания
+    {
+        Witch witch("Hermione"s);
+        auto cat = CreateCat("Crookshanks"s);
+        Cat* raw_cat = cat.get();
+        witch.SetCat(move(cat));
+
+        Witch witch2("Minerva McGonagall");
+        witch2 = move(witch);
+        auto released_cat = witch.ReleaseCat();
+        assert(!released_cat);
+        released_cat = witch2.ReleaseCat();
+        assert(released_cat.get() == raw_cat);
+    }
+
+    // Можно копировать волшебниц
+    {
+        Witch witch("Hermione");
+        auto cat = CreateCat("Crookshanks"s);
+        witch.SetCat(move(cat));
+
+        Witch witch_copy(witch);
+        assert(!cat);
+        cat = witch.ReleaseCat();
+        assert(cat);  // У первой волшебницы кот никуда не делся
+
+        auto cat_copy = witch_copy.ReleaseCat();
+        assert(cat_copy != nullptr && cat_copy != cat);
+        assert(cat_copy->GetName() == cat->GetName());  // Копия волшебницы содержит копию кота
+    }
+
+    // Работает копирующее присваивание волшебниц
+    {
+        Witch witch("Hermione"s);
+        auto cat = CreateCat("Crookshanks"s);
+        witch.SetCat(move(cat));
+
+        Witch witch2("Minerva McGonagall"s);
+        witch2 = witch;
+
+        assert(!cat);
+        cat = witch.ReleaseCat();
+        assert(cat);  // У первой волшебницы кот никуда не делся
+
+        auto cat_copy = witch2.ReleaseCat();
+        assert(cat_copy != nullptr && cat_copy != cat);
+        assert(cat_copy->GetName() == cat->GetName());  // При присваивании скопировался кот
+    }
 }
 
 int main() {
-    using T = TreeNode<int>;
-
-    T* root = N(6, N(4, N(3), N(5)), N(8, N(7)));
-    cout << root << endl;
-
-    T* iter = begin(root);
-
-    while (iter) {
-        cout << iter->value << " "s;
-        iter = next(iter);
-    }
-    cout << endl;
-
-    DeleteTree(root);
+    Test();
 }
