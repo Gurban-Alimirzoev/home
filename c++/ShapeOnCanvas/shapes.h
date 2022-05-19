@@ -11,12 +11,14 @@ public:
     // Фигура после создания имеет нулевые координаты и размер,
     // а также не имеет текстуры
     explicit Shape(ShapeType type) {
+        SetPosition({});
+        SetSize({});
         // Заглушка. Реализуйте конструктор самостоятельно
         (void) type;
     }
 
     void SetPosition(Point pos) {
-        (void) pos;
+        zero = pos;
         // Заглушка. Реализуйте метод самостоятельно
     }
 
@@ -26,7 +28,7 @@ public:
     }
 
     void SetTexture(std::shared_ptr<Texture> texture) {
-        auto texture_shape = std::make_shared<Texture>(texture);
+        texture_shape = std::make_shared<Texture>(texture);
         // Заглушка. Реализуйте метод самостоятельно
     }
 
@@ -36,9 +38,12 @@ public:
     // должны отображаться с помощью символа точка '.'
     // Части фигуры, выходящие за границы объекта image, должны отбрасываться.
     void Draw(Image& image) const {
+        texture_shape
+
         (void) image;
         // Заглушка. Реализуйте метод самостоятельно
     }
 
     std::shared_ptr<Texture> texture_shape;
+    Point zero;
 };
