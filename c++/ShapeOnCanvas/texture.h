@@ -1,26 +1,38 @@
 #pragma once
+#include <cassert>
 #include "common.h"
 
 class Texture {
 public:
-    explicit Texture(Image image)
-        : image_(std::move(image)) {
+    Texture(Image image) : image_(move(image)) {
+        for (const auto& line : image_) {
+            assert(line.size() == image_[0].size());
+        }
     }
 
-    Size GetSize() const {
-        int x = image_.size();
-        int y = x == 0 ? 0 : image_[0].size();
-        return {x, y};
+    Size GetSize() const 
+    {
+        auto width = static_cast<int>(image_.empty() ? 0 : image_[0].size());
+        auto height = static_cast<int>(image_.size());
+        return { width, height };
     }
 
     char GetPixelColor(Point p) const {
-        Size this_text = GetSize();
-        if (p.x < this_text.height && p.y < this_text.width)
-            return image_[p.x][p.y];
+        if (PositionInsideTexture(p))
+            return image_.at(p.y).at(p.x);
         else
             return '.';
     }
 
+    const Image& GetImage() const {
+        return image_;
+    }
+
 private:
     Image image_;
+
+    bool PositionInsideTexture(const Point& p) const {
+        return (0 <= p.y && p.y < static_cast<int>(image_.size())) &&
+            (0 <= p.x && p.x < static_cast<int>(image_[0].size())) ? true : false;
+    }
 };

@@ -11,25 +11,26 @@ public:
     // Фигура после создания имеет нулевые координаты и размер,
     // а также не имеет текстуры
     explicit Shape(ShapeType type) {
-        SetPosition({});
-        SetSize({});
-        // Заглушка. Реализуйте конструктор самостоятельно
-        (void) type;
+        switch (type) {
+        case ShapeType::RECTANGLE:
+            sh_ = ShapeType::RECTANGLE;
+            break;
+        case ShapeType::ELLIPSE:
+            sh_ = ShapeType::ELLIPSE;
+            break;
+        }
     }
 
     void SetPosition(Point pos) {
         zero = pos;
-        // Заглушка. Реализуйте метод самостоятельно
     }
 
     void SetSize(Size size) {
-        (void) size;
-        // Заглушка. Реализуйте метод самостоятельно
+        size_ = size;
     }
 
     void SetTexture(std::shared_ptr<Texture> texture) {
-        texture_shape = std::make_shared<Texture>(texture);
-        // Заглушка. Реализуйте метод самостоятельно
+        texture_ = texture;
     }
 
     // Рисует фигуру на указанном изображении
@@ -37,13 +38,26 @@ public:
     // Пиксели фигуры, выходящие за пределы текстуры, а также в случае, когда текстура не задана,
     // должны отображаться с помощью символа точка '.'
     // Части фигуры, выходящие за границы объекта image, должны отбрасываться.
-    void Draw(Image& image) const {
-        texture_shape
-
-        (void) image;
-        // Заглушка. Реализуйте метод самостоятельно
+    void Draw(Image & image) const {
+        for (int i = 0; i < size_.height; ++i) {
+            for (int j = 0; j < size_.width; ++j) {
+                if (sh_ == ShapeType::ELLIPSE && !IsPointInEllipse(Point{ j, i }, size_)) {
+                    continue;
+                }
+                int y = i + zero.y;
+                int x = j + zero.x;
+                if (!(y < static_cast<int>(image.size()) && x < static_cast<int>(image[y].size()))) continue;
+                if (texture_ && i < texture_->GetSize().height && j < texture_->GetSize().width) {
+                    image[y][x] = texture_->GetImage()[i][j];
+                }
+                else {
+                    image[y][x] = '.';
+                }
+            }
+        }
     }
-
-    std::shared_ptr<Texture> texture_shape;
+    std::shared_ptr<Texture> texture_{ nullptr };
     Point zero;
+    Size size_;
+    ShapeType sh_;
 };
