@@ -1,6 +1,7 @@
 #include "svg.h"
 
-namespace svg {
+namespace svg 
+{
 
 	using namespace std::literals;
 
@@ -40,12 +41,12 @@ namespace svg {
 
 	void Polyline::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		out << "<polyline points = \""sv << points[0].x << "," << points[0].y;
-		for (int i = 1; i < points.size(); i++)
+		out << "<polyline points=\""sv << points[0].x << "," << points[0].y;
+		for (int i = 1; i < static_cast<int>(points.size()); i++)
 		{
 			out << " " << points[i].x << "," << points[i].y;
 		}
-		out << "\" "sv << "/>"sv;
+		out << " />"sv;
 	}
 
 	Text& Text::SetPosition(Point pos)
@@ -92,13 +93,14 @@ namespace svg {
 			<< "\" font-size=\""sv << size_
 			<< "\" font-family=\""sv << font_family_
 			<< "\" font_weight=\""sv << font_weight_
-			<< "\" data=\""sv << data_
-			<< "/>"sv;
+			<< ">"sv << data_
+			//<< "\" data=\""sv << data_
+			<< "</text>";
 	}
 
 	void Document::AddPtr(std::unique_ptr<Object>&& obj)
 	{
-		objects_.push_back(obj);
+		objects_.push_back(move(obj));
 	}
 
 	void Document::Render(std::ostream& out) const

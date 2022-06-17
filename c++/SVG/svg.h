@@ -154,7 +154,7 @@ public:
 
     // Прочие методы и данные, необходимые для реализации класса Document
 private:
-    std::vector<std::unique_ptr<Object>&&> objects_;
+    std::vector<std::unique_ptr<Object>> objects_;
 
 };
 
