@@ -69,6 +69,8 @@ private:
  */
 class Circle final : public Object {
 public:
+    explicit Circle() = default;
+
     Circle& SetCenter(Point center);
     Circle& SetRadius(double radius);
 
@@ -85,6 +87,7 @@ private:
  */
 class Polyline final : public Object {
 public:
+    explicit Polyline() = default;
     // Добавляет очередную вершину к ломаной линии
     Polyline& AddPoint(Point point);
     /*
@@ -102,6 +105,7 @@ private:
  */
 class Text final : public Object {
 public:
+    explicit Text() = default;
     // Задаёт координаты опорной точки (атрибуты x и y)
     Text& SetPosition(Point pos);
 

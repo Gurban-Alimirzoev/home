@@ -46,7 +46,7 @@ namespace svg
 		{
 			out << " " << points[i].x << "," << points[i].y;
 		}
-		out << " />"sv;
+		out << "\" />"sv;
 	}
 
 	Text& Text::SetPosition(Point pos)
@@ -92,9 +92,8 @@ namespace svg
 			<< "\" dy=\""sv << offset_.y
 			<< "\" font-size=\""sv << size_
 			<< "\" font-family=\""sv << font_family_
-			<< "\" font_weight=\""sv << font_weight_
+			<< "\" font-weight=\""sv << font_weight_ << "\""
 			<< ">"sv << data_
-			//<< "\" data=\""sv << data_
 			<< "</text>";
 	}
 
@@ -103,8 +102,14 @@ namespace svg
 		objects_.push_back(move(obj));
 	}
 
-	void Document::Render(std::ostream& out) const
+	void Document::Render(std::ostream& out) const 
 	{
-		RenderContext x(out);
+		out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
+		out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv << std::endl;
+		RenderContext r_c(out);
+		for (auto i = 0; i != static_cast<int>(objects_.size()); ++i) {
+			objects_[i]->Render(r_c);
+		}
+		out << "</svg>"sv;
 	}
 }  // namespace svg
