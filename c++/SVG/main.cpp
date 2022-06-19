@@ -25,11 +25,11 @@ int main() {
     doc.Add(Circle().SetCenter({ 20, 20 }).SetRadius(10));
     doc.Add(Text()
         .SetFontFamily("Verdana"s)
-        .SetPosition({ 35, 20 })
+        //.SetPosition({ 35, 20 })
         .SetOffset({ 0, 6 })
         .SetFontSize(12)
-        .SetFontWeight("bold"s)
-        .SetData("Hello C++"s));
+        .SetFontWeight("bold"s));
+        //.SetData("Hello, <UserName>. Would you like some M&M's?"s));
     doc.Add(CreateStar({ 20, 50 }, 10, 5, 5));
     doc.Render(std::cout);
 }
