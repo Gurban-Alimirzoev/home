@@ -3,6 +3,23 @@
 
 #include <cmath>
 
+namespace {
+    svg::Polyline CreateStar(svg::Point center, double outer_rad, double inner_rad, int num_rays) {
+        using namespace svg;
+        Polyline polyline;
+        for (int i = 0; i <= num_rays; ++i) {
+            double angle = 2 * M_PI * (i % num_rays) / num_rays;
+            polyline.AddPoint({ center.x + outer_rad * sin(angle), center.y - outer_rad * cos(angle) });
+            if (i == num_rays) {
+                break;
+            }
+            angle += M_PI / num_rays;
+            polyline.AddPoint({ center.x + inner_rad * sin(angle), center.y - inner_rad * cos(angle) });
+        }
+        return polyline;
+    }
+}
+
 namespace shapes {
 
     class Triangle : public svg::Drawable {
@@ -22,26 +39,40 @@ namespace shapes {
         svg::Point p1_, p2_, p3_;
     };
 
-    class Star { /* Реализуйте самостоятельно */ };
-    class Snowman { /* Реализуйте самостоятельно */ };
+    class Star : public svg::Drawable {
+    public:
+        Star(svg::Point center, double outer_rad, double inner_rad, int num_rays)
+            : star(CreateStar(center, outer_rad, inner_rad, num_rays))
+        {}
 
-}
-
-namespace {
-    svg::Polyline CreateStar(svg::Point center, double outer_rad, double inner_rad, int num_rays) {
-        using namespace svg;
-        Polyline polyline;
-        for (int i = 0; i <= num_rays; ++i) {
-            double angle = 2 * M_PI * (i % num_rays) / num_rays;
-            polyline.AddPoint({ center.x + outer_rad * sin(angle), center.y - outer_rad * cos(angle) });
-            if (i == num_rays) {
-                break;
-            }
-            angle += M_PI / num_rays;
-            polyline.AddPoint({ center.x + inner_rad * sin(angle), center.y - inner_rad * cos(angle) });
+        void Draw(svg::ObjectContainer& container) const override {
+            container.Add(star);
         }
-        return polyline;
-    }
+
+    private:
+        svg::Polyline star;
+    };
+
+    class Snowman : public svg::Drawable {
+    public:
+        Snowman(svg::Point center, double first_radius)
+        {
+            first_circle.SetCenter(center).SetRadius(first_radius);
+            second_circle.SetCenter({ center.x, center.y - 2 * first_radius }).SetRadius(first_radius * 1.5);
+            third_circle.SetCenter({ center.x, center.y - 5 * first_radius }).SetRadius(first_radius * 2);
+        }
+
+        void Draw(svg::ObjectContainer& container) const override {
+            container.Add(third_circle);
+            container.Add(second_circle);
+            container.Add(first_circle);
+        }
+
+
+    private:
+        svg::Circle first_circle, second_circle, third_circle;
+    };
+
 }
 
 template <typename DrawableIterator>
