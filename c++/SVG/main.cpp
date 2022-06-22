@@ -42,7 +42,7 @@ namespace shapes {
     class Star : public svg::Drawable {
     public:
         Star(svg::Point center, double outer_rad, double inner_rad, int num_rays)
-            : star(CreateStar(center, outer_rad, inner_rad, num_rays))
+            : star(CreateStar(center, outer_rad, inner_rad, num_rays).SetFillColor("red").SetStrokeColor("black"))
         {}
 
         void Draw(svg::ObjectContainer& container) const override {
@@ -57,9 +57,9 @@ namespace shapes {
     public:
         Snowman(svg::Point center, double first_radius)
         {
-            first_circle.SetCenter(center).SetRadius(first_radius);
-            second_circle.SetCenter({ center.x, center.y - 2 * first_radius }).SetRadius(first_radius * 1.5);
-            third_circle.SetCenter({ center.x, center.y - 5 * first_radius }).SetRadius(first_radius * 2);
+            first_circle.SetCenter(center).SetRadius(first_radius).SetFillColor("rgb(240,240,240)").SetStrokeColor("black");
+            second_circle.SetCenter({ center.x, center.y + 2 * first_radius }).SetRadius(first_radius * 1.5).SetFillColor("rgb(240,240,240)").SetStrokeColor("black");
+            third_circle.SetCenter({ center.x, center.y + 5 * first_radius }).SetRadius(first_radius * 2).SetFillColor("rgb(240,240,240)").SetStrokeColor("black");
         }
 
         void Draw(svg::ObjectContainer& container) const override {
