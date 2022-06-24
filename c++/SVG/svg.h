@@ -6,17 +6,57 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <variant>
 
+using Color = std::variant<std::monostate, double, std::pair<double, double>>;
 
 namespace svg {
 
-	using Color = std::string;
+	struct Rgb
+	{
+		uint8_t red;
+		uint8_t green;
+		uint8_t blue;
+	};
 
-	// Объявив в заголовочном файле константу со спецификатором inline,
-	// мы сделаем так, что она будет одной на все единицы трансляции,
-	// которые подключают этот заголовок.
-	// В противном случае каждая единица трансляции будет использовать свою копию этой константы
-	inline const Color NoneColor{ "none" };
+	struct Rgba
+	{
+		uint8_t red;
+		uint8_t green;
+		uint8_t blue;
+		double opacity;
+	};
+
+	using Color = std::variant<std::monostate, std::string, svg::Rgb, svg::Rgba>;
+	//inline const Color NoneColor{ "none" };
+
+	struct OstreamColorPrinter {
+		std::ostream& out;
+
+		void operator()(std::monostate) const 
+		{
+			out << "No color"sv << std::endl;
+		}
+		void operator()(std::string color) const 
+		{
+			out << color << std::endl;
+		}
+		void operator()(svg::Rgb color) const 
+		{
+			out << "rgb:("sv << color.red << ","sv 
+				<< color.green << ","sv 
+				<< color.blue << ")"sv 
+				<< std::endl;
+		}
+		void operator()(svg::Rgba color) const
+		{
+			out << "rgba:("sv << color.red << ","sv
+				<< color.green << ","sv
+				<< color.blue << ","sv
+				<< color.opacity << ")"
+				<< std::endl;
+		}
+	};
 
 	enum class StrokeLineCap {
 		BUTT,
@@ -32,7 +72,7 @@ namespace svg {
 		ROUND,
 	};
 
-	std::ostream& operator<<(std::ostream& os, const StrokeLineCap& stroke_line_cap) 
+	inline std::ostream& operator<<(std::ostream& os, const StrokeLineCap& stroke_line_cap)
 	{
 		if (stroke_line_cap == StrokeLineCap::BUTT)
 			return os << "butt";
@@ -42,7 +82,7 @@ namespace svg {
 			return os << "square";
 	}
 
-	std::ostream& operator<<(std::ostream& os, const StrokeLineJoin& stroke_line_join) 
+	inline std::ostream& operator<<(std::ostream& os, const StrokeLineJoin& stroke_line_join)
 	{
 		if (stroke_line_join == StrokeLineJoin::ARCS)
 			return os << "arcs";
@@ -51,7 +91,7 @@ namespace svg {
 		else if (stroke_line_join == StrokeLineJoin::MITER)
 			return os << "miter";
 		else if (stroke_line_join == StrokeLineJoin::MITER_CLIP)
-			return os << "miter_clip";
+			return os << "miter-clip";
 		else
 			return os << "round";
 	}
@@ -115,25 +155,71 @@ namespace svg {
 	template <typename Owner>
 	class PathProps {
 	public:
-		Owner& SetFillColor(Color color);
-		Owner& SetStrokeColor(Color color);
-		Owner& SetStrokeWidth(double width);
-		Owner& SetStrokeLineCap(StrokeLineCap line_cap);
-		Owner& SetStrokeLineJoin(StrokeLineJoin line_join);
+
+		Owner& SetFillColor(Color color)
+		{
+			fill_color_ = std::move(color);
+			return AsOwner();
+		}
+
+		Owner& SetStrokeColor(Color color)
+		{
+			stroke_color_ = std::move(color);
+			return AsOwner();
+		}
+
+		Owner& SetStrokeWidth(double width)
+		{
+			width_ = std::move(width);
+			return AsOwner();
+		}
+
+		Owner& SetStrokeLineCap(StrokeLineCap line_cap)
+		{
+			line_cap_ = std::move(line_cap);
+			return AsOwner();
+		}
+		Owner& SetStrokeLineJoin(StrokeLineJoin line_join)
+		{
+			line_join_ = std::move(line_join);
+			return AsOwner();
+		}
 
 	protected:
 		~PathProps() = default;
 
-		void RenderAttrs(std::ostream& out) const;
+		void RenderAttrs(std::ostream& out) const {
+			using namespace std::literals;
+
+			if (fill_color_) {
+				out << " fill=\""sv << *fill_color_ << "\""sv;
+			}
+			if (stroke_color_) {
+				out << " stroke=\""sv << *stroke_color_ << "\""sv;
+			}
+			if (width_) {
+				out << " stroke-width=\""sv << *width_ << "\""sv;
+			}
+			if (line_cap_) {
+				out << " stroke-linecap=\""sv << *line_cap_ << "\""sv;
+			}
+			if (line_join_) {
+				out << " stroke-linejoin=\""sv << *line_join_ << "\""sv;
+			}
+		}
 
 	private:
-		Owner& AsOwner();
+		Owner& AsOwner() {
+			// static_cast безопасно преобразует *this к Owner&,
+			// если класс Owner — наследник PathProps
+			return static_cast<Owner&>(*this);
+		}
 
 		std::optional<Color> fill_color_;
 		std::optional<Color> stroke_color_;
 		std::optional<double> width_;
-		std::optional<Color> line_cap_;
-		std::optional<Color> line_join_;
+		std::optional<StrokeLineCap> line_cap_;
+		std::optional<StrokeLineJoin> line_join_;
 	};
 
 	/*
@@ -152,6 +238,7 @@ namespace svg {
 
 		Point center_;
 		double radius_ = 1.0;
+
 	};
 
 	/*
