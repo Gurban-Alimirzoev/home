@@ -8,9 +8,9 @@
 #include <optional>
 #include <variant>
 
-using Color = std::variant<std::monostate, double, std::pair<double, double>>;
-
 namespace svg {
+
+	using namespace std::literals;
 
 	struct Rgb
 	{
@@ -95,6 +95,8 @@ namespace svg {
 		else
 			return os << "round";
 	}
+
+	//inline std::ostream& operator<<(std::ostream& os, const Color& color)
 
 	struct Point {
 		Point() = default;
@@ -192,7 +194,7 @@ namespace svg {
 			using namespace std::literals;
 
 			if (fill_color_) {
-				out << " fill=\""sv << *fill_color_ << "\""sv;
+				out << " fill=\""sv << std::visit(OstreamColorPrinter(), fill_color_) << "\""sv;
 			}
 			if (stroke_color_) {
 				out << " stroke=\""sv << *stroke_color_ << "\""sv;
