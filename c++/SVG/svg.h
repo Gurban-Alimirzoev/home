@@ -14,24 +14,27 @@ namespace svg {
 
 	struct Rgb
 	{
-		uint8_t red;
-		uint8_t green;
-		uint8_t blue;
+		uint8_t red = 0u;
+		uint8_t green = 0u;
+		uint8_t blue = 0u;
 	};
 
 	struct Rgba
 	{
-		uint8_t red;
-		uint8_t green;
-		uint8_t blue;
-		double opacity;
+		uint8_t red = 0u;
+		uint8_t green = 0u;
+		uint8_t blue = 0u;
+		double opacity = 0;
 	};
 
 	using Color = std::variant<std::monostate, std::string, svg::Rgb, svg::Rgba>;
 	//inline const Color NoneColor{ "none" };
 
 	struct OstreamColorPrinter {
-		std::ostream& out;
+
+		OstreamColorPrinter(std::ostream& out)
+			: out(out)
+		{}
 
 		void operator()(std::monostate) const 
 		{
@@ -43,7 +46,7 @@ namespace svg {
 		}
 		void operator()(svg::Rgb color) const 
 		{
-			out << "rgb:("sv << color.red << ","sv 
+			out << "rgb:("sv << color.red << ","sv
 				<< color.green << ","sv 
 				<< color.blue << ")"sv 
 				<< std::endl;
@@ -56,6 +59,8 @@ namespace svg {
 				<< color.opacity << ")"
 				<< std::endl;
 		}
+
+		std::ostream& out;
 	};
 
 	enum class StrokeLineCap {
@@ -160,13 +165,13 @@ namespace svg {
 
 		Owner& SetFillColor(Color color)
 		{
-			fill_color_ = std::move(color);
+			fill_color_ = (color);
 			return AsOwner();
 		}
 
 		Owner& SetStrokeColor(Color color)
 		{
-			stroke_color_ = std::move(color);
+			stroke_color_ = (color);
 			return AsOwner();
 		}
 
@@ -193,11 +198,13 @@ namespace svg {
 		void RenderAttrs(std::ostream& out) const {
 			using namespace std::literals;
 
+			const auto fill = std::visit(OstreamColorPrinter{out}, fill_color_);
+
 			if (fill_color_) {
-				out << " fill=\""sv << std::visit(OstreamColorPrinter(), fill_color_) << "\""sv;
+				//out << " fill=\""sv << *fill << "\""sv;
 			}
 			if (stroke_color_) {
-				out << " stroke=\""sv << *stroke_color_ << "\""sv;
+				out << " stroke=\""sv << *(std::visit(OstreamColorPrinter{out}, stroke_color_)) << "\""sv;
 			}
 			if (width_) {
 				out << " stroke-width=\""sv << *width_ << "\""sv;
