@@ -14,6 +14,11 @@ namespace svg {
 
 	struct Rgb
 	{
+		Rgb() = default;
+		Rgb(uint8_t red_, uint8_t green_, uint8_t blue_)
+			: red(red_), green(green_), blue(blue_)
+		{}
+
 		uint8_t red = 0u;
 		uint8_t green = 0u;
 		uint8_t blue = 0u;
@@ -21,6 +26,11 @@ namespace svg {
 
 	struct Rgba
 	{
+		Rgba() = default;
+		Rgba(uint8_t red_, uint8_t green_, uint8_t blue_, double opacity_)
+			: red(red_), green(green_), blue(blue_), opacity(opacity_)
+		{}
+
 		uint8_t red = 0u;
 		uint8_t green = 0u;
 		uint8_t blue = 0u;
@@ -28,7 +38,7 @@ namespace svg {
 	};
 
 	using Color = std::variant<std::monostate, std::string, svg::Rgb, svg::Rgba>;
-	//inline const Color NoneColor{ "none" };
+	inline const Color NoneColor{ "none" };
 
 	struct OstreamColorPrinter {
 
@@ -198,13 +208,11 @@ namespace svg {
 		void RenderAttrs(std::ostream& out) const {
 			using namespace std::literals;
 
-			const auto fill = std::visit(OstreamColorPrinter{out}, fill_color_);
-
 			if (fill_color_) {
-				//out << " fill=\""sv << *fill << "\""sv;
+				out << " fill=\""sv << std::visit(OstreamColorPrinter{ out }, fill_color_) << "\""sv;
 			}
 			if (stroke_color_) {
-				out << " stroke=\""sv << *(std::visit(OstreamColorPrinter{out}, stroke_color_)) << "\""sv;
+				out << " stroke=\""sv << std::visit(OstreamColorPrinter{ out }, stroke_color_) << "\""sv;
 			}
 			if (width_) {
 				out << " stroke-width=\""sv << *width_ << "\""sv;
