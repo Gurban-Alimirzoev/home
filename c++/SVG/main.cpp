@@ -2,6 +2,7 @@
 #include "svg.h" // Объявления классов библиотеки должны быть расположены в файле svg.h
 
 #include <cmath>
+#include <cassert>
 
 namespace {
     svg::Polyline CreateStar(svg::Point center, double outer_rad, double inner_rad, int num_rays) {
@@ -88,6 +89,16 @@ void DrawPicture(const Container& container, svg::ObjectContainer& target) {
     DrawPicture(begin(container), end(container), target);
 }
 
+// Выполняет линейную интерполяцию значения от from до to в зависимости от параметра t
+uint8_t Lerp(uint8_t from, uint8_t to, double t) {
+    return static_cast<uint8_t>(std::round((to - from) * t + from));
+}
+
+// Выполняет линейную интерполяцию Rgb цвета от from до to в зависимости от параметра t
+svg::Rgb Lerp(svg::Rgb from, svg::Rgb to, double t) {
+    return { Lerp(from.red, to.red, t), Lerp(from.green, to.green, t), Lerp(from.blue, to.blue, t) };
+}
+
 int main() {
     using namespace svg;
     using namespace shapes;
@@ -95,19 +106,12 @@ int main() {
     using namespace std::literals;
 
 
-    vector<unique_ptr<svg::Drawable>> picture;
+    svg::Rgba rgba{ 100, 20, 50, 0.3 };
+    assert(rgba.red == 100);
+    assert(rgba.green == 20);
+    assert(rgba.blue == 50);
+    assert(rgba.opacity == 0.3);
 
-    picture.emplace_back(make_unique<Triangle>(Point{ 100, 20 }, Point{ 120, 50 }, Point{ 80, 40 }));
-    // 5-лучевая звезда с центром {50, 20}, длиной лучей 10 и внутренним радиусом 4
-    picture.emplace_back(make_unique<Star>(Point{ 50.0, 20.0 }, 10.0, 4.0, 5));
-    // Снеговик с "головой" радиусом 10, имеющей центр в точке {30, 20}
-    picture.emplace_back(make_unique<Snowman>(Point{ 30, 20 }, 10.0));
-
-    svg::Document doc;
-    // Так как документ реализует интерфейс ObjectContainer,
-    // его можно передать в DrawPicture в качестве цели для рисования
-    DrawPicture(picture, doc);
-
-    // Выводим полученный документ в stdout
-    doc.Render(cout);
+    svg::Rgba color;
+    assert(color.red == 0 && color.green == 0 && color.blue == 0 && color.opacity == 1.0);
 }

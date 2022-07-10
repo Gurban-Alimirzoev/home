@@ -7,6 +7,7 @@
 #include <vector>
 #include <optional>
 #include <variant>
+#include <iomanip>
 
 namespace svg {
 
@@ -34,7 +35,7 @@ namespace svg {
 		uint8_t red = 0u;
 		uint8_t green = 0u;
 		uint8_t blue = 0u;
-		double opacity = 0;
+		double opacity = 1;
 	};
 
 	using Color = std::variant<std::monostate, std::string, svg::Rgb, svg::Rgba>;
@@ -48,30 +49,34 @@ namespace svg {
 
 		void operator()(std::monostate) const 
 		{
-			out << "No color"sv << std::endl;
+			out << "none"sv;
 		}
 		void operator()(std::string color) const 
 		{
-			out << color << std::endl;
+			out << color;
 		}
 		void operator()(svg::Rgb color) const 
 		{
-			out << "rgb:("sv << color.red << ","sv
-				<< color.green << ","sv 
-				<< color.blue << ")"sv 
-				<< std::endl;
+			out << "rgb("sv << static_cast<int>(color.red) << ","sv
+				<< static_cast<int>(color.green) << ","sv
+				<< static_cast<int>(color.blue) << ")"sv;
 		}
 		void operator()(svg::Rgba color) const
 		{
-			out << "rgba:("sv << color.red << ","sv
-				<< color.green << ","sv
-				<< color.blue << ","sv
-				<< color.opacity << ")"
-				<< std::endl;
+			out << "rgba("sv << static_cast<int>(color.red) << ","sv
+				<< static_cast<int>(color.green) << ","sv
+				<< static_cast<int>(color.blue) << ","sv
+				<< std::setprecision(1) << color.opacity << ")" << std::resetiosflags(out.flags());
 		}
 
 		std::ostream& out;
 	};
+
+	inline std::ostream& operator<<(std::ostream& os, const Color& color)
+	{
+		std::visit(OstreamColorPrinter{ os }, color);
+		return os;
+	}
 
 	enum class StrokeLineCap {
 		BUTT,
@@ -209,10 +214,14 @@ namespace svg {
 			using namespace std::literals;
 
 			if (fill_color_) {
-				out << " fill=\""sv << std::visit(OstreamColorPrinter{ out }, fill_color_) << "\""sv;
+				out << " fill=\""sv;
+				std::visit(OstreamColorPrinter{ out }, *fill_color_);
+				out << "\""sv;
 			}
 			if (stroke_color_) {
-				out << " stroke=\""sv << std::visit(OstreamColorPrinter{ out }, stroke_color_) << "\""sv;
+				out << " stroke=\""sv;
+				std::visit(OstreamColorPrinter{ out }, *stroke_color_);
+				out << "\""sv;
 			}
 			if (width_) {
 				out << " stroke-width=\""sv << *width_ << "\""sv;
