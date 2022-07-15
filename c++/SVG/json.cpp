@@ -86,6 +86,65 @@ Node::Node(string value)
     : as_string_(move(value)) {
 }
 
+bool Node::IsInt() const
+{
+    bool result = (value_.index() == 4) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsDouble() const
+{
+    bool result = (value_.index() == 4 || value_.index() == 5) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsPureDouble() const
+{
+    bool result = (value_.index() == 5) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsBool() const
+{
+    bool result = (value_.index() == 3) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsString() const
+{
+    bool result = (value_.index() == 6) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsNull() const
+{
+    bool result = (value_.index() == 0) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsArray() const
+{
+    bool result = (value_.index() == 1) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsMap() const
+{
+    bool result = (value_.index() == 2) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsPureDouble() const
+{
+    bool result = (value_.index() == 5) ? 1 : 0;
+    return result;
+}
+
+bool Node::IsPureDouble() const
+{
+    bool result = (value_.index() == 5) ? 1 : 0;
+    return result;
+}
 const Array& Node::AsArray() const {
     return as_array_;
 }

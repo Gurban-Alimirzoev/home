@@ -33,15 +33,40 @@ public:
 
     using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
 
+    struct ValueReturner {
+
+        void operator()(std::nullptr_t) const 
+        {
+        }
+        Array operator()(Array value_) const 
+        {
+            return value_;
+        }
+        Dict operator()(Dict value_) const 
+        {
+            return value_;
+        }
+        bool operator()(bool value_) const 
+        {
+            return value_;
+        }
+        int operator()(int value_) const 
+        {
+            return value_;
+        }
+        double operator()(double value_) const 
+        {
+            return value_;
+        }
+        std::string operator()(std::string value_) const {
+            return value_;
+        }
+    };
+
     explicit Node(Array array);
     explicit Node(Dict map);
     explicit Node(int value);
     explicit Node(std::string value);
-
-    const Array& AsArray() const;
-    const Dict& AsMap() const;
-    int AsInt() const;
-    const std::string& AsString() const;
 
     bool IsInt() const;
     //Возвращает true, если в Node хранится int либо double.
