@@ -8,14 +8,6 @@
 
 namespace json {
 
-    void PrintValue(std::nullptr_t, std::ostream& out) {
-        out << "null"sv;
-    }
-
-    void PrintValue(std::string value, std::ostream& out) {
-        out << value;
-    }
-
 class Node;
 // Сохраните объявления Dict и Array без изменения
 using Dict = std::map<std::string, Node>;
@@ -33,35 +25,43 @@ public:
 
     using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
 
-    struct ValueReturner {
+    /*struct ValueReturner {
 
         void operator()(std::nullptr_t) const 
         {
         }
-        Array operator()(Array value_) const 
+        void operator()(Array value_) const
         {
-            return value_;
+            arr = move(value_);
         }
-        Dict operator()(Dict value_) const 
+        void operator()(Dict value_) const
         {
-            return value_;
+            dict = move(value_);
         }
-        bool operator()(bool value_) const 
+        void operator()(bool value_) const
         {
-            return value_;
+            flag = move(value_);
         }
-        int operator()(int value_) const 
+        void operator()(int value_) const
         {
-            return value_;
+            num = move(value_);
         }
-        double operator()(double value_) const 
+        void operator()(double value_) const
         {
-            return value_;
+            double_num = move(value_);
         }
-        std::string operator()(std::string value_) const {
-            return value_;
+        void operator()(std::string value_) const {
+            str = move(value_);
         }
-    };
+
+
+        Array& arr;
+        Dict& dict;
+        bool& flag;
+        int& num;
+        double& double_num;
+        std::string& str;
+    };*/
 
     explicit Node(Array array);
     explicit Node(Dict map);
@@ -90,10 +90,10 @@ public:
 private:
     Value value_;
 
-    Array as_array_;
+    /*Array as_array_;
     Dict as_map_;
     int as_int_ = 0;
-    std::string as_string_;
+    std::string as_string_;*/
 };
 
 class Document {

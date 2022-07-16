@@ -71,25 +71,24 @@ Node LoadNode(istream& input) {
 }  // namespace
 
 Node::Node(Array array)
-    : as_array_(move(array)) {
+    : value_(move(array)) {
 }
 
 Node::Node(Dict map)
-    : as_map_(move(map)) {
+    : value_(move(map)) {
 }
 
 Node::Node(int value)
-    : as_int_(value) {
+    : value_(value) {
 }
 
 Node::Node(string value)
-    : as_string_(move(value)) {
+    : value_(move(value)) {
 }
 
 bool Node::IsInt() const
 {
-    bool result = (value_.index() == 4) ? 1 : 0;
-    return result;
+    return value_.index() == 4 ? 1 : 0;;
 }
 
 bool Node::IsDouble() const
@@ -134,32 +133,52 @@ bool Node::IsMap() const
     return result;
 }
 
-bool Node::IsPureDouble() const
+int Node::AsInt() const 
 {
-    bool result = (value_.index() == 5) ? 1 : 0;
-    return result;
+    if (IsInt())
+        return std::get<int>(value_);
+    else
+        throw std::logic_error{"logic_err"};
 }
 
-bool Node::IsPureDouble() const
+bool Node::AsBool() const
 {
-    bool result = (value_.index() == 5) ? 1 : 0;
-    return result;
+    if (IsBool())
+        return std::get<bool>(value_);
+    else
+        throw std::logic_error{ "logic_err" };
 }
+
+double Node::AsDouble() const
+{
+    if (IsDouble())
+        return std::get<double>(value_);
+    else
+        throw std::logic_error{ "logic_err" };
+}
+
 const Array& Node::AsArray() const {
-    return as_array_;
+    if (IsArray())
+        return std::get<Array>(value_);
+    else
+        throw std::logic_error{ "logic_err" };
 }
 
 const Dict& Node::AsMap() const {
-    return as_map_;
-}
-
-int Node::AsInt() const {
-    return as_int_;
+    if (IsMap())
+        return std::get<Dict>(value_);
+    else
+        throw std::logic_error{ "logic_err" };
 }
 
 const string& Node::AsString() const {
-    return as_string_;
+    if (IsString())
+        return std::get<string>(value_);
+    else
+        throw std::logic_error{ "logic_err" };
 }
+
+////////////////////////////////////////
 
 Document::Document(Node root)
     : root_(move(root)) {
