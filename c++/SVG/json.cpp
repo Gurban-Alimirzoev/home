@@ -178,6 +178,11 @@ const string& Node::AsString() const {
         throw std::logic_error{ "logic_err" };
 }
 
+const Value Node::GetValue() const
+{
+    return value_;
+}
+
 ////////////////////////////////////////
 
 Document::Document(Node root)

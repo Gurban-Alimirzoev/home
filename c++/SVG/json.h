@@ -19,49 +19,65 @@ public:
     using runtime_error::runtime_error;
 };
 
+struct PrintContext {
+    std::ostream& out;
+    int indent_step = 4;
+    int indent = 0;
+
+    void PrintIndent() const {
+        for (int i = 0; i < indent; ++i) {
+            out.put(' ');
+        }
+    }
+
+    // Возвращает новый контекст вывода с увеличенным смещением
+    PrintContext Indented() const {
+        return { out, indent_step, indent_step + indent };
+    }
+};
+
+using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+
+struct NodePrinter {
+
+    void operator()(std::nullptr_t) const
+    {
+        out << "null"sv;
+    }
+    void operator()(Array value_) const
+    {        
+        out << value_[0].GetValue();
+        for (int i = 1; i < value_.size(); i++)
+        {
+            out << ", " << value_[i];
+        }
+    }
+    void operator()(Dict value_) const
+    {
+        //dict = move(value_);
+    }
+    void operator()(bool value_) const
+    {
+        out << value_;
+    }
+    void operator()(int value_) const
+    {
+        out << value_;
+    }
+    void operator()(double value_) const
+    {
+        out << value_;
+    }
+    void operator()(std::string value_) const {
+        out << value_;
+    }
+
+    std::ostream& out;
+};
+
 class Node {
 public:
    /* Реализуйте Node, используя std::variant */
-
-    using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
-
-    /*struct ValueReturner {
-
-        void operator()(std::nullptr_t) const 
-        {
-        }
-        void operator()(Array value_) const
-        {
-            arr = move(value_);
-        }
-        void operator()(Dict value_) const
-        {
-            dict = move(value_);
-        }
-        void operator()(bool value_) const
-        {
-            flag = move(value_);
-        }
-        void operator()(int value_) const
-        {
-            num = move(value_);
-        }
-        void operator()(double value_) const
-        {
-            double_num = move(value_);
-        }
-        void operator()(std::string value_) const {
-            str = move(value_);
-        }
-
-
-        Array& arr;
-        Dict& dict;
-        bool& flag;
-        int& num;
-        double& double_num;
-        std::string& str;
-    };*/
 
     explicit Node(Array array);
     explicit Node(Dict map);
@@ -86,7 +102,7 @@ public:
     const std::string& AsString() const;
     const Array& AsArray() const;
     const Dict& AsMap() const;
-
+    const Value GetValue() const;
 private:
     Value value_;
 
@@ -95,6 +111,10 @@ private:
     int as_int_ = 0;
     std::string as_string_;*/
 };
+
+void PrintNode(const Node& node, std::ostream& out) {
+    std::visit(NodePrinter{ out }, node.GetValue());
+}
 
 class Document {
 public:
