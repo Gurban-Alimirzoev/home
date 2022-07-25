@@ -183,6 +183,11 @@ const Value Node::GetValue() const
     return value_;
 }
 
+int Node::GetIndex() const
+{
+    return value_.index();
+}
+
 ////////////////////////////////////////
 
 Document::Document(Node root)

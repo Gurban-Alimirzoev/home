@@ -19,6 +19,9 @@ public:
     using runtime_error::runtime_error;
 };
 
+using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+
+// Контекст вывода, хранит ссылку на поток вывода и текущий отсуп
 struct PrintContext {
     std::ostream& out;
     int indent_step = 4;
@@ -36,49 +39,29 @@ struct PrintContext {
     }
 };
 
-using Value = std::variant<std::nullptr_t, Array, Dict, bool, int, double, std::string>;
+// Шаблон, подходящий для вывода double и int
+template <typename Value>
+void PrintValue(const Value& value, const PrintContext& ctx) {
+    ctx << value;
+}
 
-struct NodePrinter {
+// Перегрузка функции PrintValue для вывода значений null
+void PrintValue(std::nullptr_t, const PrintContext& ctx) {
+    ctx << "null"sv;
+}
+// Другие перегрузки функции PrintValue пишутся аналогично
 
-    void operator()(std::nullptr_t) const
-    {
-        out << "null"sv;
-    }
-    void operator()(Array value_) const
-    {        
-        out << value_[0].GetValue();
-        for (int i = 1; i < value_.size(); i++)
-        {
-            out << ", " << value_[i];
-        }
-    }
-    void operator()(Dict value_) const
-    {
-        //dict = move(value_);
-    }
-    void operator()(bool value_) const
-    {
-        out << value_;
-    }
-    void operator()(int value_) const
-    {
-        out << value_;
-    }
-    void operator()(double value_) const
-    {
-        out << value_;
-    }
-    void operator()(std::string value_) const {
-        out << value_;
-    }
-
-    std::ostream& out;
-};
+void PrintNode(const Node& node, PrintContext cont) {
+    std::visit(
+        [&cont](const auto& value) { PrintValue(value, cont); },
+        node.GetValue());
+}
 
 class Node {
 public:
    /* Реализуйте Node, используя std::variant */
 
+    Node() = default;
     explicit Node(Array array);
     explicit Node(Dict map);
     explicit Node(int value);
@@ -103,18 +86,28 @@ public:
     const Array& AsArray() const;
     const Dict& AsMap() const;
     const Value GetValue() const;
+    int GetIndex() const;
+
 private:
     Value value_;
-
-    /*Array as_array_;
-    Dict as_map_;
-    int as_int_ = 0;
-    std::string as_string_;*/
 };
 
-void PrintNode(const Node& node, std::ostream& out) {
-    std::visit(NodePrinter{ out }, node.GetValue());
+bool operator==(const Node& node_right, const Node& node_left)
+{
+    if (node_right.GetIndex() == node_left.GetIndex())
+        return true;
+    else
+        return false;
 }
+
+bool operator!=(const Node& node_right, const Node& node_left)
+{
+    if (node_right == node_left)
+        return false;
+    else
+        return true;
+}
+
 
 class Document {
 public:
