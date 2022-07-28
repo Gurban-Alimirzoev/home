@@ -73,7 +73,7 @@ void PrintValue(const Array array, const PrintContext& ctx)
         PrintNode(array[i], ctx);
         ctx.out << ", ";
     }
-    /*PrintNode*/(array[array.size() - 1], ctx);
+    PrintNode(array[array.size() - 1], ctx);
     ctx.out << "]";
 }
 
