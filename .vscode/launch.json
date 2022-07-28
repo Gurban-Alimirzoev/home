@@ -22,7 +22,7 @@
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
-            "miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
+            //"miDebuggerPath": "C:\\msys64\\mingw64\\bin\\gdb.exe",
             "setupCommands": [
                 {
                     "description": "Включить автоматическое форматирование для gdb",
@@ -30,7 +30,7 @@
                     "ignoreFailures": false
                 }
             ],
-            "preLaunchTask": "C/C++: g++.exe сборка активного файла"
+            "preLaunchTask": "C/C++: clang++.exe сборка активного файла"
         }
     ]
 }

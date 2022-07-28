@@ -70,20 +70,9 @@ Node LoadNode(istream& input) {
 
 }  // namespace
 
-Node::Node(Array array)
-    : value_(move(array)) {
-}
-
-Node::Node(Dict map)
-    : value_(move(map)) {
-}
-
-Node::Node(int value)
-    : value_(value) {
-}
-
-Node::Node(string value)
-    : value_(move(value)) {
+Node::Node(Value value)
+    : value_(move(value))
+{
 }
 
 bool Node::IsInt() const
@@ -189,6 +178,8 @@ int Node::GetIndex() const
 }
 
 ////////////////////////////////////////
+
+//////////////////////////////////////
 
 Document::Document(Node root)
     : root_(move(root)) {

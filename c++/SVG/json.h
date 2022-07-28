@@ -3,8 +3,11 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <variant>
+#include <initializer_list>
+
 
 namespace json {
 
@@ -39,19 +42,60 @@ struct PrintContext {
     }
 };
 
+void PrintNode(const Node& node, const PrintContext& cont);
+
 // Шаблон, подходящий для вывода double и int
 template <typename Value>
 void PrintValue(const Value& value, const PrintContext& ctx) {
-    ctx << value;
+    ctx.out << value;
 }
 
 // Перегрузка функции PrintValue для вывода значений null
 void PrintValue(std::nullptr_t, const PrintContext& ctx) {
-    ctx << "null"sv;
+    ctx.out << "null";
 }
-// Другие перегрузки функции PrintValue пишутся аналогично
 
-void PrintNode(const Node& node, PrintContext cont) {
+void PrintValue(const bool value, const PrintContext& ctx) 
+{
+    ctx.out << value ? "true" : "false";
+}
+
+void PrintValue(const std::string value, const PrintContext& ctx)
+{
+    ctx.out << "\"" << value << "\"";
+}
+
+void PrintValue(const Array array, const PrintContext& ctx)
+{    
+    ctx.out << "[";
+    for (int i = 1; i < array.size() - 1; i++)
+    {
+        PrintNode(array[i], ctx);
+        ctx.out << ", ";
+    }
+    /*PrintNode*/(array[array.size() - 1], ctx);
+    ctx.out << "]";
+}
+
+
+void PrintValue(const Dict dict, const PrintContext& ctx)
+{
+    ctx.out << "{";
+    for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), - 1); it++)
+    {
+        PrintValue(it->first, ctx);
+        ctx.out << " : ";
+        PrintNode(it->second, ctx);
+    }
+
+    PrintValue(next(dict.end(), - 1)->first, ctx);
+    ctx.out << " : ";
+    PrintNode(next(dict.end(), - 1)->second, ctx);
+
+    ctx.out << "}";
+}
+
+void PrintNode(const Node& node, const PrintContext& cont) {
     std::visit(
         [&cont](const auto& value) { PrintValue(value, cont); },
         node.GetValue());
@@ -62,10 +106,13 @@ public:
    /* Реализуйте Node, используя std::variant */
 
     Node() = default;
-    explicit Node(Array array);
-    explicit Node(Dict map);
-    explicit Node(int value);
-    explicit Node(std::string value);
+    explicit Node(Value value);
+
+    template <typename Node_type>
+    Node(Node_type value)
+        : value_(move(value))
+    {
+    }
 
     bool IsInt() const;
     //Возвращает true, если в Node хранится int либо double.
@@ -77,7 +124,6 @@ public:
     bool IsNull() const;
     bool IsArray() const;
     bool IsMap() const;
-
     int AsInt() const;
     bool AsBool() const;
     //Возвращает значение типа double, если внутри хранится double либо int.В последнем случае возвращается приведённое в double значение.
@@ -107,7 +153,6 @@ bool operator!=(const Node& node_right, const Node& node_left)
     else
         return true;
 }
-
 
 class Document {
 public:

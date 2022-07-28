@@ -2,16 +2,15 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "mingw64",
-            "command": "C:\\msys64\\mingw64\\bin\\cpp.exe",
+            "label": "C/C++: cpp.exe",
+            "command": "C:\\msys64\\mingw64\\bin\\c++.exe",
             "args": [
                 "-std=c++17",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "finput-charset"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -23,28 +22,27 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "компилятор: C:\\msys64\\mingw64\\bin\\cpp.exe"
+            "detail": "компилятор: C:\\msys64\\mingw64\\bin\\c++.exe"
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe сборка активного файла",
-            "command": "C:/msys64/mingw64/bin/g++.exe",
+            "label": "C/C++: clang++.exe сборка активного файла",
+            "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\Llvm\\x64\\bin\\clang++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "-std=c++17"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
             "options": {
-                "cwd": "C:/msys64/mingw64/bin"
+                "cwd": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\Llvm\\x64\\bin"
             },
             "problemMatcher": [
                 "$gcc"
             ],
             "group": "build",
-            "detail": "Задача создана отладчиком."
+            "detail": "компилятор: \"C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\Llvm\\x64\\bin\\clang++.exe\""
         }
     ],
     "version": "2.0.0"
