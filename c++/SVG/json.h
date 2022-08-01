@@ -44,62 +44,15 @@ struct PrintContext {
 
 void PrintNode(const Node& node, const PrintContext& cont);
 
-// Шаблон, подходящий для вывода double и int
-template <typename Value>
-void PrintValue(const Value& value, const PrintContext& ctx) {
-    ctx.out << value;
-}
+void PrintValue(const int value, const PrintContext& ctx);
+void PrintValue(const double value, const PrintContext& ctx);
+void PrintValue(std::nullptr_t, const PrintContext& ctx);
+void PrintValue(const bool value, const PrintContext& ctx);
+void PrintValue(const std::string value, const PrintContext& ctx);
+void PrintValue(const Array array, const PrintContext& ctx);
+void PrintValue(const Dict dict, const PrintContext& ctx);
 
-// Перегрузка функции PrintValue для вывода значений null
-void PrintValue(std::nullptr_t, const PrintContext& ctx) {
-    ctx.out << "null";
-}
-
-void PrintValue(const bool value, const PrintContext& ctx) 
-{
-    ctx.out << value ? "true" : "false";
-}
-
-void PrintValue(const std::string value, const PrintContext& ctx)
-{
-    ctx.out << "\"" << value << "\"";
-}
-
-void PrintValue(const Array array, const PrintContext& ctx)
-{    
-    ctx.out << "[";
-    for (int i = 1; i < array.size() - 1; i++)
-    {
-        PrintNode(array[i], ctx);
-        ctx.out << ", ";
-    }
-    PrintNode(array[array.size() - 1], ctx);
-    ctx.out << "]";
-}
-
-
-void PrintValue(const Dict dict, const PrintContext& ctx)
-{
-    ctx.out << "{";
-    for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), - 1); it++)
-    {
-        PrintValue(it->first, ctx);
-        ctx.out << " : ";
-        PrintValue(it->second, ctx);
-    }
-
-    PrintValue(next(dict.end(), - 1)->first, ctx);
-    ctx.out << " : ";
-    PrintValue(next(dict.end(), - 1)->second, ctx);
-
-    ctx.out << "}";
-}
-
-void PrintNode(const Node& node, const PrintContext& cont) {
-    std::visit(
-        [&cont](const auto& value) { PrintValue(value, cont); },
-        node.GetValue());
-}
+//void PrintNode(const Node& node, const PrintContext& cont);
 
 class Node {
 public:
@@ -110,7 +63,7 @@ public:
 
     template <typename Node_type>
     Node(Node_type value)
-        : value_(move(value))
+        : value_(value)
     {
     }
 
@@ -134,6 +87,8 @@ public:
     const Value GetValue() const;
     int GetIndex() const;
 
+    friend bool operator==(const Node& node_right, const Node& node_left);
+    friend bool operator!=(const Node& node_right, const Node& node_left);
 private:
     Value value_;
 };

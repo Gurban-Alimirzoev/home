@@ -179,6 +179,67 @@ int Node::GetIndex() const
 
 ////////////////////////////////////////
 
+void PrintValue(const int value, const PrintContext& ctx) {
+    ctx.out << value;
+}
+
+void PrintValue(const double value, const PrintContext& ctx) {
+    ctx.out << value;
+}
+
+void PrintValue(std::nullptr_t, const PrintContext& ctx) {
+    ctx.out << "null";
+}
+
+void PrintValue(const bool value, const PrintContext& ctx)
+{
+    if (value)
+        ctx.out << "true";
+    else
+        ctx.out << "false";
+}
+
+void PrintValue(const std::string value, const PrintContext& ctx)
+{
+    ctx.out << "\"" << value << "\"";
+}
+
+void PrintValue(const Array array, const PrintContext& ctx)
+{
+    ctx.out << "[";
+    for (int i = 1; i < static_cast<int>(array.size()) - 1; i++)
+    {
+        PrintNode(array[i], ctx);
+        ctx.out << ", ";
+    }
+    PrintNode(array[array.size() - 1], ctx);
+    ctx.out << "]";
+}
+
+void PrintValue(const Dict dict, const PrintContext& ctx)
+{
+    ctx.out << "{";
+    for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), -1); it++)
+    {
+        PrintValue(it->first, ctx);
+        ctx.out << " : ";
+        PrintNode(it->second, ctx);
+    }
+
+    PrintValue(next(dict.end(), -1)->first, ctx);
+    ctx.out << " : ";
+    PrintNode(next(dict.end(), -1)->second, ctx);
+
+    ctx.out << "}";
+}
+
+void PrintNode(const Node& node, const PrintContext& cont) {
+    std::visit(
+        [&cont](const auto& value) {
+            PrintValue(value, cont);
+        },
+        node.GetValue());
+}
 //////////////////////////////////////
 
 Document::Document(Node root)
