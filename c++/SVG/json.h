@@ -85,12 +85,12 @@ void PrintValue(const Dict dict, const PrintContext& ctx)
     {
         PrintValue(it->first, ctx);
         ctx.out << " : ";
-        PrintNode(it->second, ctx);
+        PrintValue(it->second, ctx);
     }
 
     PrintValue(next(dict.end(), - 1)->first, ctx);
     ctx.out << " : ";
-    PrintNode(next(dict.end(), - 1)->second, ctx);
+    PrintValue(next(dict.end(), - 1)->second, ctx);
 
     ctx.out << "}";
 }
