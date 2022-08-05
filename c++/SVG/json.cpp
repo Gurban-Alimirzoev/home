@@ -39,6 +39,7 @@ Node LoadNumber(std::istream& input) {
     // Считывает одну или более цифр в parsed_num из input
     auto read_digits = [&input, read_char] {
         if (!std::isdigit(input.peek())) {
+
             throw ParsingError("A digit is expected"s);
         }
         while (std::isdigit(input.peek())) {
@@ -172,51 +173,76 @@ Node LoadDict(istream& input) {
     return Node(move(result));
 }
 
-string StringParse(istreambuf_iterator<char> it, string& word)
+string StringParse(istream& input, string& word)
 {
     using namespace std::literals;
 
+    auto it = std::istreambuf_iterator<char>(input);
     auto end = std::istreambuf_iterator<char>();
-    const char ch = *it;
-    if (ch == '\\') {
-        // Встретили начало escape-последовательности
+    int flag = 0;
+    while (true)
+    {
+        if (flag == 2)
+        {
+            ++it;
+            break;
+        }
+        char ch = *it;
+        if (ch == '\\') {
+            // Встретили начало escape-последовательности
+            ++it;
+            if (it == end) {
+                // Поток завершился сразу после символа обратной косой черты
+                throw ParsingError("String parsing error");
+            }
+            const char escaped_char = *(it);
+            // Обрабатываем одну из последовательностей: \\, \n, \t, \r, \"
+            switch (escaped_char) {
+            case 'n':
+                word.push_back('\n');
+                break;
+            case 't':
+                word.push_back('\t');
+                break;
+            case 'r':
+                word.push_back('\r');
+                break;
+            case '"':
+                word.push_back('"');
+                break;
+            case '\\':
+                word.push_back('\\');
+                break;
+            default:
+                // Встретили неизвестную escape-последовательность
+                throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
+            }
+        }
+        else if (ch == '\n' || ch == '\r') {
+            // Строковый литерал внутри- JSON не может прерываться символами \r или \n
+            throw ParsingError("Unexpected end of line"s);
+        }
+        else {
+            // Просто считываем очередной символ и помещаем его в результирующую строку
+            if (ch == 'n' || ch == 'u' || ch == 'l')
+                word.push_back(ch);
+            else
+                break;
+        }
+        const char find_second_l = *(it);
+        flag += (find_second_l == 'l') ? 1 : 0;
         ++it;
-        if (it == end) {
-            // Поток завершился сразу после символа обратной косой черты
-            throw ParsingError("String parsing error");
-        }
-        const char escaped_char = *(it);
-        // Обрабатываем одну из последовательностей: \\, \n, \t, \r, \"
-        switch (escaped_char) {
-        case 'n':
-            word.push_back('\n');
-            break;
-        case 't':
-            word.push_back('\t');
-            break;
-        case 'r':
-            word.push_back('\r');
-            break;
-        case '"':
-            word.push_back('"');
-            break;
-        case '\\':
-            word.push_back('\\');
-            break;
-        default:
-            // Встретили неизвестную escape-последовательность
-            throw ParsingError("Unrecognized escape sequence \\"s + escaped_char);
-        }
     }
-    else if (ch == '\n' || ch == '\r') {
-        // Строковый литерал внутри- JSON не может прерываться символами \r или \n
-        throw ParsingError("Unexpected end of line"s);
-    }
-    else {
-        // Просто считываем очередной символ и помещаем его в результирующую строку
-        word.push_back(ch);
-    }
-    ++it;
+    return word;
+}
+
+Node LoadNull(istream& input)
+{
+    std::string s;
+    if (StringParse(input, s) == "null")
+        return nullptr;
+    else
+        return LoadNumber(input);
 }
 
 Node LoadNode(istream& input) {
@@ -232,12 +258,7 @@ Node LoadNode(istream& input) {
     else
     {
         input.putback(c);
-        Node null_maybe = LoadString(input);
-
-        if (null_maybe.GetValue() == "null"s)
-            return nullptr;
-        else
-            return LoadNumber(input);
+        return LoadNull(input);
     }
 }
 
@@ -309,7 +330,12 @@ bool Node::AsBool() const
 double Node::AsDouble() const
 {
     if (IsDouble())
-        return std::get<double>(value_);
+    {
+        if (IsInt())
+            return get<int>(value_);
+        else
+            return get<double>(value_);
+    }
     else
         throw std::logic_error{ "logic_err" };
 }
