@@ -412,7 +412,32 @@ void PrintValue(const bool value, const PrintContext& ctx)
 
 void PrintValue(const std::string value, const PrintContext& ctx)
 {
-    ctx.out << "\"" << value << "\"";
+    ctx.out << "\"";
+    for (char c : value)
+    {
+        switch (c)
+        {
+            case '\n':
+                ctx.out << "\\n";
+                break;
+            case '\t':
+                ctx.out << "\t";
+                break;
+            case '\r':
+                ctx.out << "\\r";
+                break;
+            case '\"':
+                ctx.out << "\\\"";
+                break;
+            case '\\':
+                ctx.out << "\\";
+                break;
+            default:
+                ctx.out << c;
+                break;
+        }
+    } 
+    ctx.out << "\"";
 }
 
 void PrintValue(const Array array, const PrintContext& ctx)
@@ -473,7 +498,7 @@ bool operator==(const Document& doc_right, const Document& doc_left)
 
 bool operator!=(const Document& doc_right, const Document& doc_left)
 {
-    return (doc_right == doc_left) ? false : true;
+    return (doc_right != doc_left) ? true : false;
 }
 
 void Print(const Document& doc, std::ostream& output) {
