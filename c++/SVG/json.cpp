@@ -10,6 +10,12 @@ Node LoadNode(istream& input);
 
 Node LoadArray(istream& input) {
     Array result;
+    
+    auto it = std::istreambuf_iterator<char>(input);
+    auto end = std::istreambuf_iterator<char>();
+    if (it == end) {
+        throw ParsingError("Array parsing error");
+    }
 
     for (char c; input >> c && c != ']';) {
         if (c != ',') {
@@ -160,6 +166,11 @@ Node LoadString(std::istream& input) {
 Node LoadDict(istream& input) {
     Dict result;
 
+    auto it = std::istreambuf_iterator<char>(input);
+    auto end = std::istreambuf_iterator<char>();
+    if (it == end) {
+        throw ParsingError("Dict parsing error");
+    }
     for (char c; input >> c && c != '}';) {
         if (c == ',') {
             input >> c;
@@ -173,7 +184,7 @@ Node LoadDict(istream& input) {
     return Node(move(result));
 }
 
-string StringParse(istream& input, string& word)
+void StringParse(istream& input, string& word)
 {
     using namespace std::literals;
 
@@ -182,11 +193,25 @@ string StringParse(istream& input, string& word)
     int flag = 0;
     while (true)
     {
-        if (flag == 2)
+        if (it == end || flag == 2)
         {
-            ++it;
-            break;
+            //++it;
+            if (*word.begin() == 'n')
+            {
+                if (*next(word.end(), -1) == 'l')
+                    break;
+                else
+                    throw ParsingError("Null parsing error");
+            }
+            else
+            {
+                if (*next(word.end(), -1) == 'e')
+                    break;
+                else
+                    throw ParsingError("Bool parsing error");
+            }
         }
+
         char ch = *it;
         if (ch == '\\') {
             // Встретили начало escape-последовательности
@@ -224,23 +249,43 @@ string StringParse(istream& input, string& word)
         }
         else {
             // Просто считываем очередной символ и помещаем его в результирующую строку
-            if (ch == 'n' || ch == 'u' || ch == 'l')
+            if (ch == 'n' || 
+                ch == 'u' || 
+                ch == 'l' || 
+                ch == 't' || 
+                ch == 'r' ||
+                ch == 'e' || 
+                ch == 'f' || 
+                ch == 'a' || 
+                ch == 's')
                 word.push_back(ch);
             else
                 break;
         }
-        const char find_second_l = *(it);
-        flag += (find_second_l == 'l') ? 1 : 0;
+        if (!word.empty())
+        {
+            if (*word.begin() == 'n')
+            {
+                const char find_second_l = *(it);
+                flag += (find_second_l == 'l') ? 1 : 0;
+            }
+            const char find_second_l = *(it);
+            flag += (find_second_l == 'e') ? 2 : 0;
+        }
         ++it;
     }
-    return word;
 }
 
-Node LoadNull(istream& input)
+Node LoadOther(istream& input)
 {
     std::string s;
-    if (StringParse(input, s) == "null")
+    StringParse(input, s);
+    if (s == "null")
         return nullptr;
+    else if (s == "true")
+        return true;
+    else if (s == "false")
+        return false;
     else
         return LoadNumber(input);
 }
@@ -258,7 +303,7 @@ Node LoadNode(istream& input) {
     else
     {
         input.putback(c);
-        return LoadNull(input);
+        return LoadOther(input);
     }
 }
 
@@ -368,7 +413,7 @@ const Value Node::GetValue() const
 
 int Node::GetIndex() const
 {
-    return value_.index();
+    return static_cast<int>(value_.index());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -391,19 +436,23 @@ bool operator!=(const Node& node_right, const Node& node_left)
 void PrintNode(const Node& node, const PrintContext& cont);
 
 void PrintValue(const int value, const PrintContext& ctx) {
+    ctx.PrintIndent();
     ctx.out << value;
 }
 
 void PrintValue(const double value, const PrintContext& ctx) {
+    ctx.PrintIndent();
     ctx.out << value;
 }
 
 void PrintValue(std::nullptr_t, const PrintContext& ctx) {
+    ctx.PrintIndent();
     ctx.out << "null";
 }
 
 void PrintValue(const bool value, const PrintContext& ctx)
 {
+    ctx.PrintIndent();
     if (value)
         ctx.out << "true";
     else
@@ -412,6 +461,7 @@ void PrintValue(const bool value, const PrintContext& ctx)
 
 void PrintValue(const std::string value, const PrintContext& ctx)
 {
+    ctx.PrintIndent();
     ctx.out << "\"";
     for (char c : value)
     {
@@ -430,7 +480,7 @@ void PrintValue(const std::string value, const PrintContext& ctx)
                 ctx.out << "\\\"";
                 break;
             case '\\':
-                ctx.out << "\\";
+                ctx.out << "\\\\";
                 break;
             default:
                 ctx.out << c;
@@ -442,8 +492,9 @@ void PrintValue(const std::string value, const PrintContext& ctx)
 
 void PrintValue(const Array array, const PrintContext& ctx)
 {
+    ctx.PrintIndent();
     ctx.out << "[";
-    for (int i = 1; i < static_cast<int>(array.size()) - 1; i++)
+    for (int i = 0; i < static_cast<int>(array.size()) - 1; i++)
     {
         PrintNode(array[i], ctx);
         ctx.out << ", ";
@@ -454,6 +505,7 @@ void PrintValue(const Array array, const PrintContext& ctx)
 
 void PrintValue(const Dict dict, const PrintContext& ctx)
 {
+    ctx.PrintIndent();
     ctx.out << "{";
     for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), -1); it++)
     {
@@ -469,7 +521,8 @@ void PrintValue(const Dict dict, const PrintContext& ctx)
     ctx.out << "}";
 }
 
-void PrintNode(const Node& node, const PrintContext& cont) {
+void PrintNode(const Node& node, const PrintContext& cont) 
+{
     std::visit(
         [&cont](const auto& value) {
             PrintValue(value, cont);

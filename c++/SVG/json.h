@@ -84,6 +84,15 @@ private:
 bool operator==(const Node& node_right, const Node& node_left);
 bool operator!=(const Node& node_right, const Node& node_left);
 
+void PrintValue(const int value, const PrintContext& ctx);
+void PrintValue(const double value, const PrintContext& ctx);
+void PrintValue(std::nullptr_t, const PrintContext& ctx);
+void PrintValue(const bool value, const PrintContext& ctx);
+void PrintValue(const std::string value, const PrintContext& ctx);
+void PrintValue(const Array array, const PrintContext& ctx);
+void PrintValue(const Dict dict, const PrintContext& ctx);
+
+void PrintNode(const Node& node, const PrintContext& cont);
 
 class Document {
 public:
