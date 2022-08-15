@@ -318,42 +318,42 @@ Node::Node(Value value)
 
 bool Node::IsInt() const
 {
-    return value_.index() == 4 ? 1 : 0;;
+    return value_.index() == 4;
 }
 
 bool Node::IsDouble() const
 {
-    return (value_.index() == 4 || value_.index() == 5) ? 1 : 0;
+    return value_.index() == 4 || value_.index() == 5;
 }
 
 bool Node::IsPureDouble() const
 {
-    return (value_.index() == 5) ? 1 : 0;
+    return value_.index() == 5;
 }
 
 bool Node::IsBool() const
 {
-    return (value_.index() == 3) ? 1 : 0;
+    return value_.index() == 3;
 }
 
 bool Node::IsString() const
 {
-    return (value_.index() == 6) ? 1 : 0;
+    return value_.index() == 6;
 }
 
 bool Node::IsNull() const
 {
-    return (value_.index() == 0) ? 1 : 0;
+    return value_.index() == 0;
 }
 
 bool Node::IsArray() const
 {
-    return (value_.index() == 1) ? 1 : 0;
+    return value_.index() == 1;
 }
 
 bool Node::IsMap() const
 {
-    return (value_.index() == 2) ? 1 : 0;
+    return value_.index() == 2;
 }
 
 int Node::AsInt() const 
@@ -420,30 +420,17 @@ int Node::GetIndex() const
 
 bool operator==(const Node& node_right, const Node& node_left)
 {
-    if (node_right.GetIndex() == node_left.GetIndex())
-        if (node_right.GetValue() == node_left.GetValue())
-            return true;
-    return false;
+    return node_right.GetValue() == node_left.GetValue();
 }
 
 bool operator!=(const Node& node_right, const Node& node_left)
 {
-    return (node_right == node_left) ? false : true;
+    return node_right.GetValue() != node_left.GetValue();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void PrintNode(const Node& node, const PrintContext& cont);
-
-void PrintValue(const int value, const PrintContext& ctx) {
-    ctx.PrintIndent();
-    ctx.out << value;
-}
-
-void PrintValue(const double value, const PrintContext& ctx) {
-    ctx.PrintIndent();
-    ctx.out << value;
-}
 
 void PrintValue(std::nullptr_t, const PrintContext& ctx) {
     ctx.PrintIndent();
@@ -499,7 +486,8 @@ void PrintValue(const Array array, const PrintContext& ctx)
         PrintNode(array[i], ctx);
         ctx.out << ", ";
     }
-    PrintNode(array[array.size() - 1], ctx);
+    if (!array.empty())
+        PrintNode(array[array.size() - 1], ctx);
     ctx.out << "]";
 }
 
@@ -512,11 +500,15 @@ void PrintValue(const Dict dict, const PrintContext& ctx)
         PrintValue(it->first, ctx);
         ctx.out << " : ";
         PrintNode(it->second, ctx);
+        ctx.out << ", ";
     }
 
-    PrintValue(next(dict.end(), -1)->first, ctx);
-    ctx.out << " : ";
-    PrintNode(next(dict.end(), -1)->second, ctx);
+    if (!dict.empty())
+    {
+        PrintValue(next(dict.end(), -1)->first, ctx);
+        ctx.out << " : ";
+        PrintNode(next(dict.end(), -1)->second, ctx);
+    }
 
     ctx.out << "}";
 }
@@ -544,14 +536,14 @@ Document Load(istream& input) {
     return Document{LoadNode(input)};
 }
 
-bool operator==(const Document& doc_right, const Document& doc_left)
+bool operator==(Document& doc_right, Document& doc_left)
 {
-    return (doc_right.GetRoot() == doc_left.GetRoot()) ? true : false;
+    return doc_right.GetRoot() == doc_left.GetRoot();
 }
 
-bool operator!=(const Document& doc_right, const Document& doc_left)
+bool operator!=(Document& doc_right, Document& doc_left)
 {
-    return (doc_right != doc_left) ? true : false;
+    return doc_right != doc_left;
 }
 
 void Print(const Document& doc, std::ostream& output) {

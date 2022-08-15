@@ -8,7 +8,6 @@
 #include <variant>
 #include <initializer_list>
 
-
 namespace json {
 
 class Node;
@@ -75,8 +74,6 @@ public:
     const Value GetValue() const;
     int GetIndex() const;
 
-    friend bool operator==(const Node& node_right, const Node& node_left);
-    friend bool operator!=(const Node& node_right, const Node& node_left);
 private:
     Value value_;
 };
@@ -84,8 +81,17 @@ private:
 bool operator==(const Node& node_right, const Node& node_left);
 bool operator!=(const Node& node_right, const Node& node_left);
 
-void PrintValue(const int value, const PrintContext& ctx);
-void PrintValue(const double value, const PrintContext& ctx);
+// Шаблон, подходящий для вывода double и int
+template <typename Value>
+void PrintValue(const Value& value, const PrintContext& ctx) {
+
+    if constexpr (std::is_same<Value, int>::value || std::is_same<Value, double>::value) 
+    {
+        ctx.PrintIndent();
+        ctx.out << value;
+    }
+
+}
 void PrintValue(std::nullptr_t, const PrintContext& ctx);
 void PrintValue(const bool value, const PrintContext& ctx);
 void PrintValue(const std::string value, const PrintContext& ctx);
@@ -106,9 +112,8 @@ private:
 
 Document Load(std::istream& input);
 
-bool operator==(const Document& doc_right, const Document& doc_left);
-bool operator!=(const Document& doc_right, const Document& doc_left);
-
+bool operator==(Document& doc_right, Document& doc_left);
+bool operator!=(Document& doc_right, Document& doc_left);
 
 void Print(const Document& doc, std::ostream& output);
 

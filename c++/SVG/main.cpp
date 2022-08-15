@@ -171,6 +171,8 @@ void TestArray() {
     // Пробелы, табуляции и символы перевода строки между токенами JSON файла игнорируются
     assert(LoadJSON("[ 1 \r \n ,  \r\n\t 1.23, \n \n  \t\t  \"Hello\" \t \n  ] \n  "s).GetRoot()
            == arr_node);
+
+    Print(Node(Array{ Array{} }));
 }
 
 void TestMap() {
