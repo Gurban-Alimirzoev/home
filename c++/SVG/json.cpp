@@ -536,14 +536,14 @@ Document Load(istream& input) {
     return Document{LoadNode(input)};
 }
 
-bool operator==(Document& doc_right, Document& doc_left)
+bool operator==(const Document& doc_right, const Document& doc_left)
 {
     return doc_right.GetRoot() == doc_left.GetRoot();
 }
 
-bool operator!=(Document& doc_right, Document& doc_left)
+bool operator!=(const Document& doc_right, const Document& doc_left)
 {
-    return doc_right != doc_left;
+    return doc_right.GetRoot() != doc_left.GetRoot();
 }
 
 void Print(const Document& doc, std::ostream& output) {

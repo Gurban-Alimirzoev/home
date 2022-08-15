@@ -112,8 +112,8 @@ private:
 
 Document Load(std::istream& input);
 
-bool operator==(Document& doc_right, Document& doc_left);
-bool operator!=(Document& doc_right, Document& doc_left);
+bool operator==(const Document& doc_right, const Document& doc_left);
+bool operator!=(const Document& doc_right, const Document& doc_left);
 
 void Print(const Document& doc, std::ostream& output);
 
