@@ -316,94 +316,88 @@ Node::Node(Value value)
 {
 }
 
-bool Node::IsInt() const
+bool Node::IsInt() const 
 {
-    return value_.index() == 4;
+    return std::holds_alternative<int>(value_);
 }
 
 bool Node::IsDouble() const
 {
-    return value_.index() == 4 || value_.index() == 5;
+    return std::holds_alternative<int>(value_) || std::holds_alternative<double>(value_);
 }
 
 bool Node::IsPureDouble() const
 {
-    return value_.index() == 5;
+    return std::holds_alternative<double>(value_);
 }
 
 bool Node::IsBool() const
 {
-    return value_.index() == 3;
+    return std::holds_alternative<bool>(value_);
 }
 
 bool Node::IsString() const
 {
-    return value_.index() == 6;
+    return std::holds_alternative<string>(value_);
 }
 
 bool Node::IsNull() const
 {
-    return value_.index() == 0;
+    return std::holds_alternative<nullptr_t>(value_);
 }
 
 bool Node::IsArray() const
 {
-    return value_.index() == 1;
+    return std::holds_alternative<Array>(value_);
 }
 
 bool Node::IsMap() const
 {
-    return value_.index() == 2;
+    return std::holds_alternative<Dict>(value_);
 }
 
 int Node::AsInt() const 
 {
-    if (IsInt())
-        return std::get<int>(value_);
-    else
+    if (!IsInt())
         throw std::logic_error{"logic_err"};
+    return std::get<int>(value_);
 }
 
 bool Node::AsBool() const
 {
-    if (IsBool())
-        return std::get<bool>(value_);
-    else
+    if (!IsBool())
         throw std::logic_error{ "logic_err" };
+    return std::get<bool>(value_);
 }
 
 double Node::AsDouble() const
 {
-    if (IsDouble())
+    if (!IsDouble())
     {
-        if (IsInt())
-            return get<int>(value_);
-        else
-            return get<double>(value_);
-    }
-    else
         throw std::logic_error{ "logic_err" };
+    }
+    if (IsInt())
+        return get<int>(value_);
+    else
+        return get<double>(value_);
 }
 
 const Array& Node::AsArray() const {
-    if (IsArray())
-        return std::get<Array>(value_);
-    else
+    if (!IsArray())
         throw std::logic_error{ "logic_err" };
+    return std::get<Array>(value_);
 }
 
 const Dict& Node::AsMap() const {
-    if (IsMap())
-        return std::get<Dict>(value_);
-    else
+    if (!IsMap())
         throw std::logic_error{ "logic_err" };
+    return std::get<Dict>(value_);
 }
 
 const string& Node::AsString() const {
-    if (IsString())
-        return std::get<string>(value_);
-    else
+    if (!IsString())
         throw std::logic_error{ "logic_err" };
+    return std::get<string>(value_);
 }
 
 const Value Node::GetValue() const
