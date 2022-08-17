@@ -15,7 +15,7 @@ namespace transport_catalogue
         std::optional<BusInfo> GetBusStat(const std::string_view& bus_name) const;
 
         // Возвращает маршруты, проходящие через
-        const std::unordered_set<std::string> GetBusesByStop(const std::string_view& stop_name) const;
+        const std::unordered_set<Bus*> GetBusesByStop(const std::string_view& stop_name) const;
 
         // Этот метод будет нужен в следующей части итогового проекта
         //svg::Document RenderMap() const;

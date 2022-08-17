@@ -15,12 +15,12 @@ namespace transport_catalogue
 
 	optional<BusInfo> RequestHandler::GetBusStat(const string_view& bus_name) const
 	{
-
+		return db_.GetBusInfo(bus_name);
 	}
 
-	const unordered_set<string> RequestHandler::GetBusesByStop(const string_view& stop_name) const
+	const unordered_set<Bus*> RequestHandler::GetBusesByStop(const string_view& stop_name) const
 	{
-
+		return db_.GetAllBusOnStop(stop_name);
 	}
 
 }
