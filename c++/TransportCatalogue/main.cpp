@@ -1,4 +1,21 @@
+#include <cassert>
+#include <chrono>
+#include <sstream>
+#include <string_view>
+
+#include "json.h"
+#include "transport_catalogue.h"
+#include "geo.h"
+#include "json_reader.h"
+
+using namespace json;
+using namespace std::literals; 
+
 int main() {
+
+
+
+}
     /*
      * Примерная структура программы:
      *
@@ -8,4 +25,3 @@ int main() {
      * с ответами.
      * Вывести в stdout ответы в виде JSON
      */
-}

@@ -13,13 +13,9 @@ void StatReader::OutStatReader(string_view line, TransportCatalogue& cat)
 	line = line.substr(line.find_first_not_of(" "));
 
 	if (line.substr(0, 3) == "Bus")
-	{
 		ParseBusQuieries(line, cat);
-	}
 	else
-	{
 		ParseStopQuieries(line, cat);
-	}
 }
 
 void StatReader::ParseBusQuieries(string_view line, TransportCatalogue& cat)
@@ -29,9 +25,7 @@ void StatReader::ParseBusQuieries(string_view line, TransportCatalogue& cat)
 	string_view name = MakeWithoutSpace(line, line.find(":"));
 
 	if (cat.FindBus(name) == nullptr)
-	{
 		cout << "Bus " << name << ": not found" << endl;
-	}
 	else
 	{
 		BusInfo info = cat.GetBusInfo(name);
@@ -53,13 +47,9 @@ void StatReader::ParseStopQuieries(string_view line, TransportCatalogue& cat)
 	set<string> buses_on_stop = cat.GetAllBusOnStop(name);
 
 	if (cat.FindStop(name) == nullptr)
-	{
 		cout << "Stop " << name << ": not found" << endl;
-	}
 	else if (buses_on_stop.empty())
-	{
 		cout << "Stop " << name << ": no buses" << endl;
-	}
 	else
 	{
 		cout << "Stop " << name << ": buses";
