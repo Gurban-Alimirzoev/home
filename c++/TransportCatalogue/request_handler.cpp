@@ -22,5 +22,4 @@ namespace transport_catalogue
 	{
 		return db_.GetAllBusOnStop(stop_name);
 	}
-
 }

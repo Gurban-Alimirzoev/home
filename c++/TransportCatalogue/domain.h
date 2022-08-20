@@ -17,6 +17,7 @@ namespace transport_catalogue
 	{
 		std::string name_bus;
 		std::vector<Stop*> bus;		
+		bool is_roundtrip;
 	};
 
 	struct BusInfo

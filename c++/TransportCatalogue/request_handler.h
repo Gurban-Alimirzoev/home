@@ -9,7 +9,11 @@ namespace transport_catalogue
 
     public:
         // MapRenderer понадобится в следующей части итогового проекта
-        //RequestHandler(const TransportCatalogue& db, const renderer::MapRenderer& renderer);
+        RequestHandler(const TransportCatalogue& db)
+            : db_(db)
+        {}
+        
+        //, const renderer::MapRenderer& renderer);
 
         // Возвращает информацию о маршруте (запрос Bus)
         std::optional<BusInfo> GetBusStat(const std::string_view& bus_name) const;
@@ -19,7 +23,6 @@ namespace transport_catalogue
 
         // Этот метод будет нужен в следующей части итогового проекта
         //svg::Document RenderMap() const;
-
     private:
         // RequestHandler использует агрегацию объектов "Транспортный Справочник" и "Визуализатор Карты"
         const TransportCatalogue& db_;

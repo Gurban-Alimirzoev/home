@@ -1,6 +1,9 @@
 #pragma once
+#include <vector>
+#include <string>
 #include "json.h"
 #include "transport_catalogue.h"
+#include "request_handler.h"
 
 /*
  * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
@@ -10,15 +13,19 @@
 class JsonReader
 {
 public:
+	JsonReader() = default;
 
 	JsonReader(std::istream& input)
-		: input_json(json::Load(input))
+		: input(input), input_json(json::Load(input))
 	{}
 
-	void BaseRequests();
-	void StatRequests();
+	void Requests();
+	void BaseRequests(json::Array base_requests);
+	void StatRequests(json::Array stat_requests);
 
 private:
+	std::istream& input;
 	json::Document input_json;
+	json::Document output_json;
 	transport_catalogue::TransportCatalogue db;
 };
