@@ -17,7 +17,7 @@ namespace transport_catalogue
 
         // Возвращает информацию о маршруте (запрос Bus)
         std::optional<BusInfo> GetBusStat(const std::string_view& bus_name) const;
-
+        int GetStopCount(const std::string_view& bus_name) const;
         // Возвращает маршруты, проходящие через
         const std::unordered_set<Bus*> GetBusesByStop(const std::string_view& stop_name) const;
 

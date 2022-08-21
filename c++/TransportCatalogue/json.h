@@ -29,15 +29,23 @@ namespace json {
         int indent = 0;
 
         void PrintIndent() const {
-            for (int i = 0; i < indent; ++i) {
+            for (int i = 0; i < indent; ++i) 
+            {
                 out.put(' ');
             }
+        }
+
+        PrintContext PrintEnter() const
+        {
+            out.put('\n');
+            return *this;
         }
 
         // Возвращает новый контекст вывода с увеличенным смещением
         PrintContext Indented() const {
             return { out, indent_step, indent_step + indent };
         }
+
     };
 
     class Node {

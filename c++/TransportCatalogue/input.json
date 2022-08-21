@@ -8,14 +8,14 @@
     },
     {
       "type": "Stop",
-      "name": "Ривьерский мост",
+      "name": "Riv bridge",
       "latitude": 43.587795,
       "longitude": 39.716901,
       "road_distances": {"Sea bridge": 850}
     },
     {
       "type": "Stop",
-      "name": "Морской вокзал",
+      "name": "Sea bridge",
       "latitude": 43.581969,
       "longitude": 39.719848,
       "road_distances": {"Riv bridge": 850}

@@ -12,13 +12,14 @@
 #include "json_reader.h"
 #include "request_handler.h"
 
-using namespace std;
+//using namespace std;
 //using namespace json;
 using namespace std::literals; 
 
 int main() {
 
-    JsonReader reader(cin);
+    JsonReader reader(std::cin, std::cout);
+    //transport_catalogue::RequestHandler handler(reader);
     reader.Requests();
 }
     /*

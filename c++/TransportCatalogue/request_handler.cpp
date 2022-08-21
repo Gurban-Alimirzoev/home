@@ -18,8 +18,14 @@ namespace transport_catalogue
 		return db_.GetBusInfo(bus_name);
 	}
 
+	int RequestHandler::GetStopCount(const std::string_view& bus_name) const
+	{
+		return db_.FindBus(bus_name)->bus.size();
+	}
+
 	const unordered_set<Bus*> RequestHandler::GetBusesByStop(const string_view& stop_name) const
 	{
 		return db_.GetAllBusOnStop(stop_name);
 	}
+
 }

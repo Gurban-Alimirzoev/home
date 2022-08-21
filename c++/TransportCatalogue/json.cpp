@@ -427,13 +427,13 @@ namespace json {
     void PrintNode(const Node& node, const PrintContext& cont);
 
     void PrintValue(std::nullptr_t, const PrintContext& ctx) {
-        ctx.PrintIndent();
+        ctx.Indented().PrintIndent();
         ctx.out << "null";
     }
 
     void PrintValue(const bool value, const PrintContext& ctx)
     {
-        ctx.PrintIndent();
+        ctx.Indented().PrintIndent();
         if (value)
             ctx.out << "true";
         else
@@ -442,7 +442,7 @@ namespace json {
 
     void PrintValue(const std::string value, const PrintContext& ctx)
     {
-        ctx.PrintIndent();
+        ctx.Indented().PrintIndent();
         ctx.out << "\"";
         for (char c : value)
         {
@@ -473,24 +473,28 @@ namespace json {
 
     void PrintValue(const Array array, const PrintContext& ctx)
     {
-        ctx.PrintIndent();
         ctx.out << "[";
         for (int i = 0; i < static_cast<int>(array.size()) - 1; i++)
         {
+            ctx.Indented().PrintEnter().PrintIndent();
             PrintNode(array[i], ctx);
             ctx.out << ", ";
         }
         if (!array.empty())
+        {
+            ctx.Indented().PrintEnter().PrintIndent();
             PrintNode(array[array.size() - 1], ctx);
+        }
+        ctx.PrintEnter().PrintIndent();
         ctx.out << "]";
     }
 
     void PrintValue(const Dict dict, const PrintContext& ctx)
     {
-        ctx.PrintIndent();
         ctx.out << "{";
         for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), -1); it++)
         {
+            ctx.Indented().PrintEnter().PrintIndent();
             PrintValue(it->first, ctx);
             ctx.out << " : ";
             PrintNode(it->second, ctx);
@@ -499,12 +503,13 @@ namespace json {
 
         if (!dict.empty())
         {
+            ctx.Indented().PrintEnter().PrintIndent();
             PrintValue(next(dict.end(), -1)->first, ctx);
             ctx.out << " : ";
             PrintNode(next(dict.end(), -1)->second, ctx);
         }
-
-        ctx.out << "}";
+          ctx.Indented().PrintEnter().PrintIndent();
+          ctx.out << "}";
     }
 
     void PrintNode(const Node& node, const PrintContext& cont)
