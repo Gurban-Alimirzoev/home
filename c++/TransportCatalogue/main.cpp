@@ -6,20 +6,13 @@
 #include <fstream>
 #include <iostream>
 
-#include "json.h"
-#include "transport_catalogue.h"
-#include "geo.h"
 #include "json_reader.h"
-#include "request_handler.h"
 
-//using namespace std;
-//using namespace json;
 using namespace std::literals; 
 
 int main() {
 
     JsonReader reader(std::cin, std::cout);
-    reader.ReadJson();
     reader.Requests();
     reader.PrintAnswerJson();
 }

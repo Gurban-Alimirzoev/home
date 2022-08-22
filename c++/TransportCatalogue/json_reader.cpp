@@ -1,10 +1,5 @@
 #include "json_reader.h"
 
-/*
- * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
- * а также код обработки запросов к базе и формирование массива ответов в формате JSON
- */
-
 using namespace std;
 using namespace transport_catalogue;
 using namespace json;
@@ -17,7 +12,6 @@ void JsonReader::ReadJson()
 void JsonReader::Requests()
 {
 	Node requests = input_json.GetRoot();
-
 	for (auto request : requests.AsMap())
 	{
 		if (request.first == "base_requests")
@@ -27,13 +21,11 @@ void JsonReader::Requests()
 	}
 }
 
-
 void JsonReader::BaseRequests(Array base_requests)
 {
 	for (Node base_request : base_requests)
 	{
-		Dict bus_or_stop = base_request.AsMap();
-
+			Dict bus_or_stop = base_request.AsMap();
 		if (bus_or_stop.at("type").AsString() == "Stop")
 			BaseRequests_AddStop(bus_or_stop);
 		else
@@ -46,46 +38,35 @@ void JsonReader::BaseRequest_AddBus()
 {
 	for (auto bus : buses)
 	{
+		vector<string> stops(bus.at("stops").AsArray().size());
 		if (bus.at("is_roundtrip").AsBool())
 		{
-			vector<string> stops(bus.at("stops").AsArray().size());
-			transform(
-				bus.at("stops").AsArray().begin(),
-				bus.at("stops").AsArray().end(),
-				stops.begin(),
-				[](Node stop)
-				{return stop.AsString(); }
-			);
-			db.AddBus(
-				bus.at("name").AsString(),
-				stops
-			);
+			Transform(bus.at("stops").AsArray(), stops);
 		}
 		else
 		{
 			size_t input_stop_size = bus.at("stops").AsArray().size();
-			vector<string> stops(input_stop_size * 2 - 1);
-			transform(
-				bus.at("stops").AsArray().begin(),
-				bus.at("stops").AsArray().end(),
-				stops.begin(),
-				[](Node stop)
-				{return stop.AsString(); }
-			);
+			stops.reserve(input_stop_size * 2 - 1);
+			Transform(bus.at("stops").AsArray(), stops);
 			reverse(stops.begin(), stops.end());
-			transform(
-				bus.at("stops").AsArray().begin(),
-				bus.at("stops").AsArray().end(),
-				stops.begin(),
-				[](Node stop)
-				{return stop.AsString(); }
-			);
-			db.AddBus(
-				bus.at("name").AsString(),
-				stops
-			);
+			Transform(bus.at("stops").AsArray(), stops);
 		}
+		db.AddBus(
+			bus.at("name").AsString(),
+			stops
+		);
 	}
+}
+
+void JsonReader::Transform(const json::Array& stops_input, vector<string>& stops_output)
+{
+	transform(
+		stops_input.begin(),
+		stops_input.end(),
+		stops_output.begin(),
+		[](Node stop)
+		{return stop.AsString(); }
+	);
 }
 
 void JsonReader::BaseRequests_AddStop(Dict stop)
@@ -128,7 +109,7 @@ void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 	{
 		answer.emplace_back(Dict{
 			{"error_message",
-			Node("not found")},
+			Node(string("not found"))},
 			{"request_id",
 			stop_request.at("id")},
 			});

@@ -38,6 +38,7 @@ namespace json {
         PrintContext PrintEnter() const
         {
             out.put('\n');
+            PrintIndent();
             return *this;
         }
 
@@ -45,7 +46,6 @@ namespace json {
         PrintContext Indented() const {
             return { out, indent_step, indent_step + indent };
         }
-
     };
 
     class Node {

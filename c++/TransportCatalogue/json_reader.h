@@ -8,17 +8,12 @@
 #include "transport_catalogue.h"
 #include "request_handler.h"
 
-/*
- * Здесь можно разместить код наполнения транспортного справочника данными из JSON,
- * а также код обработки запросов к базе и формирование массива ответов в формате JSON
- */
-
 class JsonReader
 {
 public:
 	JsonReader() = default;
 	JsonReader(std::istream& input, std::ostream& out)
-		: input(input), out(out), handler(db)
+		: input(input), out(out), handler(db), input_json(json::Load(input))
 	{}
 
 	void ReadJson();
@@ -30,14 +25,16 @@ private:
 	std::istream& input;
 	std::ostream& out;
 	transport_catalogue::TransportCatalogue db;
-	json::Document input_json;
 	transport_catalogue::RequestHandler handler;
+	json::Document input_json;
 	std::deque <json::Dict> buses;
 	json::Array answer;
 
 	void BaseRequests(json::Array base_requests);
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);
+
+	void Transform(const json::Array& stops_input, std::vector<std::string>& stops_output);
 
 	void StatRequests(json::Array stat_requests);
 	void StatRequests_PrintBusRequest(json::Dict bus_request);

@@ -384,19 +384,19 @@ namespace json {
 
     const Array& Node::AsArray() const {
         if (!IsArray())
-            throw std::logic_error{ "logic_err" };
+            throw std::logic_error{ "logic_err_array" };
         return std::get<Array>(value_);
     }
 
     const Dict& Node::AsMap() const {
         if (!IsMap())
-            throw std::logic_error{ "logic_err" };
+            throw std::logic_error{ "logic_err_map" };
         return std::get<Dict>(value_);
     }
 
     const string& Node::AsString() const {
         if (!IsString())
-            throw std::logic_error{ "logic_err" };
+            throw std::logic_error{ "logic_err_string" };
         return std::get<string>(value_);
     }
 
@@ -473,14 +473,14 @@ namespace json {
         ctx.out << "[";
         for (int i = 0; i < static_cast<int>(array.size()) - 1; i++)
         {
-            ctx.Indented().PrintEnter().PrintIndent();
-            PrintNode(array[i], ctx);
-            ctx.out << ", ";
+            ctx.Indented().PrintEnter();
+            PrintNode(array[i], ctx.Indented());
+            ctx.out << ",";
         }
         if (!array.empty())
         {
-            ctx.Indented().PrintEnter().PrintIndent();
-            PrintNode(array[array.size() - 1], ctx);
+            ctx.Indented().PrintEnter();
+            PrintNode(array[array.size() - 1], ctx.Indented());
         }
         ctx.PrintEnter();
         ctx.out << "]";
@@ -491,21 +491,21 @@ namespace json {
         ctx.out << "{";
         for (Dict::const_iterator it = dict.begin(); it != std::next(dict.end(), -1); it++)
         {
-            ctx.Indented().PrintEnter().PrintIndent();
-            PrintValue(it->first, ctx);
+            ctx.Indented().PrintEnter();
+            PrintValue(it->first, ctx.Indented());
             ctx.out << ": ";
-            PrintNode(it->second, ctx);
-            ctx.out << ", ";
+            PrintNode(it->second, ctx.Indented());
+            ctx.out << ",";
         }
 
         if (!dict.empty())
         {
-            ctx.Indented().PrintEnter().PrintIndent();
-            PrintValue(next(dict.end(), -1)->first, ctx);
+            ctx.Indented().PrintEnter();
+            PrintValue(next(dict.end(), -1)->first, ctx.Indented());
             ctx.out << ": ";
-            PrintNode(next(dict.end(), -1)->second, ctx);
+            PrintNode(next(dict.end(), -1)->second, ctx.Indented());
         }
-        ctx.Indented().PrintEnter().PrintIndent();
+        ctx.PrintEnter();
         ctx.out << "}";
     }
 
@@ -548,7 +548,7 @@ namespace json {
 
     void Print(const Document& doc, std::ostream& output) {
 
-        PrintContext ctx{ output };
+        PrintContext ctx{output};
         PrintNode(doc.GetRoot(), ctx);
         // Реализуйте функцию самостоятельно
     }

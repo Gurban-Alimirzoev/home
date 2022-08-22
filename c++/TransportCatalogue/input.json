@@ -3,7 +3,7 @@
     {
       "type": "Bus",
       "name": "114",
-      "stops": ["Sea bridge", "Riv bridge"],
+      "stops": ["Sea bridge", "Riv bridge", "Moscow bridge"],
       "is_roundtrip": false
     },
     {
@@ -11,7 +11,14 @@
       "name": "Riv bridge",
       "latitude": 43.587795,
       "longitude": 39.716901,
-      "road_distances": {"Sea bridge": 850}
+      "road_distances": {"Moscow bridge": 500}
+    },
+    {
+      "type": "Stop",
+      "name": "Moscow bridge",
+      "latitude": 43.587798,
+      "longitude": 39.71697,
+      "road_distances": {"Sea bridge": 400, "Riv bridge": 1000}
     },
     {
       "type": "Stop",
