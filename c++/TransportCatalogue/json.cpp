@@ -427,13 +427,11 @@ namespace json {
     void PrintNode(const Node& node, const PrintContext& cont);
 
     void PrintValue(std::nullptr_t, const PrintContext& ctx) {
-        ctx.Indented().PrintIndent();
         ctx.out << "null";
     }
 
     void PrintValue(const bool value, const PrintContext& ctx)
     {
-        ctx.Indented().PrintIndent();
         if (value)
             ctx.out << "true";
         else
@@ -442,7 +440,6 @@ namespace json {
 
     void PrintValue(const std::string value, const PrintContext& ctx)
     {
-        ctx.Indented().PrintIndent();
         ctx.out << "\"";
         for (char c : value)
         {
@@ -485,7 +482,7 @@ namespace json {
             ctx.Indented().PrintEnter().PrintIndent();
             PrintNode(array[array.size() - 1], ctx);
         }
-        ctx.PrintEnter().PrintIndent();
+        ctx.PrintEnter();
         ctx.out << "]";
     }
 
@@ -496,7 +493,7 @@ namespace json {
         {
             ctx.Indented().PrintEnter().PrintIndent();
             PrintValue(it->first, ctx);
-            ctx.out << " : ";
+            ctx.out << ": ";
             PrintNode(it->second, ctx);
             ctx.out << ", ";
         }
@@ -505,11 +502,11 @@ namespace json {
         {
             ctx.Indented().PrintEnter().PrintIndent();
             PrintValue(next(dict.end(), -1)->first, ctx);
-            ctx.out << " : ";
+            ctx.out << ": ";
             PrintNode(next(dict.end(), -1)->second, ctx);
         }
-          ctx.Indented().PrintEnter().PrintIndent();
-          ctx.out << "}";
+        ctx.Indented().PrintEnter().PrintIndent();
+        ctx.out << "}";
     }
 
     void PrintNode(const Node& node, const PrintContext& cont)
@@ -522,6 +519,10 @@ namespace json {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
+    Document::Document()
+        : root_(Node("null")) {
+    }
+
 
     Document::Document(Node root)
         : root_(move(root)) {

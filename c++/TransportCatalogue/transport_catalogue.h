@@ -21,7 +21,7 @@ namespace transport_catalogue
 
 	public:
 		void AddStop(std::string name, geo::Coordinates coor);
-		void AddBus(std::string_view name, std::vector<std::string>& stops_on_bus, bool is_roundtrip);
+		void AddBus(std::string_view name, std::vector<std::string>& stops_on_bus);
 
 		Stop* FindStop(std::string_view name) const;
 		Bus* FindBus(std::string_view name) const;

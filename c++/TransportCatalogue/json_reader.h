@@ -17,12 +17,23 @@ class JsonReader
 {
 public:
 	JsonReader() = default;
-
 	JsonReader(std::istream& input, std::ostream& out)
-		: input(input), out(out), input_json(json::Load(input)), handler(db)
+		: input(input), out(out), handler(db)
 	{}
 
+	void ReadJson();
 	void Requests();
+	json::Document GetAnswerJson() const;
+	void PrintAnswerJson();
+
+private:
+	std::istream& input;
+	std::ostream& out;
+	transport_catalogue::TransportCatalogue db;
+	json::Document input_json;
+	transport_catalogue::RequestHandler handler;
+	std::deque <json::Dict> buses;
+	json::Array answer;
 
 	void BaseRequests(json::Array base_requests);
 	void BaseRequest_AddBus();
@@ -31,14 +42,4 @@ public:
 	void StatRequests(json::Array stat_requests);
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
-
-private:
-	std::istream& input;
-	std::ostream& out;
-	json::Document input_json;
-	//json::Document output_json;
-	transport_catalogue::TransportCatalogue db;
-	transport_catalogue::RequestHandler handler;
-	std::deque <json::Dict> buses;
-	json::Array answer;
 };

@@ -19,8 +19,9 @@ using namespace std::literals;
 int main() {
 
     JsonReader reader(std::cin, std::cout);
-    //transport_catalogue::RequestHandler handler(reader);
+    reader.ReadJson();
     reader.Requests();
+    reader.PrintAnswerJson();
 }
     /*
      * Примерная структура программы:

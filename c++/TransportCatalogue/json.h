@@ -91,7 +91,6 @@ namespace json {
 
         if constexpr (std::is_same<Value, int>::value || std::is_same<Value, double>::value)
         {
-            ctx.PrintIndent();
             ctx.out << value;
         }
 
@@ -106,6 +105,7 @@ namespace json {
 
     class Document {
     public:
+        Document();
         explicit Document(Node root);
 
         const Node& GetRoot() const;

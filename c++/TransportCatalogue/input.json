@@ -23,6 +23,7 @@
   ],
   "stat_requests": [
     { "id": 1, "type": "Stop", "name": "Riv bridge" },
-    { "id": 2, "type": "Bus", "name": "114" }
+    { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 3, "type": "Stop", "name": "Riv"}
   ]
 }
