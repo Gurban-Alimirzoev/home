@@ -16,8 +16,10 @@ void JsonReader::Requests()
 	{
 		if (request.first == "base_requests")
 			BaseRequests(request.second.AsArray());
-		else
+		else if (request.first == "stat_requests")
 			StatRequests(request.second.AsArray());
+		else
+			RenderRequests(request.second.AsMap());
 	}
 }
 
@@ -164,4 +166,9 @@ json::Document JsonReader::GetAnswerJson() const
 void JsonReader::PrintAnswerJson()
 {
 	Print(Document{ answer }, out);
+}
+
+void JsonReader::RenderRequests(json::Dict render_requests)
+{
+
 }

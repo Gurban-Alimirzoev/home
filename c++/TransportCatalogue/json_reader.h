@@ -39,4 +39,6 @@ private:
 	void StatRequests(json::Array stat_requests);
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
+
+	void RenderRequests(json::Dict render_requests);
 };
