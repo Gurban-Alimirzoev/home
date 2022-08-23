@@ -85,7 +85,11 @@ namespace transport_catalogue
 
 	unordered_set<Bus*> TransportCatalogue::GetAllBusOnStop(string_view name) const
 	{
-		return all_buses_on_stops.at(name);
+		auto iter = all_buses_on_stops.find(name);
+		if (iter != all_buses_on_stops.end())
+			return all_buses_on_stops.at(name);
+		else
+			return {};
 	}
 
 	void TransportCatalogue::SetEarthDistance(pair <string, string> stop_and_next_, double distance)

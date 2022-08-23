@@ -3,7 +3,13 @@
     {
       "type": "Bus",
       "name": "114",
-      "stops": ["Sea bridge", "Riv bridge", "Moscow bridge"],
+      "stops": ["Sea bridge", "Riv bridge"],
+      "is_roundtrip": false
+    },
+    {
+      "type": "Bus",
+      "name": "11",
+      "stops": ["Sea bridge", "Riv bridge"],
       "is_roundtrip": false
     },
     {
@@ -29,8 +35,13 @@
     }
   ],
   "stat_requests": [
+    { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 1, "type": "Bus", "name": "113" },
+    { "id": 5, "type": "Stop", "name": "Moscow bridge"},
     { "id": 1, "type": "Stop", "name": "Riv bridge" },
     { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 4, "type": "Bus", "name": "11" },
     { "id": 3, "type": "Stop", "name": "Riv"}
+    
   ]
 }

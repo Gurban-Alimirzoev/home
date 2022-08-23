@@ -3,6 +3,9 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <unordered_map>
+#include <utility>
+
 
 #include "json.h"
 #include "transport_catalogue.h"
@@ -27,6 +30,7 @@ private:
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
 	json::Document input_json;
+	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 	std::deque <json::Dict> buses;
 	json::Array answer;
 
@@ -34,6 +38,7 @@ private:
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);
 
+	void SetDistance();
 	void Transform(const json::Array& stops_input, std::vector<std::string>& stops_output);
 
 	void StatRequests(json::Array stat_requests);
