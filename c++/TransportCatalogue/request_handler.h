@@ -2,6 +2,7 @@
 #include <optional>
 #include "transport_catalogue.h"
 #include "domain.h"
+#include "map_renderer.h"
 
 namespace transport_catalogue
 {
