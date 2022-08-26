@@ -197,5 +197,8 @@ void JsonReader::PrintAnswerJson()
 
 void JsonReader::RenderRequests(json::Dict render_requests)
 {
-
+	for (auto bus : buses)
+	{
+		renderer.AddBus(bus);
+	}
 }

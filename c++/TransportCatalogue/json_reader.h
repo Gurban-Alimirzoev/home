@@ -16,7 +16,10 @@ class JsonReader
 public:
 	JsonReader() = default;
 	JsonReader(std::istream& input, std::ostream& out)
-		: input(input), out(out), handler(db), input_json(json::Load(input))
+		: input(input)
+		, out(out)
+		, handler(db, renderer)
+		, input_json(json::Load(input))
 	{}
 
 	void ReadJson();
@@ -28,6 +31,7 @@ private:
 	std::istream& input;
 	std::ostream& out;
 	transport_catalogue::TransportCatalogue db;
+	renderer::MapRenderer renderer;
 	transport_catalogue::RequestHandler handler;
 	json::Document input_json;
 	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;

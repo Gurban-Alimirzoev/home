@@ -30,4 +30,8 @@ namespace transport_catalogue
 		return db_.GetAllBusOnStop(stop_name);
 	}
 
+	svg::Document RequestHandler::RenderMap() const
+	{
+		return renderer_.GetMapDocument();
+	}
 }
