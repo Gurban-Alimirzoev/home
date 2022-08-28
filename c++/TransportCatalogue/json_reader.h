@@ -31,11 +31,11 @@ private:
 	std::istream& input;
 	std::ostream& out;
 	transport_catalogue::TransportCatalogue db;
-	renderer::MapRenderer renderer;
 	transport_catalogue::RequestHandler handler;
-	json::Document input_json;
+	renderer::MapRenderer renderer;
 	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 	std::deque <json::Dict> buses;
+	json::Document input_json;
 	json::Array answer;
 
 	void BaseRequests(json::Array base_requests);

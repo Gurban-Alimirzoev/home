@@ -107,7 +107,6 @@ namespace renderer
 			stop_label_offset = { 0, 0 };
 
 		svg::Color color;
-
 	};
 
 	class MapRenderer
@@ -119,7 +118,7 @@ namespace renderer
 		{}
 
         void AddBus();
-        void CalculateSphereProjectorSettings(std::unordered_map <std::string_view, Stop*> stopname_to_stop);
+        void CalculateSphereProjectorSettings(std::unordered_map <std::string_view, transport_catalogue::Stop*> stopname_to_stop);
         svg::Document GetMapDocument() const;
 
 	private:

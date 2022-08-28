@@ -14,7 +14,7 @@ namespace renderer
 
 	void MapRenderer::CalculateSphereProjectorSettings(unordered_map<string_view, Stop*> stopname_to_stop)
 	{
-		double
+		/*double
 			min_lat = 0,
 			min_lon = 0,
 			max_lat = 0,
@@ -30,9 +30,9 @@ namespace renderer
 					min_lat = stop_data->coor.lat;
 				if (stop_data->coor.lng > max_lon)
 					min_lat = stop_data->coor.lat;
-			}
+			}*/
 
-		SphereProjector();
+		SphereProjector(settings.width, settings.height, settings.padding);
 	}
 
 	void MapRenderer::AddBus()
