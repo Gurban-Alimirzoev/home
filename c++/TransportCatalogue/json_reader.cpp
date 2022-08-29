@@ -3,31 +3,37 @@
 using namespace std;
 using namespace transport_catalogue;
 using namespace json;
+using namespace renderer;
 
 void JsonReader::ReadJson()
 {
 	input_json = json::Load(input);
 }
 
-void JsonReader::Requests()
+TransportCatalogue JsonReader::GetDB() const
+{
+	return db;
+}
+
+void JsonReader::ParseRequests()
 {
 	Node requests = input_json.GetRoot();
 	for (auto request : requests.AsMap())
 	{
 		if (request.first == "base_requests")
-			BaseRequests(request.second.AsArray());
+			base_requests = request.second.AsArray();
 		else if (request.first == "stat_requests")
-			StatRequests(request.second.AsArray());
+			stat_requests = request.second.AsArray();
 		else
-			RenderRequests(request.second.AsMap());
+			render_requests = request.second.AsMap();
 	}
 }
 
-void JsonReader::BaseRequests(Array base_requests)
+void JsonReader::BaseRequests()
 {
 	for (Node base_request : base_requests)
 	{
-			Dict bus_or_stop = base_request.AsMap();
+		Dict bus_or_stop = base_request.AsMap();
 		if (bus_or_stop.at("type").AsString() == "Stop")
 			BaseRequests_AddStop(bus_or_stop);
 		else
@@ -44,7 +50,7 @@ void JsonReader::BaseRequest_AddBus()
 		vector<string> stops(bus.at("stops").AsArray().size());
 		Transform(bus.at("stops").AsArray(), stops);
 		if (!bus.at("is_roundtrip").AsBool())
-		{			
+		{
 			size_t input_stop_size = bus.at("stops").AsArray().size();
 			stops.resize(input_stop_size * 2 - 1);
 			reverse(stops.begin(), stops.end());
@@ -83,7 +89,7 @@ void JsonReader::BaseRequests_AddStop(Dict stop)
 	{
 		buffer_distance[
 			stop.at("name").AsString()].push_back({
-				name_second_stop, distance.AsDouble()});
+				name_second_stop, distance.AsDouble() });
 	}
 }
 
@@ -98,7 +104,7 @@ void JsonReader::SetDistance()
 	}
 }
 
-void JsonReader::StatRequests(Array stat_requests)
+void JsonReader::StatRequests()
 {
 	for (Node stat_request : stat_requests)
 	{
@@ -185,20 +191,81 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 }
 
-json::Document JsonReader::GetAnswerJson() const
+json::Document JsonReader::GetAnswerToStatRequests() const
 {
 	return Document(answer);
 }
 
-void JsonReader::PrintAnswerJson()
+void JsonReader::PrintAnswerToStatRequests()
 {
 	Print(Document{ answer }, out);
 }
 
-void JsonReader::RenderRequests(json::Dict render_requests)
+void JsonReader::ParseRenderRequests()
 {
-	for (auto bus : buses)
+	MakeSettings(render_requests);
+}
+
+void JsonReader::MakeSettings(json::Dict render_requests)
+{
+	settings.width = render_requests.at("width").AsInt();
+	settings.height = render_requests.at("height").AsInt();
+	settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsInt();
+	settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsInt();
+
+	settings.padding = render_requests.at("padding").AsDouble();
+	settings.line_width = render_requests.at("line_width").AsDouble();
+	settings.stop_radius = render_requests.at("stop_radius").AsDouble();
+	settings.underlayer_width = render_requests.at("underlayer_width").AsDouble();
+
+	for (auto offset : render_requests.at("bus_label_offset").AsArray())
+		settings.bus_label_offset.push_back(offset.AsDouble());
+	for (auto offset : render_requests.at("stop_label_offset").AsArray())
+		settings.stop_label_offset.push_back(offset.AsDouble());
+
+	if (render_requests.at("underlayer_color").IsString())
+		settings.underlayer_color = render_requests.at("underlayer_color").AsString();
+	else
+		settings.underlayer_color = RenderRequests_RgbOrRgba(
+			render_requests.at("underlayer_color").AsArray());
+
+	for (auto color : render_requests.at("color_palette").AsArray())
 	{
-		renderer.AddBus(bus);
+		if (color.IsString())
+			settings.color_palette.push_back(
+				color.AsString());
+		else
+			settings.color_palette.push_back(
+				RenderRequests_RgbOrRgba(
+					color.AsArray()));
 	}
+}
+
+svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
+{
+	if (color.size() == 3)
+	{
+		return svg::Rgb{
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt()) };
+	}
+	else
+	{
+		return svg::Rgba{
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt())
+		, color[3].AsDouble() };
+	}
+}
+
+Settings JsonReader::GetSettings() const
+{
+	return settings;
+}
+
+vector<Stop*> JsonReader::GetAllStopOnBus()
+{
+	return handler.GetStopsByBus();
 }

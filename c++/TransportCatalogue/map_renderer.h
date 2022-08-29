@@ -8,6 +8,7 @@
 #include <iostream>
 #include <optional>
 #include <vector>
+#include <deque>
 #include <utility>
 #include <unordered_map>
 #include <string_view>
@@ -102,11 +103,12 @@ namespace renderer
 			stop_radius = 0,
 			underlayer_width = 0;
 
-		std::pair<double, double> 
+		std::vector<double, double> 
 			bus_label_offset = { 0, 0 },
 			stop_label_offset = { 0, 0 };
 
-		svg::Color color;
+		svg::Color underlayer_color;
+        std::vector<svg::Color> color_palette;
 	};
 
 	class MapRenderer
@@ -117,12 +119,12 @@ namespace renderer
 			: settings(settings)
 		{}
 
-        void AddBus();
-        void CalculateSphereProjectorSettings(std::unordered_map <std::string_view, transport_catalogue::Stop*> stopname_to_stop);
-        svg::Document GetMapDocument() const;
+        void AddPoints(std::deque<transport_catalogue::Stop*> bus);
+        void RenderMap();
 
 	private:
 		Settings settings;
         svg::Document out_doc;
+        std::vector<svg::Point> Points;
 	};
 }

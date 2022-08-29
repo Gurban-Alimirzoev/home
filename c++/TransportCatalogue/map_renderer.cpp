@@ -4,39 +4,32 @@
 using namespace std;
 using namespace transport_catalogue;
 using namespace geo;
+
 namespace renderer
 {
 
-	svg::Document MapRenderer::GetMapDocument() const
+	void MapRenderer::AddPoints(
+		deque<Stop*> bus)
 	{
-		return out_doc;
-	}
-
-	void MapRenderer::CalculateSphereProjectorSettings(unordered_map<string_view, Stop*> stopname_to_stop)
-	{
-		/*double
-			min_lat = 0,
-			min_lon = 0,
-			max_lat = 0,
-			max_lon = 0;
-
-		for (auto [stop_name, stop_data] : stopname_to_stop)
+		svg::Polyline line;
+		for_each(
+			bus.begin(),
+			bus.end(),
+			[this, &line](auto name, Stop* data)
 			{
-				if (stop_data->coor.lat < min_lat)
-					min_lat = stop_data->coor.lat;
-				if (stop_data->coor.lng < min_lon)
-					min_lat = stop_data->coor.lat;
-				if (stop_data->coor.lat > max_lat)
-					min_lat = stop_data->coor.lat;
-				if (stop_data->coor.lng > max_lon)
-					min_lat = stop_data->coor.lat;
-			}*/
+				line.AddPoint({ data->coor.lat, data->coor.lng) });
+		});
 
-		SphereProjector(settings.width, settings.height, settings.padding);
+		out_doc.Add(line);
 	}
 
-	void MapRenderer::AddBus()
+	void MapRenderer::RenderMap()
 	{
-
+		SphereProjector SP(
+			Points.begin(),
+			Points.end(),
+			settings.width
+			, settings.height
+			, settings.padding);
 	}
 }

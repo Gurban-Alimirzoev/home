@@ -30,8 +30,11 @@ namespace transport_catalogue
 		return db_.GetAllBusOnStop(stop_name);
 	}
 
-	svg::Document RequestHandler::RenderMap() const
+	const std::vector<Stop*> RequestHandler::GetStopsByBus(const std::string_view& bus_name) const
 	{
-		return renderer_.GetMapDocument();
+		if (ChekBus(bus_name))
+			return db_.FindBus(bus_name)->bus;
+		return {};
 	}
+
 }
