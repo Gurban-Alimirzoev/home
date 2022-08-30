@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cassert>
 #include <chrono>
 #include <sstream>
@@ -7,21 +9,20 @@
 #include <iostream>
 
 #include "json_reader.h"
-#include "map_renderer.h"
 
 using namespace std::literals; 
 
 int main() {
-    JsonReader reader(std::cin, std::cout);
-    reader.ParseRequests();
-    reader.BaseRequests();
+    renderer::MapRenderer renderer;
 
-    transport_catalogue::RequestHandler handler(reader.GetDB());
+    JsonReader reader(std::cin, std::cout, renderer);
+    reader.ParseRequests();
+    reader.ParseRenderRequests();
+    renderer.SetSettings(reader.GetSettings());
+
+    reader.BaseRequests();
     reader.StatRequests();
 
-    reader.ParseRenderRequests();
-    renderer::MapRenderer renderer(reader.GetSettings());
-
-
-    renderer.AddPoints();
+    reader.AddRendererElements();
+    renderer.RenderMap(std::cout);
 }

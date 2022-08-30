@@ -1,8 +1,4 @@
 #pragma once
-#include "svg.h"
-#include "geo.h"
-#include "domain.h"
-
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
@@ -13,10 +9,9 @@
 #include <unordered_map>
 #include <string_view>
 
-inline const double EPSILON = 1e-6;
-bool IsZero(double value) {
-    return std::abs(value) < EPSILON;
-}
+#include "svg.h"
+#include "geo.h"
+#include "domain.h"
 
 namespace renderer
 {
@@ -36,16 +31,16 @@ namespace renderer
             // Находим точки с минимальной и максимальной долготой
             const auto [left_it, right_it] = std::minmax_element(
                 points_begin, points_end,
-                [](auto lhs, auto rhs) { return lhs.lng < rhs.lng; });
-            min_lon_ = left_it->lng;
-            const double max_lon = right_it->lng;
+                [](auto lhs, auto rhs) { return lhs.y < rhs.y; });
+            min_lon_ = left_it->y;
+            const double max_lon = right_it->y;
 
             // Находим точки с минимальной и максимальной широтой
             const auto [bottom_it, top_it] = std::minmax_element(
                 points_begin, points_end,
-                [](auto lhs, auto rhs) { return lhs.lat < rhs.lat; });
-            const double min_lat = bottom_it->lat;
-            max_lat_ = top_it->lat;
+                [](auto lhs, auto rhs) { return lhs.x < rhs.x; });
+            const double min_lat = bottom_it->x;
+            max_lat_ = top_it->x;
 
             // Вычисляем коэффициент масштабирования вдоль координаты x
             std::optional<double> width_zoom;
@@ -82,6 +77,11 @@ namespace renderer
             };
         }
 
+        const double EPSILON = 1e-6;
+        bool IsZero(double value) {
+            return std::abs(value) < EPSILON;
+        }
+
     private:
         double padding_;
         double min_lon_ = 0;
@@ -103,7 +103,7 @@ namespace renderer
 			stop_radius = 0,
 			underlayer_width = 0;
 
-		std::vector<double, double> 
+		std::vector<double> 
 			bus_label_offset = { 0, 0 },
 			stop_label_offset = { 0, 0 };
 
@@ -115,16 +115,20 @@ namespace renderer
 	{
 	public:
         MapRenderer() = default;
-		MapRenderer(Settings settings)
-			: settings(settings)
+		MapRenderer(Settings settings_)
+			: settings(settings_)
 		{}
+        void SetSettings(Settings settings_);
+        void SavePoints(svg::Point);
+        void AddPoints(std::vector<transport_catalogue::Stop*> bus);
 
-        void AddPoints(std::deque<transport_catalogue::Stop*> bus);
-        void RenderMap();
+        void RenderMap(std::ostream& out);
 
 	private:
 		Settings settings;
+        std::vector<svg::Object> polylines;
         svg::Document out_doc;
-        std::vector<svg::Point> Points;
+        std::vector<svg::Point> all_points;
+        int number_of_color = 0;
 	};
 }

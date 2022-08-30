@@ -4,7 +4,6 @@ using namespace std;
 
 namespace transport_catalogue
 {
-
 	optional<BusInfo> RequestHandler::GetBusStat(const string_view& bus_name) const
 	{
 		return db_.GetBusInfo(bus_name);

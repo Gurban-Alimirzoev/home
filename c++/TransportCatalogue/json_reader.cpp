@@ -10,11 +10,6 @@ void JsonReader::ReadJson()
 	input_json = json::Load(input);
 }
 
-TransportCatalogue JsonReader::GetDB() const
-{
-	return db;
-}
-
 void JsonReader::ParseRequests()
 {
 	Node requests = input_json.GetRoot();
@@ -265,7 +260,38 @@ Settings JsonReader::GetSettings() const
 	return settings;
 }
 
-vector<Stop*> JsonReader::GetAllStopOnBus()
+void JsonReader::AddRendererElements()
 {
-	return handler.GetStopsByBus();
+	AddStops();
+	AddBuses();
+}
+
+void JsonReader::AddStops()
+{
+	const std::deque <Stop>& stops = db.GetAllStops();
+	for (Stop stop : stops)
+	{
+		rendrer.SavePoints({ stop.coor.lat, stop.coor.lng });
+	}
+
+
+}
+
+void JsonReader::AddBuses()
+{
+	vector<std::string> buses_sort(buses.size());
+	transform(
+		buses.begin(),
+		buses.end(),
+		buses_sort.begin(),
+		[this](Dict str)
+		{return str.at("name").AsString(); }
+	);
+	sort(buses_sort.begin(), buses_sort.end());
+	for (auto str  : buses_sort)
+	{
+		rendrer.AddPoints(
+			handler.GetStopsByBus(str)
+		);
+	}
 }

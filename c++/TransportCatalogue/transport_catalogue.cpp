@@ -114,4 +114,9 @@ namespace transport_catalogue
 		else
 			return geo_stops_distance.at({ stop_and_next_stop.second, stop_and_next_stop.first });
 	}
+
+	const std::deque <Stop>& TransportCatalogue::GetAllStops() const
+	{
+		return stops;
+	}
 }
