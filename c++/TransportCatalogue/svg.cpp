@@ -27,10 +27,11 @@ namespace svg
 
 	void Circle::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
+		context.Indented().RenderIndent();
 		out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
 		out << "r=\""sv << radius_ << "\""sv;
 		RenderAttrs(context.out);
-		out << " />"sv;
+		out << "/>"sv;
 	}
 
 	Polyline& Polyline::AddPoint(Point point)
@@ -41,6 +42,7 @@ namespace svg
 
 	void Polyline::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
+		context.Indented().RenderIndent();
 		if (!points.empty())
 		{
 			out << "<polyline points=\""sv << points[0].x << "," << points[0].y;
@@ -55,7 +57,7 @@ namespace svg
 		}
 		out << "\""sv;
 		RenderAttrs(context.out);
-		out << " />"sv;
+		out << "/>"sv;
 	}
 
 	Text& Text::SetPosition(Point pos)
@@ -96,6 +98,7 @@ namespace svg
 
 	void Text::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
+		context.Indented().RenderIndent();
 		out << "<text x=\""sv << pos_.x << "\""
 			<< " y=\""sv << pos_.y << "\""
 			<< " dx=\""sv << offset_.x << "\""
@@ -140,7 +143,7 @@ namespace svg
 	{
 		out << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"sv << std::endl;
 		out << "<svg xmlns=\"http://www.w3.org/2000/svg\" version=\"1.1\">"sv << std::endl;
-		RenderContext r_c(out);
+		RenderContext r_c{ out };
 		for (auto i = 0; i != static_cast<int>(objects_.size()); ++i) {
 			objects_[i]->Render(r_c);
 		}

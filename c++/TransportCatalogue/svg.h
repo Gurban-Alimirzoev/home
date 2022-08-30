@@ -133,15 +133,9 @@ namespace svg {
 	 * Хранит ссылку на поток вывода, текущее значение и шаг отступа при выводе элемента
 	 */
 	struct RenderContext {
-		RenderContext(std::ostream& out)
-			: out(out) {
-		}
-
-		RenderContext(std::ostream& out, int indent_step, int indent = 0)
-			: out(out)
-			, indent_step(indent_step)
-			, indent(indent) {
-		}
+		std::ostream& out;
+		int indent_step = 2;
+		int indent = 0;
 
 		RenderContext Indented() const {
 			return { out, indent_step, indent + indent_step };
@@ -153,9 +147,12 @@ namespace svg {
 			}
 		}
 
-		std::ostream& out;
-		int indent_step = 0;
-		int indent = 0;
+		RenderContext RenderEnter() const
+		{
+			out.put('\n');
+			RenderIndent();
+			return *this;
+		}
 	};
 
 	/*
