@@ -2,72 +2,36 @@
   "base_requests": [
     {
       "type": "Bus",
-      "name": "14",
-      "stops": [
-        "Ulitsa Lizy Chaikinoi",
-        "Elektroseti",
-        "Ulitsa Dokuchaeva",
-        "Ulitsa Lizy Chaikinoi"
-      ],
-      "is_roundtrip": true
-    },
-    {
-      "type": "Bus",
       "name": "114",
-      "stops": [
-        "Morskoy vokzal",
-        "Rivierskiy most"
-      ],
+      "stops": ["Sea bridge", "Riv bridge", "Moscow bridge"],
       "is_roundtrip": false
     },
     {
       "type": "Stop",
-      "name": "Rivierskiy most",
+      "name": "Riv bridge",
       "latitude": 43.587795,
       "longitude": 39.716901,
-      "road_distances": {
-        "Morskoy vokzal": 850
-      }
+      "road_distances": {"Moscow bridge": 500}
     },
     {
       "type": "Stop",
-      "name": "Morskoy vokzal",
+      "name": "Moscow bridge",
+      "latitude": 43.587798,
+      "longitude": 39.71697,
+      "road_distances": {"Sea bridge": 400, "Riv bridge": 500}
+    },
+    {
+      "type": "Stop",
+      "name": "Sea bridge",
       "latitude": 43.581969,
       "longitude": 39.719848,
-      "road_distances": {
-        "Rivierskiy most": 850
-      }
-    },
-    {
-      "type": "Stop",
-      "name": "Elektroseti",
-      "latitude": 43.598701,
-      "longitude": 39.730623,
-      "road_distances": {
-        "Ulitsa Dokuchaeva": 3000,
-        "Ulitsa Lizy Chaikinoi": 4300
-      }
-    },
-    {
-      "type": "Stop",
-      "name": "Ulitsa Dokuchaeva",
-      "latitude": 43.585586,
-      "longitude": 39.733879,
-      "road_distances": {
-        "Ulitsa Lizy Chaikinoi": 2000,
-        "Elektroseti": 3000
-      }
-    },
-    {
-      "type": "Stop",
-      "name": "Ulitsa Lizy Chaikinoi",
-      "latitude": 43.590317,
-      "longitude": 39.746833,
-      "road_distances": {
-        "Elektroseti": 4300,
-        "Ulitsa Dokuchaeva": 2000
-      }
+      "road_distances": {"Riv bridge": 850}
     }
+  ],
+  "stat_requests": [
+    { "id": 1, "type": "Stop", "name": "Riv bridge" },
+    { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 3, "type": "Stop", "name": "Riv"}
   ],
   "render_settings": {
     "width": 600,
@@ -97,7 +61,5 @@
       [255, 160, 0],
       "red"
     ]
-  },
-  "stat_requests": [
-  ]
+  }
 }

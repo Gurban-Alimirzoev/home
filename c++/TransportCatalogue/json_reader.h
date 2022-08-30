@@ -23,14 +23,11 @@ public:
 		, handler(db, rendrer_)
 	{}
 
-	void ReadJson();
-	//transport_catalogue::TransportCatalogue GetDB() const;
 	void ParseRequests();
 	void BaseRequests();
 	void ParseRenderRequests();
 	void StatRequests();
 
-	//void SetHandler(transport_catalogue::RequestHandler handler_);
 	json::Document GetAnswerToStatRequests() const;
 	void PrintAnswerToStatRequests();
 

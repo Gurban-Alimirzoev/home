@@ -17,12 +17,14 @@ namespace renderer
 {
     class SphereProjector {
     public:
+        SphereProjector() = default;
+
         // points_begin и points_end задают начало и конец интервала элементов geo::Coordinates
         template <typename PointInputIt>
-        SphereProjector(PointInputIt points_begin, PointInputIt points_end,
+        void CalculateCoef(PointInputIt points_begin, PointInputIt points_end,
             double max_width, double max_height, double padding)
-            : padding_(padding) //
         {
+            padding_ = padding;
             // Если точки поверхности сферы не заданы, вычислять нечего
             if (points_begin == points_end) {
                 return;
@@ -68,7 +70,6 @@ namespace renderer
                 zoom_coeff_ = *height_zoom;
             }
         }
-
         // Проецирует широту и долготу в координаты внутри SVG-изображения
         svg::Point operator()(geo::Coordinates coords) const {
             return {
@@ -83,7 +84,7 @@ namespace renderer
         }
 
     private:
-        double padding_;
+        double padding_ = 0;
         double min_lon_ = 0;
         double max_lat_ = 0;
         double zoom_coeff_ = 0;
@@ -91,13 +92,11 @@ namespace renderer
 
 	struct Settings
 	{
-		int 
+        double
 			width = 0,
 			height = 0,
 			bus_label_font_size = 0,
-			stop_label_font_size = 0;
-
-		double 
+			stop_label_font_size = 0, 
 			padding = 0,
 			line_width = 0,
 			stop_radius = 0,
@@ -120,12 +119,14 @@ namespace renderer
 		{}
         void SetSettings(Settings settings_);
         void SavePoints(svg::Point);
+        void MakeSphereProjector();
         void AddPoints(std::vector<transport_catalogue::Stop*> bus);
 
         void RenderMap(std::ostream& out);
 
 	private:
 		Settings settings;
+        SphereProjector SP;
         std::vector<svg::Object> polylines;
         svg::Document out_doc;
         std::vector<svg::Point> all_points;

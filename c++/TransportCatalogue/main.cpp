@@ -1,4 +1,3 @@
-
 #include <cassert>
 #include <chrono>
 #include <sstream>
@@ -8,8 +7,6 @@
 #include <iostream>
 
 #include "json_reader.h"
-
-using namespace std::literals; 
 
 int main() {
     renderer::MapRenderer renderer;
@@ -21,7 +18,7 @@ int main() {
 
     reader.BaseRequests();
     //reader.StatRequests();
-
+    //reader.PrintAnswerToStatRequests();
     reader.AddRendererElements();
     renderer.RenderMap(std::cout);
 }

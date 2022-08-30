@@ -203,37 +203,42 @@ void JsonReader::ParseRenderRequests()
 
 void JsonReader::MakeSettings(json::Dict render_requests)
 {
-	settings.width = render_requests.at("width").AsInt();
-	settings.height = render_requests.at("height").AsInt();
-	settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsInt();
-	settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsInt();
-
-	settings.padding = render_requests.at("padding").AsDouble();
-	settings.line_width = render_requests.at("line_width").AsDouble();
-	settings.stop_radius = render_requests.at("stop_radius").AsDouble();
-	settings.underlayer_width = render_requests.at("underlayer_width").AsDouble();
-
-	for (auto offset : render_requests.at("bus_label_offset").AsArray())
-		settings.bus_label_offset.push_back(offset.AsDouble());
-	for (auto offset : render_requests.at("stop_label_offset").AsArray())
-		settings.stop_label_offset.push_back(offset.AsDouble());
-
-	if (render_requests.at("underlayer_color").IsString())
-		settings.underlayer_color = render_requests.at("underlayer_color").AsString();
-	else
-		settings.underlayer_color = RenderRequests_RgbOrRgba(
-			render_requests.at("underlayer_color").AsArray());
-
-	for (auto color : render_requests.at("color_palette").AsArray())
+	if (!render_requests.empty())
 	{
-		if (color.IsString())
-			settings.color_palette.push_back(
-				color.AsString());
+		settings.width = render_requests.at("width").AsDouble();
+		settings.height = render_requests.at("height").AsDouble();
+		settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsDouble();
+		settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsDouble();
+
+		settings.padding = render_requests.at("padding").AsDouble();
+		settings.line_width = render_requests.at("line_width").AsDouble();
+		settings.stop_radius = render_requests.at("stop_radius").AsDouble();
+		settings.underlayer_width = render_requests.at("underlayer_width").AsDouble();
+
+		for (auto offset : render_requests.at("bus_label_offset").AsArray())
+			settings.bus_label_offset.push_back(offset.AsDouble());
+		for (auto offset : render_requests.at("stop_label_offset").AsArray())
+			settings.stop_label_offset.push_back(offset.AsDouble());
+
+		if (render_requests.at("underlayer_color").IsString())
+			settings.underlayer_color = render_requests.at("underlayer_color").AsString();
 		else
-			settings.color_palette.push_back(
-				RenderRequests_RgbOrRgba(
-					color.AsArray()));
-	}
+			settings.underlayer_color = RenderRequests_RgbOrRgba(
+				render_requests.at("underlayer_color").AsArray());
+
+		for (auto color : render_requests.at("color_palette").AsArray())
+		{
+			if (color.IsString())
+				settings.color_palette.push_back(
+					color.AsString());
+			else
+				settings.color_palette.push_back(
+					RenderRequests_RgbOrRgba(
+						color.AsArray()));
+		}
+
+
+	}		
 }
 
 svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
@@ -241,16 +246,16 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	if (color.size() == 3)
 	{
 		return svg::Rgb{
-		static_cast<uint8_t>(color[0].AsInt())
-		, static_cast<uint8_t>(color[1].AsInt())
-		, static_cast<uint8_t>(color[2].AsInt()) };
+		static_cast<uint8_t>(color[0].AsDouble())
+		, static_cast<uint8_t>(color[1].AsDouble())
+		, static_cast<uint8_t>(color[2].AsDouble()) };
 	}
 	else
 	{
 		return svg::Rgba{
-		static_cast<uint8_t>(color[0].AsInt())
-		, static_cast<uint8_t>(color[1].AsInt())
-		, static_cast<uint8_t>(color[2].AsInt())
+		static_cast<uint8_t>(color[0].AsDouble())
+		, static_cast<uint8_t>(color[1].AsDouble())
+		, static_cast<uint8_t>(color[2].AsDouble())
 		, color[3].AsDouble() };
 	}
 }
@@ -288,10 +293,8 @@ void JsonReader::AddBuses()
 		{return str.at("name").AsString(); }
 	);
 	sort(buses_sort.begin(), buses_sort.end());
+
+	rendrer.MakeSphereProjector();
 	for (string str  : buses_sort)
-	{
-		rendrer.AddPoints(
-			handler.GetStopsByBus(str)
-		);
-	}
+		rendrer.AddPoints(handler.GetStopsByBus(str));
 }

@@ -10,14 +10,6 @@ namespace renderer
 	void MapRenderer::AddPoints(vector<Stop*> bus)
 	{
 		svg::Polyline line;
-
-		SphereProjector SP(
-			all_points.begin(),
-			all_points.end(),
-			settings.width
-			, settings.height
-			, settings.padding);
-
 		for (auto data : bus)
 			line.AddPoint(SP(data->coor));
 		line.SetFillColor("none");
@@ -30,12 +22,22 @@ namespace renderer
 			number_of_color = 0;
 		else
 			number_of_color++;
+
 		out_doc.Add(line);
 	}
 
 	void MapRenderer::SetSettings(Settings settings_)
 	{
 		settings = settings_;
+	}
+
+	void MapRenderer::MakeSphereProjector()
+	{
+		SP.CalculateCoef(all_points.begin()
+			, all_points.end()
+			, settings.width
+			, settings.height
+			, settings.padding);
 	}
 
 	void MapRenderer::SavePoints(svg::Point p)
