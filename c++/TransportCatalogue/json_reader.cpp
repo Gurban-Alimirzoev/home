@@ -5,11 +5,6 @@ using namespace transport_catalogue;
 using namespace json;
 using namespace renderer;
 
-void JsonReader::ReadJson()
-{
-	input_json = json::Load(input);
-}
-
 void JsonReader::ParseRequests()
 {
 	Node requests = input_json.GetRoot();
