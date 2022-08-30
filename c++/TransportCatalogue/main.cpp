@@ -1,4 +1,3 @@
-#pragma once
 
 #include <cassert>
 #include <chrono>
@@ -21,7 +20,7 @@ int main() {
     renderer.SetSettings(reader.GetSettings());
 
     reader.BaseRequests();
-    reader.StatRequests();
+    //reader.StatRequests();
 
     reader.AddRendererElements();
     renderer.RenderMap(std::cout);

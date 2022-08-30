@@ -43,8 +43,6 @@ namespace renderer
 		all_points.push_back(p);
 	}
 
-
-
 	void MapRenderer::RenderMap(std::ostream& out)
 	{
 		out_doc.Render(out);

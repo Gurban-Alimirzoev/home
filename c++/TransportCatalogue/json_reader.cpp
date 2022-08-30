@@ -288,7 +288,7 @@ void JsonReader::AddBuses()
 		{return str.at("name").AsString(); }
 	);
 	sort(buses_sort.begin(), buses_sort.end());
-	for (auto str  : buses_sort)
+	for (string str  : buses_sort)
 	{
 		rendrer.AddPoints(
 			handler.GetStopsByBus(str)
