@@ -92,20 +92,19 @@ namespace renderer
 
 	struct Settings
 	{
+        int
+            bus_label_font_size = 0,
+            stop_label_font_size = 0;
         double
 			width = 0,
 			height = 0,
-			bus_label_font_size = 0,
-			stop_label_font_size = 0, 
 			padding = 0,
 			line_width = 0,
 			stop_radius = 0,
 			underlayer_width = 0;
-
 		std::vector<double> 
 			bus_label_offset = { 0, 0 },
 			stop_label_offset = { 0, 0 };
-
 		svg::Color underlayer_color;
         std::vector<svg::Color> color_palette;
 	};
@@ -120,8 +119,7 @@ namespace renderer
         void SetSettings(Settings settings_);
         void SavePoints(svg::Point);
         void MakeSphereProjector();
-        void AddPoints(std::vector<transport_catalogue::Stop*> bus);
-
+        void AddObject(std::vector<transport_catalogue::Stop*> bus);
         void RenderMap(std::ostream& out);
 
 	private:

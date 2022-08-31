@@ -152,7 +152,8 @@ void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 
 void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 {
-	if (!handler.ChekBus(bus_request.at("name").AsString()))
+	string name = bus_request.at("name").AsString();
+	if (!handler.ChekBus(name))
 	{
 		answer.emplace_back(Dict{
 			{"error_message",
@@ -163,7 +164,6 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 	else
 	{
-		string name = bus_request.at("name").AsString();
 		BusInfo info = *(handler.GetBusStat(name));
 		int stop_count = handler.GetStopCount(name);
 		answer.emplace_back(Dict{
@@ -202,8 +202,8 @@ void JsonReader::MakeSettings(json::Dict render_requests)
 	{
 		settings.width = render_requests.at("width").AsDouble();
 		settings.height = render_requests.at("height").AsDouble();
-		settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsDouble();
-		settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsDouble();
+		settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsInt();
+		settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsInt();
 
 		settings.padding = render_requests.at("padding").AsDouble();
 		settings.line_width = render_requests.at("line_width").AsDouble();
@@ -231,8 +231,6 @@ void JsonReader::MakeSettings(json::Dict render_requests)
 					RenderRequests_RgbOrRgba(
 						color.AsArray()));
 		}
-
-
 	}		
 }
 
@@ -268,13 +266,8 @@ void JsonReader::AddRendererElements()
 
 void JsonReader::AddStops()
 {
-	const std::deque <Stop>& stops = db.GetAllStops();
-	for (Stop stop : stops)
-	{
+	for (Stop stop : db.GetAllStops())
 		rendrer.SavePoints({ stop.coor.lat, stop.coor.lng });
-	}
-
-
 }
 
 void JsonReader::AddBuses()
@@ -291,5 +284,5 @@ void JsonReader::AddBuses()
 
 	rendrer.MakeSphereProjector();
 	for (string str  : buses_sort)
-		rendrer.AddPoints(handler.GetStopsByBus(str));
+		rendrer.AddObject(handler.GetStopsByBus(str));
 }

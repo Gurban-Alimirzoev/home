@@ -7,23 +7,26 @@ using namespace geo;
 namespace renderer
 {
 
-	void MapRenderer::AddPoints(vector<Stop*> bus)
+	void MapRenderer::AddObject(vector<Stop*> bus)
 	{
-		svg::Polyline line;
-		for (auto data : bus)
-			line.AddPoint(SP(data->coor));
-		line.SetFillColor("none");
-		line.SetStrokeWidth(settings.line_width);
-		line.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
-		line.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
-		line.SetStrokeColor(settings.color_palette[number_of_color]);
+		if (!bus.empty())
+		{
+			svg::Polyline line;
+			for (Stop* data : bus)
+				line.AddPoint(SP(data->coor));
+			line.SetFillColor("none");
+			line.SetStrokeWidth(settings.line_width);
+			line.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
+			line.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
+			line.SetStrokeColor(settings.color_palette[number_of_color]);
 
-		if (number_of_color == static_cast<int>(settings.color_palette.size()))
-			number_of_color = 0;
-		else
-			number_of_color++;
+			if (number_of_color == static_cast<int>(settings.color_palette.size()))
+				number_of_color = 0;
+			else
+				number_of_color++;
 
-		out_doc.Add(line);
+			out_doc.Add(line);
+		}
 	}
 
 	void MapRenderer::SetSettings(Settings settings_)

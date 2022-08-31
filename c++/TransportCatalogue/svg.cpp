@@ -6,8 +6,7 @@ namespace svg
 	using namespace std::literals;
 
 	void Object::Render(const RenderContext& context) const {
-		context.RenderIndent();
-
+		context.Indented().RenderIndent();
 		// Делегируем вывод тега своим подклассам
 		RenderObject(context);
 
@@ -27,7 +26,6 @@ namespace svg
 
 	void Circle::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		context.Indented().RenderIndent();
 		out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
 		out << "r=\""sv << radius_ << "\""sv;
 		RenderAttrs(context.out);
@@ -42,7 +40,6 @@ namespace svg
 
 	void Polyline::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		context.Indented().RenderIndent();
 		if (!points.empty())
 		{
 			out << "<polyline points=\""sv << points[0].x << "," << points[0].y;
@@ -98,7 +95,6 @@ namespace svg
 
 	void Text::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		context.Indented().RenderIndent();
 		out << "<text x=\""sv << pos_.x << "\""
 			<< " y=\""sv << pos_.y << "\""
 			<< " dx=\""sv << offset_.x << "\""

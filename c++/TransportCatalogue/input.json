@@ -3,7 +3,36 @@
     {
       "type": "Bus",
       "name": "114",
-      "stops": ["Sea bridge", "Riv bridge", "Moscow bridge"],
+      "stops": [
+        "Sea bridge",
+        "Riv bridge",
+        "Moscow bridge"
+      ],
+      "is_roundtrip": false
+    },
+    {
+      "type": "Stop",
+      "name": "A",
+      "latitude": 55.611087,
+      "longitude": 37.20829,
+      "road_distances": {
+        "B": 1000
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "B",
+      "latitude": 55.595884,
+      "longitude": 37.209755,
+      "road_distances": {}
+    },
+    {
+      "type": "Bus",
+      "name": "B1",
+      "stops": [
+        "A",
+        "B"
+      ],
       "is_roundtrip": false
     },
     {
@@ -11,27 +40,46 @@
       "name": "Riv bridge",
       "latitude": 43.587795,
       "longitude": 39.716901,
-      "road_distances": {"Moscow bridge": 500}
+      "road_distances": {
+        "Moscow bridge": 500
+      }
     },
     {
       "type": "Stop",
       "name": "Moscow bridge",
       "latitude": 43.587798,
       "longitude": 39.71697,
-      "road_distances": {"Sea bridge": 400, "Riv bridge": 500}
+      "road_distances": {
+        "Sea bridge": 400,
+        "Riv bridge": 500
+      }
     },
     {
       "type": "Stop",
       "name": "Sea bridge",
       "latitude": 43.581969,
       "longitude": 39.719848,
-      "road_distances": {"Riv bridge": 850}
+      "road_distances": {
+        "Riv bridge": 850
+      }
     }
   ],
   "stat_requests": [
-    { "id": 1, "type": "Stop", "name": "Riv bridge" },
-    { "id": 2, "type": "Bus", "name": "114" },
-    { "id": 3, "type": "Stop", "name": "Riv"}
+    {
+      "id": 1,
+      "type": "Stop",
+      "name": "Riv bridge"
+    },
+    {
+      "id": 2,
+      "type": "Bus",
+      "name": "114"
+    },
+    {
+      "id": 3,
+      "type": "Stop",
+      "name": "Riv"
+    }
   ],
   "render_settings": {
     "width": 600,
@@ -57,8 +105,24 @@
     ],
     "underlayer_width": 3,
     "color_palette": [
+      [
+        255,
+        160,
+        2,
+        1
+      ],
       "green",
-      [255, 160, 0],
+      [
+        255,
+        160,
+        0
+      ],
+      [
+        255,
+        160,
+        2,
+        1
+      ],
       "red"
     ]
   }
