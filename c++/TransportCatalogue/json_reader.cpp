@@ -238,16 +238,16 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	if (color.size() == 3)
 	{
 		return svg::Rgb{
-		static_cast<uint8_t>(color[0].AsDouble())
-		, static_cast<uint8_t>(color[1].AsDouble())
-		, static_cast<uint8_t>(color[2].AsDouble()) };
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt()) };
 	}
 	else
 	{
 		return svg::Rgba{
-		static_cast<uint8_t>(color[0].AsDouble())
-		, static_cast<uint8_t>(color[1].AsDouble())
-		, static_cast<uint8_t>(color[2].AsDouble())
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt())
 		, color[3].AsDouble() };
 	}
 }
