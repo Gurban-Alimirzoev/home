@@ -119,7 +119,10 @@ namespace renderer
         void SetSettings(Settings settings_);
         void SavePoints(svg::Point);
         void MakeSphereProjector();
-        void AddPolyline(std::vector<transport_catalogue::Stop*> bus);
+        void AddBusLine(std::vector<transport_catalogue::Stop*> bus);
+        void AddBusName(std::string_view& bus_name, bool is_roundtrip);
+        void AddCircleStop();
+        void AddStopName(std::string_view& stop_name);
         void RenderMap(std::ostream& out);
 
 	private:

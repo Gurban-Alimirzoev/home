@@ -259,11 +259,12 @@ Settings JsonReader::GetSettings() const
 
 void JsonReader::AddRendererElements()
 {
-	AddStops();
-	AddBuses();
+	MakeMap();
+	AddBusesToMap();
+	AddStopsToMap();
 }
 
-void JsonReader::AddStops()
+void JsonReader::MakeMap()
 {
 	for (Stop stop : db.GetAllStops())
 	{
@@ -272,7 +273,12 @@ void JsonReader::AddStops()
 	}
 }
 
-void JsonReader::AddBuses()
+void JsonReader::AddStopsToMap()
+{
+
+}
+
+void JsonReader::AddBusesToMap()
 {
 	vector<std::string> buses_sort(buses.size());
 	transform(
@@ -284,10 +290,14 @@ void JsonReader::AddBuses()
 	);
 	sort(buses_sort.begin(), buses_sort.end());
 
+	sort(buses.begin(), buses.end());
+
 	rendrer.MakeSphereProjector();
 	for (string str : buses_sort)
 	{
 		if (handler.ChekBus(str))
-			rendrer.AddPolyline(handler.GetStopsByBus(str));
+		{
+			rendrer.AddBusLine(handler.GetStopsByBus(str));
+		}
 	}
 }

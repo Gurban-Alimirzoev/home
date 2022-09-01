@@ -61,6 +61,13 @@ private:
 	void MakeSettings(json::Dict render_requests);
 	svg::Color RenderRequests_RgbOrRgba(json::Array color);
 
-	void AddStops();
-	void AddBuses();
+	void MakeMap();
+	void AddStopsToMap();
+	void AddBusesToMap();
 };
+
+bool operator<(const std::pair<std::string, json::Node>& lhs,
+	const std::pair<std::string, json::Node>& rhs)
+{
+	return lhs.first < rhs.first;
+}
