@@ -7,20 +7,22 @@ using namespace geo;
 namespace renderer
 {
 
-	void MapRenderer::AddObject(vector<Stop*> bus)
+	void MapRenderer::AddPolyline(vector<Stop*> bus)
 	{
 		if (!bus.empty())
 		{
 			svg::Polyline line;
 			for (Stop* data : bus)
-				line.AddPoint(SP(data->coor));
+			{
+					line.AddPoint(SP(data->coor));
+			}
 			line.SetFillColor("none");
 			line.SetStrokeWidth(settings.line_width);
 			line.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 			line.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 			line.SetStrokeColor(settings.color_palette[number_of_color]);
 
-			if (number_of_color == static_cast<int>(settings.color_palette.size()))
+			if (number_of_color + 1 == static_cast<int>(settings.color_palette.size()))
 				number_of_color = 0;
 			else
 				number_of_color++;

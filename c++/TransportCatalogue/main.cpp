@@ -8,8 +8,6 @@
 
 #include "json_reader.h"
 
-
-
 int main() {
     renderer::MapRenderer renderer;
 
@@ -19,8 +17,8 @@ int main() {
     renderer.SetSettings(reader.GetSettings());
 
     reader.BaseRequests();
-    //reader.StatRequests();
-    //reader.PrintAnswerToStatRequests();
+    reader.StatRequests();
+    reader.PrintAnswerToStatRequests();
     reader.AddRendererElements();
     renderer.RenderMap(std::cout);
 }

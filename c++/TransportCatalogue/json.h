@@ -29,9 +29,7 @@ namespace json {
 
         void PrintIndent() const {
             for (int i = 0; i < indent; ++i) 
-            {
                 out.put(' ');
-            }
         }
 
         PrintContext PrintEnter() const
@@ -86,13 +84,10 @@ namespace json {
     bool operator!=(const Node& node_right, const Node& node_left);
 
     template <typename Value>
-    void PrintValue(const Value& value, const PrintContext& ctx) {
-
+    void PrintValue(const Value& value, const PrintContext& ctx) 
+    {
         if constexpr (std::is_same<Value, int>::value || std::is_same<Value, double>::value)
-        {
             ctx.out << value;
-        }
-
     }
     void PrintValue(std::nullptr_t, const PrintContext& ctx);
     void PrintValue(const bool value, const PrintContext& ctx);
