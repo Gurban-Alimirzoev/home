@@ -38,18 +38,16 @@ private:
 	std::istream& input;
 	std::ostream& out;
 	json::Document input_json;
-	renderer::MapRenderer& rendrer;
-	transport_catalogue::TransportCatalogue db;
-	transport_catalogue::RequestHandler handler;
 	json::Array base_requests;
 	json::Array stat_requests;
-	json::Dict render_requests;
-
-	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
-
-	std::deque <json::Dict> buses;
 	json::Array answer;
+	json::Dict render_requests;
+	renderer::MapRenderer& rendrer;
 	renderer::Settings settings;
+	transport_catalogue::TransportCatalogue db;
+	transport_catalogue::RequestHandler handler;
+	std::deque <json::Dict> buses;
+	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);

@@ -66,7 +66,7 @@ namespace svg {
 			out << "rgba("sv << static_cast<int>(color.red) << ","sv
 				<< static_cast<int>(color.green) << ","sv
 				<< static_cast<int>(color.blue) << ","sv
-				<< std::setprecision(1) << color.opacity << ")" << std::resetiosflags(out.flags());
+				<< color.opacity << ")" << std::resetiosflags(out.flags());
 		}
 
 		std::ostream& out;

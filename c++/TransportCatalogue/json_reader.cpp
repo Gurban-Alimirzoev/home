@@ -37,6 +37,8 @@ void JsonReader::BaseRequest_AddBus()
 {
 	for (auto bus : buses)
 	{
+		if (bus.at("stops").AsArray().empty())
+			continue;
 		vector<string> stops(bus.at("stops").AsArray().size());
 		Transform(bus.at("stops").AsArray(), stops);
 		if (!bus.at("is_roundtrip").AsBool())
@@ -88,9 +90,7 @@ void JsonReader::SetDistance()
 	for (auto [stop, second_stops_and_distance] : buffer_distance)
 	{
 		for (auto [second_stop, distance] : second_stops_and_distance)
-		{
 			db.SetEarthDistance({ stop, second_stop }, distance);
-		}
 	}
 }
 
@@ -103,20 +103,19 @@ void JsonReader::StatRequests()
 			StatRequests_PrintStopRequest(bus_or_stop);
 		else
 			StatRequests_PrintBusRequest(bus_or_stop);
+
 	}
 }
 
 void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 {
 	if (!handler.ChekStop(stop_request.at("name").AsString()))
-	{
 		answer.emplace_back(Dict{
 			{"error_message",
 			Node(string("not found"))},
 			{"request_id",
 			stop_request.at("id")},
 			});
-	}
 	else
 	{
 		std::unordered_set<Bus*> buses_on_stop = handler.GetBusesByStop(stop_request.at("name").AsString());
@@ -239,16 +238,16 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	if (color.size() == 3)
 	{
 		return svg::Rgb{
-		static_cast<uint8_t>(color[0].AsDouble())
-		, static_cast<uint8_t>(color[1].AsDouble())
-		, static_cast<uint8_t>(color[2].AsDouble()) };
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt()) };
 	}
 	else
 	{
 		return svg::Rgba{
-		static_cast<uint8_t>(color[0].AsDouble())
-		, static_cast<uint8_t>(color[1].AsDouble())
-		, static_cast<uint8_t>(color[2].AsDouble())
+		static_cast<uint8_t>(color[0].AsInt())
+		, static_cast<uint8_t>(color[1].AsInt())
+		, static_cast<uint8_t>(color[2].AsInt())
 		, color[3].AsDouble() };
 	}
 }
@@ -267,7 +266,10 @@ void JsonReader::AddRendererElements()
 void JsonReader::AddStops()
 {
 	for (Stop stop : db.GetAllStops())
-		rendrer.SavePoints({ stop.coor.lat, stop.coor.lng });
+	{
+		if (!handler.GetBusesByStop(stop.name_stop).empty())
+			rendrer.SavePoints({ stop.coor.lat, stop.coor.lng });
+	}
 }
 
 void JsonReader::AddBuses()
@@ -283,6 +285,9 @@ void JsonReader::AddBuses()
 	sort(buses_sort.begin(), buses_sort.end());
 
 	rendrer.MakeSphereProjector();
-	for (string str  : buses_sort)
-		rendrer.AddObject(handler.GetStopsByBus(str));
+	for (string str : buses_sort)
+	{
+		if (handler.ChekBus(str))
+			rendrer.AddPolyline(handler.GetStopsByBus(str));
+	}
 }
