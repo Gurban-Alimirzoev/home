@@ -66,8 +66,8 @@ private:
 	void AddBusesToMap();
 };
 
-bool operator<(const std::pair<std::string, json::Node>& lhs,
+/*bool operator<(const std::pair<std::string, json::Node>& lhs,
 	const std::pair<std::string, json::Node>& rhs)
 {
 	return lhs.first < rhs.first;
-}
+}*/

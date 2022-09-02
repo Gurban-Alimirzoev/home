@@ -103,7 +103,6 @@ void JsonReader::StatRequests()
 			StatRequests_PrintStopRequest(bus_or_stop);
 		else
 			StatRequests_PrintBusRequest(bus_or_stop);
-
 	}
 }
 

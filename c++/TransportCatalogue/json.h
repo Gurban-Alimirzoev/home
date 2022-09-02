@@ -54,8 +54,7 @@ namespace json {
         template <typename Node_type>
         Node(Node_type value)
             : value_(value)
-        {
-        }
+        {}
 
         bool IsInt() const;
         //Возвращает true, если в Node хранится int либо double.
@@ -82,6 +81,8 @@ namespace json {
 
     bool operator==(const Node& node_right, const Node& node_left);
     bool operator!=(const Node& node_right, const Node& node_left);
+    bool operator<(const Node& node_right, const Node& node_left);
+
 
     template <typename Value>
     void PrintValue(const Value& value, const PrintContext& ctx) 

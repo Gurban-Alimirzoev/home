@@ -422,6 +422,17 @@ namespace json {
         return node_right.GetValue() != node_left.GetValue();
     }
 
+    /*bool operator<(const Node& node_right, const Node& node_left)
+    {
+        return node_right.AsMap() < node_left.AsMap();
+    }*/
+
+    bool operator<(const Node& lhs,
+        const Node& rhs)
+    {
+        return lhs.AsString() < rhs.AsString();
+    }
+
     ////////////////////////////////////////////////////////////////////////////////
 
     void PrintNode(const Node& node, const PrintContext& cont);
