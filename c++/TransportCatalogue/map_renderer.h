@@ -120,9 +120,11 @@ namespace renderer
         void SavePoints(svg::Point);
         void MakeSphereProjector();
         void AddBusLine(std::vector<transport_catalogue::Stop*> bus);
-        void AddBusName(std::string_view& bus_name, bool is_roundtrip);
+        void AddBusNameOnMap(transport_catalogue::Bus* bus);
+        void AddBusNameOnStop(transport_catalogue::Bus* bus, size_t last_or_first_stop);
+        void AddSubstrateForBusName(transport_catalogue::Bus* bus, size_t last_or_first_stop);
         void AddCircleStop();
-        void AddStopName(std::string_view& stop_name);
+        void AddStopName(std::string stop_name);
         void RenderMap(std::ostream& out);
 
 	private:

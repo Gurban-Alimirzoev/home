@@ -47,6 +47,7 @@ private:
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
 	std::deque <json::Dict> buses;
+	vector<std::string> buses_sort;
 	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 
 	void BaseRequest_AddBus();

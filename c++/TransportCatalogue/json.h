@@ -81,8 +81,6 @@ namespace json {
 
     bool operator==(const Node& node_right, const Node& node_left);
     bool operator!=(const Node& node_right, const Node& node_left);
-    bool operator<(const Node& node_right, const Node& node_left);
-
 
     template <typename Value>
     void PrintValue(const Value& value, const PrintContext& ctx) 

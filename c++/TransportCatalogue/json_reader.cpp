@@ -279,7 +279,7 @@ void JsonReader::AddStopsToMap()
 
 void JsonReader::AddBusesToMap()
 {
-	vector<std::string> buses_sort(buses.size());
+	buses_sort.resize(buses.size());
 	transform(
 		buses.begin(),
 		buses.end(),
@@ -289,14 +289,13 @@ void JsonReader::AddBusesToMap()
 	);
 	sort(buses_sort.begin(), buses_sort.end());
 
-	sort(buses.begin(), buses.end());
-
 	rendrer.MakeSphereProjector();
-	for (string str : buses_sort)
+	for (auto name : buses_sort)
 	{
-		if (handler.ChekBus(str))
+		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
 		{
-			rendrer.AddBusLine(handler.GetStopsByBus(str));
+			rendrer.AddBusLine(handler.GetStopsByBus(name));
+			rendrer.AddBusNameOnMap(db.FindBus(name));
 		}
 	}
 }
