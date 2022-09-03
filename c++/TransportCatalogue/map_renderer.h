@@ -122,9 +122,9 @@ namespace renderer
         void AddBusLine(std::vector<transport_catalogue::Stop*> bus);
         void AddBusNameOnMap(transport_catalogue::Bus* bus);
         void AddBusNameOnStop(transport_catalogue::Bus* bus, size_t last_or_first_stop);
-        void AddSubstrateForBusName(transport_catalogue::Bus* bus, size_t last_or_first_stop);
-        void AddCircleStop();
-        void AddStopName(std::string stop_name);
+        void AddSubstrate(transport_catalogue::Bus* bus, size_t last_or_first_stop);
+        void AddCircleStops();
+        void AddStopName(transport_catalogue::Stop& stop);
         void RenderMap(std::ostream& out);
 
 	private:
