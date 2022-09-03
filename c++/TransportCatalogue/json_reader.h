@@ -24,7 +24,6 @@ public:
 	void BaseRequests();
 	void ParseRenderRequests();
 	void StatRequests();
-
 	json::Document GetAnswerToStatRequests() const;
 	void PrintAnswerToStatRequests();
 
@@ -44,7 +43,8 @@ private:
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
 	std::deque<json::Dict> buses;
-	std::vector<std::string> buses_sort;
+	std::vector<std::pair<std::string, bool>> buses_sort;
+	std::vector<transport_catalogue::Stop> var;
 	std::unordered_map<std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 
 	void BaseRequest_AddBus();
@@ -55,6 +55,7 @@ private:
 
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
+	void StatRequests_PrintMapRequests(json::Dict map_request);
 
 	void MakeSettings(json::Dict render_requests);
 	svg::Color RenderRequests_RgbOrRgba(json::Array color);

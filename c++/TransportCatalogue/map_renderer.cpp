@@ -38,25 +38,22 @@ namespace renderer
 		line.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		line.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 		line.SetStrokeColor(settings.color_palette[number_of_color]);
-
-		if (number_of_color + 1 == static_cast<int>(settings.color_palette.size()))
-			number_of_color = 0;
-		else
-			number_of_color++;
+		PlusNumberOfColor();
 
 		out_doc.Add(line);
 	}
 
-	void MapRenderer::AddBusNameOnMap(Bus *bus)
+	void MapRenderer::AddBusNameOnMap(Bus *bus, bool is_roundtrip)
 	{
 		AddSubstrateForBusName(bus, 0u);
 		AddBusNameOnStop(bus, 0u);
-		size_t last_stop = bus->bus.size() - 1;
-		if (bus->bus[0]->name_stop == bus->bus[last_stop]->name_stop)
+		size_t last_stop_if_not_roundtrip = bus->bus.size() / 2;
+		if (!is_roundtrip && bus->bus[0]->name_stop != bus->bus[last_stop_if_not_roundtrip]->name_stop)
 		{
-			AddSubstrateForBusName(bus, last_stop);
-			AddBusNameOnStop(bus, last_stop);
+			AddSubstrateForBusName(bus, last_stop_if_not_roundtrip);
+			AddBusNameOnStop(bus, last_stop_if_not_roundtrip);
 		}
+		PlusNumberOfColor();
 	}
 
 	void MapRenderer::AddBusNameOnStop(Bus *bus, size_t last_or_first_stop)
@@ -85,6 +82,7 @@ namespace renderer
 		text.SetFontWeight("bold");
 		text.SetData(bus->name_bus);
 		text.SetFillColor(settings.underlayer_color);
+		text.SetStrokeColor(settings.underlayer_color);
 		text.SetStrokeWidth(settings.underlayer_width);
 		text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		text.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
@@ -118,9 +116,9 @@ namespace renderer
 						settings.stop_label_offset[1]});
 		text.SetFontSize(settings.stop_label_font_size);
 		text.SetFontFamily("Verdana");
-		text.SetFontWeight("bold");
 		text.SetData(stop.name_stop);
 		text.SetFillColor(settings.underlayer_color);
+		text.SetStrokeColor(settings.underlayer_color);
 		text.SetStrokeWidth(settings.underlayer_width);
 		text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		text.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
@@ -135,10 +133,22 @@ namespace renderer
 						settings.stop_label_offset[1]});
 		text.SetFontSize(settings.stop_label_font_size);
 		text.SetFontFamily("Verdana");
-		text.SetFontWeight("bold");
 		text.SetData(stop.name_stop);
 		text.SetFillColor("black");
 
 		out_doc.Add(text);
+	}
+
+	void MapRenderer::RestartNumberOfColor()
+	{
+		number_of_color = 0;
+	}
+
+	void MapRenderer::PlusNumberOfColor()
+	{
+		if (number_of_color + 1 == static_cast<int>(settings.color_palette.size()))
+			number_of_color = 0;
+		else
+			number_of_color++;
 	}
 }

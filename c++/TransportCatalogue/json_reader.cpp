@@ -91,11 +91,13 @@ void JsonReader::StatRequests()
 {
 	for (Node stat_request : stat_requests)
 	{
-		Dict bus_or_stop = stat_request.AsMap();
-		if (bus_or_stop.at("type").AsString() == "Stop")
-			StatRequests_PrintStopRequest(bus_or_stop);
+		Dict requests_type = stat_request.AsMap();
+		if (requests_type.at("type").AsString() == "Stop")
+			StatRequests_PrintStopRequest(requests_type);
+		else if (requests_type.at("type").AsString() == "Bus")
+			StatRequests_PrintBusRequest(requests_type);
 		else
-			StatRequests_PrintBusRequest(bus_or_stop);
+			StatRequests_PrintMapRequests(requests_type);
 	}
 }
 
@@ -169,6 +171,17 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 }
 
+void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
+{
+	ostringstream out;
+	rendrer.RenderMap(out);
+	answer.emplace_back(Dict{
+		{"map", Node(out.str())},
+		{"request_id",
+			 map_request.at("id")}
+		});
+}
+
 json::Document JsonReader::GetAnswerToStatRequests() const
 {
 	return Document(answer);
@@ -198,8 +211,10 @@ void JsonReader::MakeSettings(json::Dict render_requests)
 		settings.stop_radius = render_requests.at("stop_radius").AsDouble();
 		settings.underlayer_width = render_requests.at("underlayer_width").AsDouble();
 
+		settings.bus_label_offset.clear();
 		for (auto offset : render_requests.at("bus_label_offset").AsArray())
 			settings.bus_label_offset.push_back(offset.AsDouble());
+		settings.stop_label_offset.clear();
 		for (auto offset : render_requests.at("stop_label_offset").AsArray())
 			settings.stop_label_offset.push_back(offset.AsDouble());
 
@@ -250,7 +265,18 @@ void JsonReader::AddRendererElements()
 
 void JsonReader::MakeMap()
 {
-	for (Stop stop : db.GetAllStops())
+	auto stops = db.GetAllStops();
+	var.resize(stops.size());
+	transform(
+		stops.begin(),
+		stops.end(),
+		var.begin(),
+		[this](Stop stop)
+		{ return stop; });
+
+	sort(var.begin(), var.end());
+
+	for (Stop stop : var)
 	{
 		if (!handler.GetBusesByStop(stop.name_stop).empty())
 			rendrer.SavePoints({stop.coor.lat, stop.coor.lng});
@@ -265,27 +291,32 @@ void JsonReader::AddBusesToMap()
 		buses.end(),
 		buses_sort.begin(),
 		[this](Dict str)
-		{ return str.at("name").AsString(); });
+		{
+			return pair{ str.at("name").AsString(),
+				str.at("is_roundtrip").AsBool() };
+		});
+
 	sort(buses_sort.begin(), buses_sort.end());
 
 	rendrer.MakeSphereProjector();
-	for (auto name : buses_sort)
+	for (auto [name, is_roundtrip] : buses_sort)
 	{
 		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
 			rendrer.AddBusLine(handler.GetStopsByBus(name));
 	}
-	rendrer.SetSettings(settings);
-	for (auto name : buses_sort)
+
+	rendrer.RestartNumberOfColor();
+	for (auto [name, is_roundtrip] : buses_sort)
 	{
 		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
-			rendrer.AddBusNameOnMap(db.FindBus(name));
+			rendrer.AddBusNameOnMap(db.FindBus(name), is_roundtrip);
 	}
 }
 
 void JsonReader::AddStopsToMap()
 {
 	rendrer.AddCircleStops();
-	for (Stop stop : db.GetAllStops())
+	for (Stop stop : var)
 	{
 		if (!handler.GetBusesByStop(stop.name_stop).empty())
 			rendrer.AddStopName(stop);

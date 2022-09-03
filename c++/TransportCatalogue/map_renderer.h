@@ -131,13 +131,10 @@ namespace renderer
         void SavePoints(svg::Point);
         void MakeSphereProjector();
         void AddBusLine(std::vector<transport_catalogue::Stop *> bus);
-        void AddBusNameOnMap(transport_catalogue::Bus *bus);
-        void AddBusNameOnStop(transport_catalogue::Bus *bus, size_t last_or_first_stop);
-        void AddSubstrateForBusName(transport_catalogue::Bus *bus, size_t last_or_first_stop);
+        void AddBusNameOnMap(transport_catalogue::Bus *bus, bool is_roundtrip);
         void AddCircleStops();
         void AddStopName(transport_catalogue::Stop &stop);
-        void AddSubstrateForStopName(transport_catalogue::Stop &stop);
-        void AddStopNameOnMap(transport_catalogue::Stop &stop);
+        void RestartNumberOfColor();
         void RenderMap(std::ostream &out);
 
     private:
@@ -147,5 +144,12 @@ namespace renderer
         svg::Document out_doc;
         std::vector<svg::Point> all_points;
         int number_of_color = 0;
+
+
+        void AddBusNameOnStop(transport_catalogue::Bus* bus, size_t last_or_first_stop);
+        void AddSubstrateForBusName(transport_catalogue::Bus* bus, size_t last_or_first_stop);
+        void AddSubstrateForStopName(transport_catalogue::Stop& stop);
+        void AddStopNameOnMap(transport_catalogue::Stop& stop);
+        void PlusNumberOfColor();
     };
 }
