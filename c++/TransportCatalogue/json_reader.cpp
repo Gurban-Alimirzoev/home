@@ -274,6 +274,12 @@ void JsonReader::AddBusesToMap()
 		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
 		{
 			rendrer.AddBusLine(handler.GetStopsByBus(name));
+		}
+	}
+	for (auto name : buses_sort)
+	{
+		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
+		{
 			rendrer.AddBusNameOnMap(db.FindBus(name));
 		}
 	}
@@ -282,9 +288,9 @@ void JsonReader::AddBusesToMap()
 void JsonReader::AddStopsToMap()
 {
 	rendrer.AddCircleStops();
-	for (Stop &stop : db.GetAllStops())
+	for (Stop stop : db.GetAllStops())
 	{
 		if (!handler.GetBusesByStop(stop.name_stop).empty())
-			rendrer.AddStopName(stop
-	});
+			rendrer.AddStopName(stop);
+	}
 }

@@ -15,13 +15,10 @@ class JsonReader
 {
 public:
 	JsonReader() = default;
-	JsonReader(std::istream& input, std::ostream& out, renderer::MapRenderer& rendrer_)
-		: input(input)
-		, out(out)
-		, input_json(json::Load(input))
-		, rendrer(rendrer_)
-		, handler(db, rendrer_)
-	{}
+	JsonReader(std::istream &input, std::ostream &out, renderer::MapRenderer &rendrer_)
+		: input(input), out(out), input_json(json::Load(input)), rendrer(rendrer_), handler(db, rendrer_)
+	{
+	}
 
 	void ParseRequests();
 	void BaseRequests();
@@ -35,26 +32,26 @@ public:
 	void AddRendererElements();
 
 private:
-	std::istream& input;
-	std::ostream& out;
+	std::istream &input;
+	std::ostream &out;
 	json::Document input_json;
 	json::Array base_requests;
 	json::Array stat_requests;
 	json::Array answer;
 	json::Dict render_requests;
-	renderer::MapRenderer& rendrer;
+	renderer::MapRenderer &rendrer;
 	renderer::Settings settings;
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
-	std::deque <json::Dict> buses;
-	vector<std::string> buses_sort;
-	std::unordered_map < std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
+	std::deque<json::Dict> buses;
+	std::vector<std::string> buses_sort;
+	std::unordered_map<std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
 
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);
 
 	void SetDistance();
-	void Transform(const json::Array& stops_input, std::vector<std::string>& stops_output);
+	void Transform(const json::Array &stops_input, std::vector<std::string> &stops_output);
 
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
@@ -66,9 +63,3 @@ private:
 	void AddStopsToMap();
 	void AddBusesToMap();
 };
-
-/*bool operator<(const std::pair<std::string, json::Node>& lhs,
-	const std::pair<std::string, json::Node>& rhs)
-{
-	return lhs.first < rhs.first;
-}*/
