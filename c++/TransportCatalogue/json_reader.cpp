@@ -272,16 +272,13 @@ void JsonReader::AddBusesToMap()
 	for (auto name : buses_sort)
 	{
 		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
-		{
 			rendrer.AddBusLine(handler.GetStopsByBus(name));
-		}
 	}
+	rendrer.SetSettings(settings);
 	for (auto name : buses_sort)
 	{
 		if (handler.ChekBus(name) && !handler.GetStopsByBus(name).empty())
-		{
 			rendrer.AddBusNameOnMap(db.FindBus(name));
-		}
 	}
 }
 
