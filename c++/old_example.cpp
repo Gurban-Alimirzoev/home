@@ -1,86 +1,35 @@
+#include <cassert>
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <vector>
 
 using namespace std;
 
-class Speakable {
-public:
-    virtual ~Speakable() = default;
-    virtual void Speak(ostream& out) const = 0;
-};
-
-class Drawable {
-public:
-    virtual ~Drawable() = default;
-    virtual void Draw(ostream& out) const = 0;
-};
-
-class Animal {
-public:
-    virtual ~Animal() = default;
-    void Eat(string_view food) {
-        cout << GetType() << " is eating "sv << food << endl;
-        ++energy_;
+// ���������� ��� �������:
+size_t GetFileSize(string file)
+{
+    fstream fout(file, ios::in);
+    if (fout)
+    {
+        fout.seekg(0, ios::end);
+        return static_cast<size_t>(fout.tellg());
     }
-    virtual string GetType() const = 0;
-
-private:
-    int energy_ = 100;
-};
-
-class Fish : public Animal, public Drawable {
-public:
-    string GetType() const override {
-        return "fish"s;
+    else
+    {
+        return string::npos;
     }
-    void Draw(ostream& out) const override {
-        out << "><(((*>"sv << endl;
-    }
-};
-
-class Cat : public Animal, public Speakable, public Drawable {
-public:
-    void Speak(ostream& out) const override {
-        out << "Meow-meow"sv << endl;
-    }
-    void Draw(ostream& out) const override {
-        out << "(^w^)"sv << endl;
-    }
-    string GetType() const override {
-        return "cat"s;
-    }
-};
-
-// Рисует животных, которых можно нарисовать
-void DrawAnimals(const std::vector<const Animal*>& animals, ostream& out) {
-   for (auto animal : animals)
-   {
-        if (const Cat* jerry = dynamic_cast<const Cat*>(animal))
-            jerry->Draw(out);
-        if (const Fish* nemo = dynamic_cast<const Fish*>(animal))
-            nemo->Draw(out);            
-   }
-}
-
-// Побеседовать с животными, которые умеют разговаривать
-void TalkToAnimals(const std::vector<const Animal*> animals, ostream& out) {
-    for (auto animal : animals)
-   {
-        if (const Cat* jerry = dynamic_cast<const Cat*>(animal))
-            jerry->Speak(out);         
-   }
-}
-
-void PlayWithAnimals(const std::vector<const Animal*> animals, ostream& out) {
-    TalkToAnimals(animals, out);
-    DrawAnimals(animals, out);
 }
 
 int main() {
-    Cat cat;
-    Fish fish;
-    vector<const Animal*> animals{&cat, &fish};
-    PlayWithAnimals(animals, cerr);
+    ofstream("test.txt") << "123456789"sv;
+    assert(GetFileSize("test.txt"s) == 9);
+
+    ofstream test2("test2.txt"s);
+    test2.seekp(1000);
+    test2 << "abc"sv;
+    test2.flush();
+
+    assert(GetFileSize("test2.txt"s) == 1003);
+    assert(GetFileSize("a file not exists"s) == string::npos);
 }
