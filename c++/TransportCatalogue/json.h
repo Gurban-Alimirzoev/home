@@ -54,7 +54,8 @@ namespace json {
         template <typename Node_type>
         Node(Node_type value)
             : value_(value)
-        {}
+        {
+        }
 
         bool IsInt() const;
         //Возвращает true, если в Node хранится int либо double.
