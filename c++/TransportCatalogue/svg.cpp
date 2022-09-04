@@ -9,6 +9,7 @@ namespace svg
 		context.Indented().RenderIndent();
 		// Делегируем вывод тега своим подклассам
 		RenderObject(context);
+
 		context.out << std::endl;
 	}
 	// ---------- Circle ------------------
@@ -94,9 +95,7 @@ namespace svg
 
 	void Text::RenderObject(const RenderContext& context) const {
 		auto& out = context.out;
-		out << "<text";
-		RenderAttrs(context.out);
-		out << " x=\""sv << pos_.x << "\""
+		out << "<text x=\""sv << pos_.x << "\""
 			<< " y=\""sv << pos_.y << "\""
 			<< " dx=\""sv << offset_.x << "\""
 			<< " dy=\""sv << offset_.y << "\""
@@ -111,7 +110,8 @@ namespace svg
 		{
 			out << " font-weight=\""sv << font_weight_ << "\"";
 		}
-		out << ">"sv;
+		RenderAttrs(context.out);
+		out << " >"sv;
 		for (auto i : data_)
 		{
 			if (i == '"')

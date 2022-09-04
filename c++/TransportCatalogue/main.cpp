@@ -17,8 +17,8 @@ int main() {
     renderer.SetSettings(reader.GetSettings());
 
     reader.BaseRequests();
-    reader.AddRendererElements();
     reader.StatRequests();
-    //renderer.RenderMap(std::cout);
     reader.PrintAnswerToStatRequests();
+    reader.AddRendererElements();
+    renderer.RenderMap(std::cout);
 }
