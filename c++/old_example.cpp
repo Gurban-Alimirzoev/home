@@ -23,6 +23,16 @@ bool Preprocess(const path& in_file, const path& out_file, const vector<path>& i
         return false;
     }
     std::ofstream out(out_file, std::ios::binary);
+
+    static regex reg_hand(R"/(\s*#\s*include\s*"([^"]*)"\s*)/");
+    static regex reg_std(R"/(\s*#\s*include\s*<([^>]*)>\s*)/");
+    smatch m;
+
+    for (auto dir_or_file : filesystem::directory_iterator(in_file))
+    {
+        if (!regex_match(text, m, reg_hand))
+    }
+
 }
 
 bool Preprocess(const path& in_file, const path& out_file, const vector<path>& include_directories)
