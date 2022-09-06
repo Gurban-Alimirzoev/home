@@ -27,10 +27,16 @@ bool Preprocess(const path& in_file, const path& out_file, const vector<path>& i
     static regex reg_hand(R"/(\s*#\s*include\s*"([^"]*)"\s*)/");
     static regex reg_std(R"/(\s*#\s*include\s*<([^>]*)>\s*)/");
     smatch m;
-
+    string str;
     for (auto dir_or_file : filesystem::directory_iterator(in_file))
     {
-        if (!regex_match(text, m, reg_hand))
+        while (getline(input, str))
+            do {
+                if (!regex_match(str, m, reg_hand))
+                {
+                    Preprocess(out, out_file)
+                }
+            }
     }
 
 }
