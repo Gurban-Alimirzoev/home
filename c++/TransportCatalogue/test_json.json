@@ -25,12 +25,38 @@
         "is_roundtrip": false
       },
       {
+        "type": "Bus",
+        "name": "13",
+        "stops": [
+          "Morskoy vokzal",
+          "Rivierskiy most",
+          "Morskoy vokzal"
+        ],
+        "is_roundtrip": true
+      },
+      {
+        "type": "Bus",
+        "name": "1",
+        "stops": [
+          "Morskoy vokzal",
+          "Rivierskiy most"
+        ],
+        "is_roundtrip": false
+      },
+      {
+        "type": "Bus",
+        "name": "16",
+        "stops": [
+        ],
+        "is_roundtrip": true
+      },
+      {
         "type": "Stop",
         "name": "Blackhole",
         "latitude": 43.587795,
         "longitude": 39.716901,
         "road_distances": {
-          "Morskoy vokzal": 850
+          "Rivierskiy most": 850
         }
       },
       {
@@ -108,7 +134,7 @@
       "underlayer_width": 3,
       "color_palette": [
         "green",
-        [255, 160, 0],
+        [255, 160, 0, 0.85],
         "red"
       ]
     }

@@ -2,12 +2,11 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <string>
-#include <vector>
-#include <algorithm>
 #include <string_view>
-#include <utility>
+#include <vector>
 
 using namespace std;
 using filesystem::path;
@@ -16,73 +15,95 @@ path operator""_p(const char* data, std::size_t sz) {
     return path(data, data + sz);
 }
 
-bool operator>(const path& lhs,
-    const path& rhs)
+// напишите эту функцию
+bool Preprocess(const path& in_file, const path& out_file, const vector<path>& include_directories)
 {
-    return lhs.filename().string() < rhs.filename().string();
+    ifstream input(in_file, std::ios::binary);
+    if (!input) {
+        return false;
+    }
+    std::ofstream out(out_file, std::ios::binary);
 }
 
-void PrintTree(ostream& dst, const path& p, const filesystem::file_status& status, int offset)
+bool Preprocess(const path& in_file, const path& out_file, const vector<path>& include_directories)
 {
-    error_code err;
-    vector <path> result_file;
-    vector <path> result_dir;
-    if (err) {
-        return;
-    }
-    dst << string(offset, ' ') << p.filename().string() << endl;
-    offset += 2;
-    for (const auto& dir_entry : filesystem::directory_iterator(p))
-    {
-        if (dir_entry.is_regular_file())
-            result_file.push_back(dir_entry);
-        else
-        {
-            result_dir.push_back(dir_entry);
-        }
-    }
 
-    sort(result_file.begin(), result_file.end());
-    sort(result_dir.begin(), result_dir.end());
-    reverse(result_file.begin(), result_file.end());
-    reverse(result_dir.begin(), result_dir.end());
-    for (auto _p : result_file)
-    {
-        dst << string(offset, ' ') << _p.filename().string() << endl;
-    }
-    for (auto _p : result_dir)
-    {
-        PrintTree(dst, _p, status, offset);
-    }
 }
 
-void PrintTree(ostream& dst, const path& p)
-{
-    int offset = 0;
+string GetFileContents(string file) {
+    ifstream stream(file);
+
+    // конструируем string по двум итераторам
+    return { (istreambuf_iterator<char>(stream)), istreambuf_iterator<char>() };
+}
+
+void Test() {
     error_code err;
-    auto status = filesystem::status(p, err);
-    PrintTree(dst, p, status, offset);
+    filesystem::remove_all("sources"_p, err);
+    filesystem::create_directories("sources"_p / "include2"_p / "lib"_p, err);
+    filesystem::create_directories("sources"_p / "include1"_p, err);
+    filesystem::create_directories("sources"_p / "dir1"_p / "subdir"_p, err);
+
+    {
+        ofstream file("sources/a.cpp");
+        file << "// this comment before include\n"
+            "#include \"dir1/b.h\"\n"
+            "// text between b.h and c.h\n"
+            "#include \"dir1/d.h\"\n"
+            "\n"
+            "int SayHello() {\n"
+            "    cout << \"hello, world!\" << endl;\n"
+            "#   include<dummy.txt>\n"
+            "}\n"sv;
+    }
+    {
+        ofstream file("sources/dir1/b.h");
+        file << "// text from b.h before include\n"
+            "#include \"subdir/c.h\"\n"
+            "// text from b.h after include"sv;
+    }
+    {
+        ofstream file("sources/dir1/subdir/c.h");
+        file << "// text from c.h before include\n"
+            "#include <std1.h>\n"
+            "// text from c.h after include\n"sv;
+    }
+    {
+        ofstream file("sources/dir1/d.h");
+        file << "// text from d.h before include\n"
+            "#include \"lib/std2.h\"\n"
+            "// text from d.h after include\n"sv;
+    }
+    {
+        ofstream file("sources/include1/std1.h");
+        file << "// std1\n"sv;
+    }
+    {
+        ofstream file("sources/include2/lib/std2.h");
+        file << "// std2\n"sv;
+    }
+
+    assert((!Preprocess("sources"_p / "a.cpp"_p, "sources"_p / "a.in"_p,
+        { "sources"_p / "include1"_p,"sources"_p / "include2"_p })));
+
+    ostringstream test_out;
+    test_out << "// this comment before include\n"
+        "// text from b.h before include\n"
+        "// text from c.h before include\n"
+        "// std1\n"
+        "// text from c.h after include\n"
+        "// text from b.h after include\n"
+        "// text between b.h and c.h\n"
+        "// text from d.h before include\n"
+        "// std2\n"
+        "// text from d.h after include\n"
+        "\n"
+        "int SayHello() {\n"
+        "    cout << \"hello, world!\" << endl;\n"sv;
+
+    assert(GetFileContents("sources/a.in"s) == test_out.str());
 }
 
 int main() {
-    error_code err;
-    filesystem::remove_all("test_dir", err);
-    filesystem::create_directories("test_dir"_p / "a"_p, err);
-    filesystem::create_directories("test_dir"_p / "b"_p, err);
-
-    ofstream("test_dir"_p / "b"_p / "f1.txt"_p);
-    ofstream("test_dir"_p / "b"_p / "f2.txt"_p);
-    ofstream("test_dir"_p / "a"_p / "f3.txt"_p);
-
-    ostringstream out;
-    PrintTree(cout, "test_dir"_p);
-    PrintTree(out, "test_dir"_p);
-    assert(out.str() ==
-        "test_dir\n"
-        "  b\n"
-        "    f2.txt\n"
-        "    f1.txt\n"
-        "  a\n"
-        "    f3.txt\n"sv
-    );
+    Test();
 }
