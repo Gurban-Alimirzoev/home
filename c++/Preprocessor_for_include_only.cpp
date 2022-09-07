@@ -73,16 +73,6 @@ bool Preprocess(const path& in_file, const path& out_file, const vector<path>& i
 	return true;
 }
 
-void ReadAndWrite(ifstream& in, ofstream& out)
-{
-	static const int BUFF_SIZE = 1024;
-	array<char, BUFF_SIZE> buffer;
-	do {
-		in.read(buffer.data(), BUFF_SIZE);
-		out.write(buffer.data(), in.gcount());
-	} while (in);
-}
-
 string GetFileContents(string file) {
 	ifstream stream(file);
 
