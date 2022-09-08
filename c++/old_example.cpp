@@ -19,12 +19,14 @@ public:
     {
         deque<pair<int64_t, int>> dict = db_[hotel_name];
         int64_t one_day = current_time - 86400;
+        set<int> result;
         remove_if(dict.begin(), dict.end(),
-            [one_day](pair<int64_t, int> pair_)
+            [one_day, &result](pair<int64_t, int> pair_)
             {
+                result.insert(pair_.second);
                 return (pair_.first - one_day) <= 0;
             });
-        return static_cast<int>(dict.size());
+        return static_cast<int>(result.size());
     }
 
     int ComputeRoomCount(string hotel_name)
