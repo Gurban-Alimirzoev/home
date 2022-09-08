@@ -1,132 +1,86 @@
-#include <cassert>
-#include <stdexcept>
-#include <cstddef>  // нужно для nullptr_t
-
+#include <iostream>
+#include <map>
+#include <set>
+#include <deque>
+#include <algorithm>
+#include <numeric>
 using namespace std;
 
-// Реализуйте шаблон класса UniquePtr
-template <typename T>
-class UniquePtr {
-private:
-    T* ptr_ = nullptr;
+class HotelManager {
 public:
-    UniquePtr() = default;
-
-    explicit UniquePtr(T* ptr)
-        : ptr_(ptr)
+    void Book(int64_t time, string hotel_name, int client_id, int room_count)
     {
+        db_[hotel_name].push_back({ time , client_id });
+        time_and_sum[hotel_name].push_back({ time , room_count });
+        current_time = time;
     }
 
-    UniquePtr(const UniquePtr&) = delete;
-
-    UniquePtr(UniquePtr&& other) = default;
-
-    UniquePtr& operator=(const UniquePtr& ptr)
+    int ComputeClientCount(string hotel_name)
     {
-        ptr_ = ptr;
-        return ptr_;
-    }
-    UniquePtr& operator=(nullptr_t)
-    {
-        ~UniquePtr();
-        ptr_ = nullptr;
-    }
-    UniquePtr& operator=(UniquePtr&& other) = default;
-
-    ~UniquePtr()
-    {
-        delete ptr_;
+        deque<pair<int64_t, int>> dict = db_[hotel_name];
+        int64_t one_day = current_time - 86400;
+        remove_if(dict.begin(), dict.end(),
+            [one_day](pair<int64_t, int> pair_)
+            {
+                return (pair_.first - one_day) <= 0;
+            });
+        return static_cast<int>(dict.size());
     }
 
-    T& operator*() const
+    int ComputeRoomCount(string hotel_name)
     {
-        if (!ptr_) {
-            throw logic_error("Unique ptr is null");
+        deque<pair<int64_t, int>> dict = time_and_sum[hotel_name];
+        int64_t one_day = current_time - 86400;
+        auto noSpaceEnd = remove_if(dict.begin(), dict.end(),
+            [one_day](pair<int64_t, int> pair_)
+            {
+                return (pair_.first - one_day) <= 0;
+            });
+        dict.erase(noSpaceEnd, dict.end());
+        int result = 0;
+        for (auto [time, rooms] : dict)
+        {
+            result += rooms;
         }
-        return *ptr_;
+        return result;
     }
 
-    T* operator->() const
-    {
-        if (!ptr_) {
-            throw logic_error("Unique ptr is null");
-        }
-        return ptr_;
-    }
-
-    T* Release()
-    {
-        T* p = ptr_;
-        ptr_ = nullptr;
-        return p;
-    }
-    void Reset(T* ptr)
-    {
-        *ptr_ = *ptr;
-    }
-    void Swap(UniquePtr& other)
-    {
-        T* var = other;
-        swap(ptr_, var);
-    }
-    T* Get() const
-    {
-        return ptr_;
-    }
+private:
+    map <string, deque<pair<int64_t, int>>> db_;
+    map <string, deque<pair<int64_t, int>>> time_and_sum;
+    int64_t current_time = 0;
 };
-
-struct Item {
-    static int counter;
-    int value;
-    Item(int v = 0)
-        : value(v)
-    {
-        ++counter;
-    }
-    Item(const Item& other)
-        : value(other.value)
-    {
-        ++counter;
-    }
-    ~Item() {
-        --counter;
-    }
-};
-
-int Item::counter = 0;
-
-void TestLifetime() {
-    Item::counter = 0;
-    {
-        UniquePtr<Item> ptr(new Item);
-        assert(Item::counter == 1);
-
-        ptr.Reset(new Item);
-        assert(Item::counter == 1);
-    }
-    assert(Item::counter == 0);
-
-    {
-        UniquePtr<Item> ptr(new Item);
-        assert(Item::counter == 1);
-
-        auto rawPtr = ptr.Release();
-        assert(Item::counter == 1);
-
-        delete rawPtr;
-        assert(Item::counter == 0);
-    }
-    assert(Item::counter == 0);
-}
-
-void TestGetters() {
-    UniquePtr<Item> ptr(new Item(42));
-    assert(ptr.Get()->value == 42);
-    assert((*ptr).value == 42);
-    assert(ptr->value == 42);
-}
 
 int main() {
-    TestLifetime();
-    TestGetters();
+    HotelManager manager;
+
+    int query_count;
+    cin >> query_count;
+
+    for (int query_id = 0; query_id < query_count; ++query_id) {
+        string query_type;
+        cin >> query_type;
+
+        if (query_type == "BOOK") {
+            int64_t time;
+            cin >> time;
+            string hotel_name;
+            cin >> hotel_name;
+            int client_id, room_count;
+            cin >> client_id >> room_count;
+            manager.Book(time, hotel_name, client_id, room_count);
+        }
+        else {
+            string hotel_name;
+            cin >> hotel_name;
+            if (query_type == "CLIENTS") {
+                cout << manager.ComputeClientCount(hotel_name) << "\n";
+            }
+            else if (query_type == "ROOMS") {
+                cout << manager.ComputeRoomCount(hotel_name) << "\n";
+            }
+        }
+    }
+
+    return 0;
 }
