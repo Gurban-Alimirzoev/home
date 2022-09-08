@@ -1,4 +1,5 @@
 #include <cassert>
+#include <stdexcept>
 #include <cstddef>  // нужно для nullptr_t
 
 using namespace std;
@@ -7,23 +8,71 @@ using namespace std;
 template <typename T>
 class UniquePtr {
 private:
-    // ???
+    T* ptr_ = nullptr;
 public:
-    UniquePtr();
-    explicit UniquePtr(T* ptr);
-    UniquePtr(const UniquePtr&);
-    UniquePtr(UniquePtr&& other);
-    UniquePtr& operator=(const UniquePtr&);
-    UniquePtr& operator=(nullptr_t);
-    UniquePtr& operator=(UniquePtr&& other);
-    ~UniquePtr();
+    UniquePtr() = default;
 
-    T& operator*() const;
-    T* operator->() const;
-    T* Release();
-    void Reset(T* ptr);
-    void Swap(UniquePtr& other);
-    T* Get() const;
+    explicit UniquePtr(T* ptr)
+        : ptr_(ptr)
+    {
+    }
+
+    UniquePtr(const UniquePtr&) = delete;
+
+    UniquePtr(UniquePtr&& other) = default;
+
+    UniquePtr& operator=(const UniquePtr& ptr)
+    {
+        ptr_ = ptr;
+        return ptr_;
+    }
+    UniquePtr& operator=(nullptr_t)
+    {
+        ~UniquePtr();
+        ptr_ = nullptr;
+    }
+    UniquePtr& operator=(UniquePtr&& other) = default;
+
+    ~UniquePtr()
+    {
+        delete ptr_;
+    }
+
+    T& operator*() const
+    {
+        if (!ptr_) {
+            throw logic_error("Unique ptr is null");
+        }
+        return *ptr_;
+    }
+
+    T* operator->() const
+    {
+        if (!ptr_) {
+            throw logic_error("Unique ptr is null");
+        }
+        return ptr_;
+    }
+
+    T* Release()
+    {
+        T* p = ptr_;
+        ptr_ = nullptr;
+        return p;
+    }
+    void Reset(T* ptr)
+    {
+        *ptr_ = *ptr;
+    }
+    void Swap(UniquePtr& other)
+    {
+        T* var = other;
+        swap(ptr_, var);
+    }
+    T* Get() const
+    {
+        return ptr_;
+    }
 };
 
 struct Item {
