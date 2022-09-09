@@ -10,11 +10,10 @@ namespace raii {
         using BookingId = typename Provider::BookingId;
 
         std::unique_ptr<Provider> provider_;
-        int counter;
-
+        BookingId counter_ = 0;
     public:
         Booking(Provider* p, int counter)
-            : provider_(p), counter(counter)
+            : provider_(p), counter_(counter)
         {}
 
         Booking(const Booking&) = delete;
@@ -32,14 +31,16 @@ namespace raii {
 
         ~Booking()
         {
+            counter_ = provider_->Provider::counter;
             provider_->Provider::CancelOrComplete(*this);
-            provider_.reset();
+            //provider_.reset();
+            delete (provider_.get());
         }
 
         // Эта функция не требуется в тестах, но в реальной программе она может быть нужна
         BookingId GetId() const
         {
-            return counter;
+            return Provider::counter;
         }
     };
 }

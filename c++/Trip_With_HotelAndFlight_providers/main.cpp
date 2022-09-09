@@ -18,14 +18,14 @@ int HotelProvider::counter = 0;
 void TestNoOverbooking() {
     FlightProvider::capacity = 100;
     HotelProvider::capacity = 100;
-    FlightProvider::counter = 0;
-    HotelProvider::counter = 0;
+    FlightProvider::counter = 3;
+    HotelProvider::counter = 3;
     {
         TripManager tm;
         auto trip = tm.Book({});
     }
-    assert(FlightProvider::counter == 0);
-    assert(HotelProvider::counter == 0);
+    assert(FlightProvider::counter == 3);
+    assert(HotelProvider::counter == 3);
 }
 
 void TestFlightOverbooking() {
