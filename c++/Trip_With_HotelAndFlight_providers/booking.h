@@ -9,7 +9,7 @@ namespace raii {
     private:
         using BookingId = typename Provider::BookingId;
 
-        std::unique_ptr<Provider> provider_;
+        Provider* provider_;
         BookingId counter_ = 0;
     public:
         Booking(Provider* p, int counter)
@@ -19,7 +19,7 @@ namespace raii {
         Booking(const Booking&) = delete;
         Booking& operator=(const Booking&) = delete;
 
-        Booking(Booking&& other)
+        Booking(Booking&& other) noexcept
         {
             provider_ = std::move(other.provider_);
         }
@@ -27,14 +27,17 @@ namespace raii {
         Booking& operator=(Booking&& other)
         {
             provider_ = std::move(other.provider_);
+            return *this;
         }
 
         ~Booking()
         {
-            counter_ = provider_->Provider::counter;
-            provider_->Provider::CancelOrComplete(*this);
-            //provider_.reset();
-            delete (provider_.get());
+            if (provider_ != nullptr)
+            {
+                counter_ = provider_->Provider::counter;
+                provider_->Provider::CancelOrComplete(*this);
+                provider_ = nullptr;
+            }
         }
 
         // Эта функция не требуется в тестах, но в реальной программе она может быть нужна
