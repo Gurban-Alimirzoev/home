@@ -2,9 +2,13 @@
 #include <stdexcept>
 #include <string>
 
+#include "booking.h"
+
 class HotelProvider {
 public:
     using BookingId = int;
+    using Booking = raii::Booking<HotelProvider>;
+    friend Booking;
 
     struct BookingData {
         std::string city;
@@ -12,20 +16,20 @@ public:
         std::string date_to;
     };
 
-    BookingId Book(const BookingData&) {
+    Booking Book(const BookingData&) {
         using namespace std;
         if (counter >= capacity) {
             throw runtime_error("Hotel overbooking"s);
         }
         counter++;
-        return counter;
+        return {this, counter};
     }
 
-    void Cancel(const BookingId&) {
-        using namespace std;
-        counter--;
-        if (counter < 0) {
-            counter = 0;
+private:
+    void CancelOrComplete(const Booking&) {
+    	counter--;
+        if (0 > counter) {
+        	counter = 0;
         }
     }
 
