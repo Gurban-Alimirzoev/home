@@ -14,7 +14,7 @@ namespace json {
 		Builder() = default;
 
 		Builder& Key(std::string);
-		Builder& Value(Node::Value);
+		Builder& Value(Node::Value value);
 		Builder& StartDict();
 		Builder& StartArray();
 		Builder& EndDict();
@@ -23,6 +23,9 @@ namespace json {
 
 	private:
 		Node root_;
+		Dict dict;
+		Array array;
+		std::pair<std::string, Node> key_and_value;
 		std::vector<Node*> nodes_stack_;
 	};
 
