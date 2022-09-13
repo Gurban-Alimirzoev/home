@@ -23,6 +23,10 @@ namespace json {
         using variant::variant;
         using Value = variant;
 
+        Node(Node::Value value) {
+            this->swap(value);
+        }
+
         bool IsInt() const {
             return std::holds_alternative<int>(*this);
         }

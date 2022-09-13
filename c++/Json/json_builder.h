@@ -1,32 +1,79 @@
 #pragma once
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <variant>
-#include <vector>
 #include "json.h"
 
+#include <vector>
+#include <optional>
+
 namespace json {
-	class Builder
-	{
-	public:
-		Builder() = default;
 
-		Builder& Key(std::string);
-		Builder& Value(Node::Value value);
-		Builder& StartDict();
-		Builder& StartArray();
-		Builder& EndDict();
-		Builder& EndArray();
-		json::Node Build();
+    class DictItemContext;
+    class DictKeyContext;
+    class ArrayItemContext;
 
-	private:
-		Node root_;
-		Dict dict;
-		Array array;
-		std::pair<std::string, Node> key_and_value;
-		std::vector<Node*> nodes_stack_;
-	};
+    class Builder {
+
+    public:
+
+        Builder();
+
+        DictKeyContext Key(std::string key);
+        Builder& Value(Node::Value value);
+        DictItemContext StartDict();
+        ArrayItemContext StartArray();
+        Builder& EndDict();
+        Builder& EndArray();
+
+        json::Node Build();
+
+    private:
+        Node root_;
+        std::vector<Node*> nodes_stack_;
+        std::optional<std::string> key_;
+
+        bool IsEmpty();
+        bool PrevIsArray();
+        bool PrevIsDict();
+
+        Node* AddElement(Node::Value value);
+
+    };
+
+    class DictItemContext {
+    public:
+        DictItemContext(Builder& builder);
+
+        DictKeyContext Key(std::string key);
+        Builder& EndDict();
+
+    private:
+        Builder& builder_;
+    };
+
+    class DictKeyContext {
+    public:
+        DictKeyContext(Builder& builder);
+
+        DictItemContext Value(Node::Value value);
+        DictItemContext StartDict();
+        ArrayItemContext StartArray();
+
+    private:
+        Builder& builder_;
+    };
+
+    class ArrayItemContext {
+    public:
+        ArrayItemContext(Builder& builder);
+
+        ArrayItemContext Value(Node::Value value);
+        DictItemContext StartDict();
+        ArrayItemContext StartArray();
+
+        Builder& EndArray();
+
+    private:
+        Builder& builder_;
+    };
 
 }
