@@ -89,19 +89,21 @@ void JsonReader::SetDistance()
 
 void JsonReader::StatRequests()
 {
+	vector<Node> result_answer;
 	for (Node stat_request : stat_requests)
 	{
 		Dict requests_type = stat_request.AsMap();
 		if (requests_type.at("type").AsString() == "Stop")
-			StatRequests_PrintStopRequest(requests_type);
+			Node stop_answer = StatRequests_PrintStopRequest(requests_type);
 		else if (requests_type.at("type").AsString() == "Bus")
-			StatRequests_PrintBusRequest(requests_type);
+			Node stop_answer = StatRequests_PrintBusRequest(requests_type);
 		else
 			StatRequests_PrintMapRequests(requests_type);
 	}
+	answer = json::Builder{}.StartArray().Value() Build();
 }
 
-void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
+Node JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 {
 	if (!handler.ChekStop(stop_request.at("name").AsString()))
 		answer.emplace_back(Dict{
@@ -140,7 +142,7 @@ void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 	}
 }
 
-void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
+Node JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 {
 	string name = bus_request.at("name").AsString();
 	if (!handler.ChekBus(name))
@@ -171,7 +173,7 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 }
 
-void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
+Node JsonReader::StatRequests_PrintMapRequests(Dict map_request)
 {
 	ostringstream out;
 	rendrer.RenderMap(out);
@@ -182,7 +184,7 @@ void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
 		});
 }
 
-json::Document JsonReader::GetAnswerToStatRequests() const
+Document JsonReader::GetAnswerToStatRequests() const
 {
 	return Document(answer);
 }
@@ -197,7 +199,7 @@ void JsonReader::ParseRenderRequests()
 	MakeSettings(render_requests);
 }
 
-void JsonReader::MakeSettings(json::Dict render_requests)
+void JsonReader::MakeSettings(Dict render_requests)
 {
 	if (!render_requests.empty())
 	{
