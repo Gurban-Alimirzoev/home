@@ -105,15 +105,8 @@ void JsonReader::StatRequests()
 			StatRequests_PrintMapRequests(requests_type);
 		}
 	}
-	Array arr;
-	for (auto node : bus_answer)
-		arr.push_back(node);
-	for (auto node : stop_answer)
-		arr.push_back(node);
-	for (auto node : map_answer)
-		arr.push_back(node);
 
-	result_answer = Builder{}.Value(arr).Build();
+	result_answer = Builder{}.Value(answers).Build();
 }
 
 void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
