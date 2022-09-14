@@ -23,7 +23,7 @@ namespace json {
         using variant::variant;
         using Value = variant;
 
-        Node(Node::Value value)
+        Node(Node::Value value);
 
         bool IsInt() const;
         int AsInt() const;

@@ -10,7 +10,35 @@
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                //"finput-charset"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "компилятор: C:\\msys64\\mingw64\\bin\\c++.exe"
+        },
+        {
+            "type": "cppbuild",
+            "label": "clang++ build active file",
+            "command": "F:\\LLVM\\bin\\clang++",
+            "args": [
+                "-std=c++17",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-O1",
+                "-fno-omit-frame-pointer",
+                "-fno-optimize-sibling-calls",
+                "-fsanitize=address",
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -18,8 +46,10 @@
             "problemMatcher": [
                 "$gcc"
             ],
-            "group": "build",
-            "detail": "компилятор: C:\\msys64\\mingw64\\bin\\c++.exe"
+            /*"group": {
+                "kind": "build",
+                "isDefault": true
+            }*/
         }
     ],
     "version": "2.0.0"

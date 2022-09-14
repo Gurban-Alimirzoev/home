@@ -1,86 +1,88 @@
 #include <iostream>
-#include <string>
-#include <string_view>
-#include <vector>
-
+#include <map>
+#include <set>
+#include <deque>
+#include <algorithm>
+#include <numeric>
 using namespace std;
 
-class Speakable {
+class HotelManager {
 public:
-    virtual ~Speakable() = default;
-    virtual void Speak(ostream& out) const = 0;
-};
-
-class Drawable {
-public:
-    virtual ~Drawable() = default;
-    virtual void Draw(ostream& out) const = 0;
-};
-
-class Animal {
-public:
-    virtual ~Animal() = default;
-    void Eat(string_view food) {
-        cout << GetType() << " is eating "sv << food << endl;
-        ++energy_;
+    void Book(int64_t time, string hotel_name, int client_id, int room_count)
+    {
+        db_[hotel_name].push_back({ time , client_id });
+        time_and_sum[hotel_name].push_back({ time , room_count });
+        current_time = time;
     }
-    virtual string GetType() const = 0;
+
+    int ComputeClientCount(string hotel_name)
+    {
+        deque<pair<int64_t, int>> dict = db_[hotel_name];
+        int64_t one_day = current_time - 86400;
+        set<int> result;
+        remove_if(dict.begin(), dict.end(),
+            [one_day, &result](pair<int64_t, int> pair_)
+            {
+                result.insert(pair_.second);
+                return (pair_.first - one_day) <= 0;
+            });
+        return static_cast<int>(result.size());
+    }
+
+    int ComputeRoomCount(string hotel_name)
+    {
+        deque<pair<int64_t, int>> dict = time_and_sum[hotel_name];
+        int64_t one_day = current_time - 86400;
+        auto noSpaceEnd = remove_if(dict.begin(), dict.end(),
+            [one_day](pair<int64_t, int> pair_)
+            {
+                return (pair_.first - one_day) <= 0;
+            });
+        dict.erase(noSpaceEnd, dict.end());
+        int result = 0;
+        for (auto [time, rooms] : dict)
+        {
+            result += rooms;
+        }
+        return result;
+    }
 
 private:
-    int energy_ = 100;
+    map <string, deque<pair<int64_t, int>>> db_;
+    map <string, deque<pair<int64_t, int>>> time_and_sum;
+    int64_t current_time = 0;
 };
-
-class Fish : public Animal, public Drawable {
-public:
-    string GetType() const override {
-        return "fish"s;
-    }
-    void Draw(ostream& out) const override {
-        out << "><(((*>"sv << endl;
-    }
-};
-
-class Cat : public Animal, public Speakable, public Drawable {
-public:
-    void Speak(ostream& out) const override {
-        out << "Meow-meow"sv << endl;
-    }
-    void Draw(ostream& out) const override {
-        out << "(^w^)"sv << endl;
-    }
-    string GetType() const override {
-        return "cat"s;
-    }
-};
-
-// Рисует животных, которых можно нарисовать
-void DrawAnimals(const std::vector<const Animal*>& animals, ostream& out) {
-   for (auto animal : animals)
-   {
-        if (const Cat* jerry = dynamic_cast<const Cat*>(animal))
-            jerry->Draw(out);
-        if (const Fish* nemo = dynamic_cast<const Fish*>(animal))
-            nemo->Draw(out);            
-   }
-}
-
-// Побеседовать с животными, которые умеют разговаривать
-void TalkToAnimals(const std::vector<const Animal*> animals, ostream& out) {
-    for (auto animal : animals)
-   {
-        if (const Cat* jerry = dynamic_cast<const Cat*>(animal))
-            jerry->Speak(out);         
-   }
-}
-
-void PlayWithAnimals(const std::vector<const Animal*> animals, ostream& out) {
-    TalkToAnimals(animals, out);
-    DrawAnimals(animals, out);
-}
 
 int main() {
-    Cat cat;
-    Fish fish;
-    vector<const Animal*> animals{&cat, &fish};
-    PlayWithAnimals(animals, cerr);
+    HotelManager manager;
+
+    int query_count;
+    cin >> query_count;
+
+    for (int query_id = 0; query_id < query_count; ++query_id) {
+        string query_type;
+        cin >> query_type;
+
+        if (query_type == "BOOK") {
+            int64_t time;
+            cin >> time;
+            string hotel_name;
+            cin >> hotel_name;
+            int client_id, room_count;
+            cin >> client_id >> room_count;
+            manager.Book(time, hotel_name, client_id, room_count);
+        }
+        else {
+            string hotel_name;
+            cin >> hotel_name;
+            if (query_type == "CLIENTS") {
+                cout << manager.ComputeClientCount(hotel_name) << "\n";
+            }
+            else if (query_type == "ROOMS") {
+                cout << manager.ComputeRoomCount(hotel_name) << "\n";
+            }
+        }
+    }
+
+    return 0;
 }

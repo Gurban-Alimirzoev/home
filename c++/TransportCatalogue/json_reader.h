@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "json.h"
+#include "json_builder.h"
 #include "transport_catalogue.h"
 #include "request_handler.h"
 #include "map_renderer.h"
@@ -40,7 +40,8 @@ private:
 	json::Document input_json;
 	json::Array base_requests;
 	json::Array stat_requests;
-	json::Array answer;
+	json::Array answers;
+	json::Node result_answer;
 	json::Dict render_requests;
 	renderer::MapRenderer& rendrer;
 	renderer::Settings settings;

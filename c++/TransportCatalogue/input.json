@@ -1,84 +1,87 @@
 {
+  "stat_requests": [
+    { "id": 2, "type": "Bus", "name": "114" },
+    { "id": 1, "type": "Bus", "name": "1" }
+  ],
+
   "base_requests": [
+    {
+      "type": "Bus",
+      "name": "14",
+      "stops": [
+        "Ulitsa Lizy Chaikinoi",
+        "Elektroseti",
+        "Ulitsa Dokuchaeva",
+        "Ulitsa Lizy Chaikinoi"
+      ],
+      "is_roundtrip": true
+    },
     {
       "type": "Bus",
       "name": "114",
       "stops": [
-        "Sea bridge",
-        "Riv bridge",
-        "Moscow bridge"
+        "Morskoy vokzal",
+        "Rivierskiy most"
       ],
       "is_roundtrip": false
     },
     {
       "type": "Stop",
-      "name": "A",
-      "latitude": 55.611087,
-      "longitude": 37.20829,
-      "road_distances": {
-        "B": 1000
-      }
-    },
-    {
-      "type": "Stop",
-      "name": "B",
-      "latitude": 55.595884,
-      "longitude": 37.209755,
-      "road_distances": {}
-    },
-    {
-      "type": "Bus",
-      "name": "B1",
-      "stops": [
-        "A",
-        "B"
-      ],
-      "is_roundtrip": false
-    },
-    {
-      "type": "Stop",
-      "name": "Riv bridge",
+      "name": "Blackhole",
       "latitude": 43.587795,
       "longitude": 39.716901,
       "road_distances": {
-        "Moscow bridge": 500
+        "Morskoy vokzal": 850
       }
     },
     {
       "type": "Stop",
-      "name": "Moscow bridge",
-      "latitude": 43.587798,
-      "longitude": 39.71697,
+      "name": "Rivierskiy most",
+      "latitude": 43.587795,
+      "longitude": 39.716901,
       "road_distances": {
-        "Sea bridge": 400,
-        "Riv bridge": 500
+
       }
     },
     {
       "type": "Stop",
-      "name": "Sea bridge",
+      "name": "Morskoy vokzal",
       "latitude": 43.581969,
       "longitude": 39.719848,
       "road_distances": {
-        "Riv bridge": 850
+        "Rivierskiy most": 850
       }
-    }
-  ],
-  "stat_requests": [
-    {
-      "id": 1,
-      "type": "Stop",
-      "name": "Riv bridge"
     },
     {
-      "id": 2,
-      "type": "Bus",
-      "name": "114"
+      "type": "Stop",
+      "name": "Elektroseti",
+      "latitude": 43.598701,
+      "longitude": 39.730623,
+      "road_distances": {
+        "Ulitsa Dokuchaeva": 3000,
+        "Ulitsa Lizy Chaikinoi": 4300,
+        "Rivierskiy most": 150
+      }
     },
     {
-      "id": 3,
       "type": "Stop",
-      "name": "Riv"
+      "name": "Ulitsa Dokuchaeva",
+      "latitude": 43.585586,
+      "longitude": 39.733879,
+      "road_distances": {
+        "Ulitsa Lizy Chaikinoi": 2000,
+        "Elektroseti": 3000
+      }
+    },
+    {
+      "type": "Stop",
+      "name": "Ulitsa Lizy Chaikinoi",
+      "latitude": 43.590317,
+      "longitude": 39.746833,
+      "road_distances": {
+        "Elektroseti": 4300,
+        "Ulitsa Dokuchaeva": 2000
+      }
     }
   ],
   "render_settings": {
@@ -105,24 +108,8 @@
     ],
     "underlayer_width": 3,
     "color_palette": [
-      [
-        255,
-        160,
-        2,
-        1
-      ],
       "green",
-      [
-        255,
-        160,
-        0
-      ],
-      [
-        255,
-        160,
-        2,
-        1
-      ],
+      [255, 160, 0],
       "red"
     ]
   }

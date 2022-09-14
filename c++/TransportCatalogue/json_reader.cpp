@@ -8,14 +8,14 @@ using namespace renderer;
 void JsonReader::ParseRequests()
 {
 	Node requests = input_json.GetRoot();
-	for (auto request : requests.AsMap())
+	for (auto request : requests.AsDict())
 	{
 		if (request.first == "base_requests")
 			base_requests = request.second.AsArray();
 		else if (request.first == "stat_requests")
 			stat_requests = request.second.AsArray();
 		else
-			render_requests = request.second.AsMap();
+			render_requests = request.second.AsDict();
 	}
 }
 
@@ -23,7 +23,7 @@ void JsonReader::BaseRequests()
 {
 	for (Node base_request : base_requests)
 	{
-		Dict bus_or_stop = base_request.AsMap();
+		Dict bus_or_stop = base_request.AsDict();
 		if (bus_or_stop.at("type").AsString() == "Stop")
 			BaseRequests_AddStop(bus_or_stop);
 		else
@@ -98,24 +98,36 @@ void JsonReader::StatRequests()
 {
 	for (Node stat_request : stat_requests)
 	{
-		Dict bus_or_stop = stat_request.AsMap();
-		if (bus_or_stop.at("type").AsString() == "Stop")
-			StatRequests_PrintStopRequest(bus_or_stop);
+		Dict requests_type = stat_request.AsDict();
+		if (requests_type.at("type").AsString() == "Stop")
+		{
+			StatRequests_PrintStopRequest(requests_type);
+		}
+		else if (requests_type.at("type").AsString() == "Bus")
+		{
+			StatRequests_PrintBusRequest(requests_type);
+		}
 		else
-			StatRequests_PrintBusRequest(bus_or_stop);
-
+		{
+			StatRequests_PrintMapRequests(requests_type);
+		}
 	}
+
+	result_answer = Builder{}.Value(answers).Build();
 }
 
 void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 {
 	if (!handler.ChekStop(stop_request.at("name").AsString()))
-		answer.emplace_back(Dict{
-			{"error_message",
-			Node(string("not found"))},
-			{"request_id",
-			stop_request.at("id")},
-			});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("error_message")
+			.Value(string("not found"))
+			.Key("request_id")
+			.Value(stop_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	else
 	{
 		std::unordered_set<Bus*> buses_on_stop = handler.GetBusesByStop(stop_request.at("name").AsString());
@@ -139,13 +151,16 @@ void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 			[](string bus)
 			{
 				return Node(bus);
-			}
-		);
-		answer.emplace_back(Dict{
-			{"buses",
-			Node(buses_on_stop_vector_bus)},
-			{"request_id", stop_request.at("id")}
 			});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("buses")
+			.Value(buses_on_stop_vector_bus)
+			.Key("request_id")
+			.Value(stop_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 }
 
@@ -154,40 +169,61 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	string name = bus_request.at("name").AsString();
 	if (!handler.ChekBus(name))
 	{
-		answer.emplace_back(Dict{
-			{"error_message",
-			Node(string("not found"))},
-			{"request_id",
-			bus_request.at("id")},
-			});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("error_message")
+			.Value(string("not found"))
+			.Key("request_id")
+			.Value(bus_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 	else
 	{
 		BusInfo info = *(handler.GetBusStat(name));
 		int stop_count = handler.GetStopCount(name);
-		answer.emplace_back(Dict{
-			{"curvature",
-			Node(info.curvature)},
-			{"request_id",
-			bus_request.at("id")},
-			{"route_length",
-			Node(info.route_length)},
-			{"stop_count",
-			Node(stop_count)},
-			{"unique_stop_count",
-			Node(static_cast<int>(info.unique_stop))},
-			});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("curvature")
+			.Value(info.curvature)
+			.Key("request_id")
+			.Value(bus_request.at("id").AsInt())
+			.Key("route_length")
+			.Value(info.route_length)
+			.Key("stop_count")
+			.Value(stop_count)
+			.Key("unique_stop_count")
+			.Value(static_cast<int>(info.unique_stop))
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 }
 
-json::Document JsonReader::GetAnswerToStatRequests() const
+void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
 {
-	return Document(answer);
+	ostringstream out;
+	rendrer.RenderMap(out);
+	answers.push_back(Builder{}
+		.StartDict()
+		.Key("map")
+		.Value(out.str())
+		.Key("request_id")
+		.Value(map_request.at("id").AsInt())
+		.EndDict()
+		.Build()
+		.AsDict());
+}
+
+Document JsonReader::GetAnswerToStatRequests() const
+{
+	return Document(result_answer);
 }
 
 void JsonReader::PrintAnswerToStatRequests()
 {
-	Print(Document{ answer }, out);
+	Print(Document{ result_answer }, out);
 }
 
 void JsonReader::ParseRenderRequests()
@@ -195,7 +231,7 @@ void JsonReader::ParseRenderRequests()
 	MakeSettings(render_requests);
 }
 
-void JsonReader::MakeSettings(json::Dict render_requests)
+void JsonReader::MakeSettings(Dict render_requests)
 {
 	if (!render_requests.empty())
 	{
@@ -238,17 +274,12 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	if (color.size() == 3)
 	{
 		return svg::Rgb{
-		static_cast<uint8_t>(color[0].AsInt())
-		, static_cast<uint8_t>(color[1].AsInt())
-		, static_cast<uint8_t>(color[2].AsInt()) };
+			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt()) };
 	}
 	else
 	{
 		return svg::Rgba{
-		static_cast<uint8_t>(color[0].AsInt())
-		, static_cast<uint8_t>(color[1].AsInt())
-		, static_cast<uint8_t>(color[2].AsInt())
-		, color[3].AsDouble() };
+			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt()), color[3].AsDouble() };
 	}
 }
 
