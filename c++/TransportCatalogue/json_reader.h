@@ -36,7 +36,8 @@ private:
 	json::Document input_json;
 	json::Array base_requests;
 	json::Array stat_requests;
-	json::Node answer;
+	json::Array answers;
+	json::Node result_answer;
 	json::Dict render_requests;
 	renderer::MapRenderer &rendrer;
 	renderer::Settings settings;

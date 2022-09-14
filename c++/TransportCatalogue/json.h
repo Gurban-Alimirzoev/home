@@ -38,7 +38,7 @@ namespace json {
         bool IsString() const;
         const std::string& AsString() const;
         bool IsDict() const;
-        const Dict& AsMap() const;
+        const Dict& AsDict() const;
         bool operator==(const Node& rhs) const;
         const Value& GetValue() const;
         Value& GetValue();

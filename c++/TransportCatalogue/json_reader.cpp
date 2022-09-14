@@ -8,14 +8,14 @@ using namespace renderer;
 void JsonReader::ParseRequests()
 {
 	Node requests = input_json.GetRoot();
-	for (auto request : requests.AsMap())
+	for (auto request : requests.AsDict())
 	{
 		if (request.first == "base_requests")
 			base_requests = request.second.AsArray();
 		else if (request.first == "stat_requests")
 			stat_requests = request.second.AsArray();
 		else
-			render_requests = request.second.AsMap();
+			render_requests = request.second.AsDict();
 	}
 }
 
@@ -23,7 +23,7 @@ void JsonReader::BaseRequests()
 {
 	for (Node base_request : base_requests)
 	{
-		Dict bus_or_stop = base_request.AsMap();
+		Dict bus_or_stop = base_request.AsDict();
 		if (bus_or_stop.at("type").AsString() == "Stop")
 			BaseRequests_AddStop(bus_or_stop);
 		else
@@ -54,7 +54,7 @@ void JsonReader::BaseRequest_AddBus()
 	}
 }
 
-void JsonReader::Transform(const json::Array &stops_input, vector<string> &stops_output)
+void JsonReader::Transform(const json::Array& stops_input, vector<string>& stops_output)
 {
 	transform(
 		stops_input.begin(),
@@ -69,12 +69,12 @@ void JsonReader::BaseRequests_AddStop(Dict stop)
 
 	db.AddStop(
 		stop.at("name").AsString(),
-		{stop.at("latitude").AsDouble(),
-		 stop.at("longitude").AsDouble()});
-	Dict road_distances = stop.at("road_distances").AsMap();
+		{ stop.at("latitude").AsDouble(),
+		 stop.at("longitude").AsDouble() });
+	Dict road_distances = stop.at("road_distances").AsDict();
 	for (auto [name_second_stop, distance] : road_distances)
 	{
-		buffer_distance[stop.at("name").AsString()].push_back({name_second_stop, distance.AsDouble()});
+		buffer_distance[stop.at("name").AsString()].push_back({ name_second_stop, distance.AsDouble() });
 	}
 }
 
@@ -83,45 +83,61 @@ void JsonReader::SetDistance()
 	for (auto [stop, second_stops_and_distance] : buffer_distance)
 	{
 		for (auto [second_stop, distance] : second_stops_and_distance)
-			db.SetEarthDistance({stop, second_stop}, distance);
+			db.SetEarthDistance({ stop, second_stop }, distance);
 	}
 }
 
 void JsonReader::StatRequests()
 {
-	vector<Node> result_answer;
 	for (Node stat_request : stat_requests)
 	{
-		Dict requests_type = stat_request.AsMap();
+		Dict requests_type = stat_request.AsDict();
 		if (requests_type.at("type").AsString() == "Stop")
-			Node stop_answer = StatRequests_PrintStopRequest(requests_type);
+		{
+			StatRequests_PrintStopRequest(requests_type);
+		}
 		else if (requests_type.at("type").AsString() == "Bus")
-			Node stop_answer = StatRequests_PrintBusRequest(requests_type);
+		{
+			StatRequests_PrintBusRequest(requests_type);
+		}
 		else
+		{
 			StatRequests_PrintMapRequests(requests_type);
+		}
 	}
-	answer = json::Builder{}.StartArray().Value() Build();
+	Array arr;
+	for (auto node : bus_answer)
+		arr.push_back(node);
+	for (auto node : stop_answer)
+		arr.push_back(node);
+	for (auto node : map_answer)
+		arr.push_back(node);
+
+	result_answer = Builder{}.Value(arr).Build();
 }
 
-Node JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
+void JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 {
 	if (!handler.ChekStop(stop_request.at("name").AsString()))
-		answer.emplace_back(Dict{
-			{"error_message",
-			 Node(string("not found"))},
-			{"request_id",
-			 stop_request.at("id")},
-		});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("error_message")
+			.Value(string("not found"))
+			.Key("request_id")
+			.Value(stop_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	else
 	{
-		std::unordered_set<Bus *> buses_on_stop = handler.GetBusesByStop(stop_request.at("name").AsString());
+		std::unordered_set<Bus*> buses_on_stop = handler.GetBusesByStop(stop_request.at("name").AsString());
 		deque<string> buses_on_stop_str(buses_on_stop.size());
 
 		transform(
 			buses_on_stop.begin(),
 			buses_on_stop.end(),
 			buses_on_stop_str.begin(),
-			[](Bus *bus)
+			[](Bus* bus)
 			{
 				return (*bus).name_bus;
 			});
@@ -135,63 +151,78 @@ Node JsonReader::StatRequests_PrintStopRequest(Dict stop_request)
 			{
 				return Node(bus);
 			});
-		answer.emplace_back(Dict{
-			{"buses",
-			 Node(buses_on_stop_vector_bus)},
-			{"request_id", stop_request.at("id")}});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("buses")
+			.Value(buses_on_stop_vector_bus)
+			.Key("request_id")
+			.Value(stop_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 }
 
-Node JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
+void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 {
 	string name = bus_request.at("name").AsString();
 	if (!handler.ChekBus(name))
 	{
-		answer.emplace_back(Dict{
-			{"error_message",
-			 Node(string("not found"))},
-			{"request_id",
-			 bus_request.at("id")},
-		});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("error_message")
+			.Value(string("not found"))
+			.Key("request_id")
+			.Value(bus_request.at("id").AsInt())
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 	else
 	{
 		BusInfo info = *(handler.GetBusStat(name));
 		int stop_count = handler.GetStopCount(name);
-		answer.emplace_back(Dict{
-			{"curvature",
-			 Node(info.curvature)},
-			{"request_id",
-			 bus_request.at("id")},
-			{"route_length",
-			 Node(info.route_length)},
-			{"stop_count",
-			 Node(stop_count)},
-			{"unique_stop_count",
-			 Node(static_cast<int>(info.unique_stop))},
-		});
+		answers.push_back(Builder{}
+			.StartDict()
+			.Key("curvature")
+			.Value(info.curvature)
+			.Key("request_id")
+			.Value(bus_request.at("id").AsInt())
+			.Key("route_length")
+			.Value(info.route_length)
+			.Key("stop_count")
+			.Value(stop_count)
+			.Key("unique_stop_count")
+			.Value(static_cast<int>(info.unique_stop))
+			.EndDict()
+			.Build()
+			.AsDict());
 	}
 }
 
-Node JsonReader::StatRequests_PrintMapRequests(Dict map_request)
+void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
 {
 	ostringstream out;
 	rendrer.RenderMap(out);
-	answer.emplace_back(Dict{
-		{"map", Node(out.str())},
-		{"request_id",
-			 map_request.at("id")}
-		});
+	answers.push_back(Builder{}
+		.StartDict()
+		.Key("map")
+		.Value(out.str())
+		.Key("request_id")
+		.Value(map_request.at("id").AsInt())
+		.EndDict()
+		.Build()
+		.AsDict());
 }
 
 Document JsonReader::GetAnswerToStatRequests() const
 {
-	return Document(answer);
+	return Document(result_answer);
 }
 
 void JsonReader::PrintAnswerToStatRequests()
 {
-	Print(Document{answer}, out);
+	Print(Document{ result_answer }, out);
 }
 
 void JsonReader::ParseRenderRequests()
@@ -244,12 +275,12 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	if (color.size() == 3)
 	{
 		return svg::Rgb{
-			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt())};
+			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt()) };
 	}
 	else
 	{
 		return svg::Rgba{
-			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt()), color[3].AsDouble()};
+			static_cast<uint8_t>(color[0].AsInt()), static_cast<uint8_t>(color[1].AsInt()), static_cast<uint8_t>(color[2].AsInt()), color[3].AsDouble() };
 	}
 }
 
@@ -281,7 +312,7 @@ void JsonReader::MakeMap()
 	for (Stop stop : var)
 	{
 		if (!handler.GetBusesByStop(stop.name_stop).empty())
-			rendrer.SavePoints({stop.coor.lat, stop.coor.lng});
+			rendrer.SavePoints({ stop.coor.lat, stop.coor.lng });
 	}
 }
 

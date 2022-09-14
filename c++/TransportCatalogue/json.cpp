@@ -303,7 +303,7 @@ namespace json {
 	bool Node::IsDict() const {
 		return std::holds_alternative<Dict>(*this);
 	}
-	const Dict& Node::AsMap() const {
+	const Dict& Node::AsDict() const {
 		using namespace std::literals;
 		if (!IsDict()) {
 			throw std::logic_error("Not a dict"s);
