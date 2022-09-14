@@ -10,6 +10,16 @@ namespace transport_catalogue
 	{
 		std::string name_stop;
 		geo::Coordinates coor;
+
+		bool operator<(const Stop& rhs)
+		{
+			return name_stop < rhs.name_stop;
+		}
+
+		bool operator>(const Stop& rhs)
+		{
+			return name_stop > rhs.name_stop;
+		}
 	};
 
 	struct Bus
@@ -38,5 +48,4 @@ namespace transport_catalogue::detail
 		}
 		std::hash<const void*> coor_hasher;
 	};
-
 }
