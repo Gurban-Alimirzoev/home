@@ -10,7 +10,7 @@ using namespace std;
 class BookBase
 {
 public:
-	void SetReadUser(int id, int page)
+	void SetIdAndPage(int id, int page)
 	{
 		if (id_and_page.size() < id + 1)
 			id_and_page.resize(id + 1);
@@ -76,7 +76,7 @@ void ParseRequsets(BookBase& bb, string line)
 		double id = stod(line);
 		size_t space = line.find_first_of(' ');
 		double page = stod(line.substr(space));
-		bb.SetReadUser(id, page);
+		bb.SetIdAndPage(id, page);
 	}
 }
 
