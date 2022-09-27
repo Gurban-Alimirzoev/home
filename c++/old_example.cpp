@@ -3,7 +3,7 @@
 #include <set>
 #include <string_view>
 #include <vector>
-#include <span>
+#include <iterator>
 
 using namespace std;
 
@@ -11,34 +11,39 @@ using namespace std;
 // сливать не только векторы, но и любые другие контейнеры
 template <typename InputIt1, typename InputIt2>
 void Merge(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2, ostream& out) {
-    size_t i1 = 0, i2 = 0;
-    while (i1 < src1.size() && i2 < src2.size()) {
-        if (src1[i1] < src2[i2]) {
-            out << src1[i1++] << endl;
+    InputIt1 i1 = first1;
+    InputIt2 i2 = first2;
+    while (i1 != last1 && i2 != last2) {
+        if (less<>()(*i1, *i2)) {
+            out << *i1 << endl;
+            i1 = next(i1);
         }
         else {
-            out << src2[i2++] << endl;
+            out << *i2 << endl;
+            i2 = next(i2);
         }
     }
-    while (i1 < src1.size()) {
-        out << src1[i1++] << endl;
+    while (i1 != last1) {
+        out << *i1 << endl;
+        i1 = next(i1);
     }
-    while (i2 < src2.size()) {
-        out << src2[i2++] << endl;
+    while (i2 != last2) {
+        out << *i2 << endl;
+        i2 = next(i2);
     }
 }
 
 template <typename T, typename S>
-void MergeSomething(T src1, S src2, ostream& out) {
-    Merge(src1, src2, out);
+void MergeSomething(const T& src1, const S& src2, ostream& out) {
+    Merge(src1.begin(), src1.end(), src2.begin(), src2.end(), out);
 }
 
 // –еализуйте эту функцию:
 template <typename T>
-void MergeHalves(T src, ostream& out) {
+void MergeHalves(const vector<T>& src, ostream& out) {
     size_t mid = (src.size() + 1) / 2;
-    // —делать Merge участка вектора от 0 до mid и от mid до конца.
-    // Ёлемент с индексом mid включаетс€ во второй диапазон.
+    auto mid_iter = next(src.begin(), mid);
+    Merge(src.begin(), mid_iter, mid_iter, src.end(), out);
 }
 
 int main() {
