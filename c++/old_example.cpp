@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string_view>
 #include <vector>
+#include <set>
 #include <list>
 #include <cassert>
 
@@ -13,21 +14,24 @@ vector<string> MakeWithoutDot(string_view str)
 {
     vector<string> result;
     size_t dot = str.find_first_of('.');
-    while (dot == str.size())
+
+    if (dot == string_view::npos)
+        result.push_back(string(str));
+
+    while (dot != string_view::npos)
     {
-        result.push_back(string(str.substr(0, dot)));
         dot = str.find_first_of('.');
+        result.push_back(string(str.substr(0, dot)));
         str = str.substr(dot + 1);
     }
-    result.push_back(string(str));
-    return (result);
+    return result;
 }
 
 class Domain {
     // разработайте класс домена
 public:
     Domain(string_view str)
-        :domain_(MakeWithoutDot(str))
+        :domain_(MakeWithoutDot(str)), full_domain(str)
     {}
     // конструктор должен позволять конструирование из string, с сигнатурой определитесь сами
 
@@ -42,44 +46,65 @@ public:
     bool IsSubdomain(const Domain& parent)
     {
         int parent_size = static_cast<int>(parent.domain_.size());
+        int domain_size = static_cast<int>(domain_.size());
 
-        if (parent_size < static_cast<int>(domain_.size()))
+        if (parent_size > domain_size)
             return false;
 
-        for (const string& one_domain : domain_)
+        int diff_size = domain_size - parent_size;
+        for (const string& parent_domain : parent.domain_)
         {
-            if (one_domain == parent.domain_[parent_size--])
-                return true;
+            if (domain_[diff_size++] != parent_domain)
+                return false;
         }
-        return false;
+        return true;
     }
 
-    const vector<string>& GetDomain()
+    const vector<string>& GetDomain() const
     {
         return domain_;
     }
 
+    const string& GetFullDomain() const
+    {
+        return full_domain;
+    }
+
 private:
     vector<string> domain_;
+    string full_domain;
 };
+
+bool operator<(const Domain& lhs, const Domain& rhs)
+{
+    return lexicographical_compare(
+        lhs.GetDomain().begin(),
+        lhs.GetDomain().end(),
+        rhs.GetDomain().begin(),
+        rhs.GetDomain().end()
+    );
+}
 
 class DomainChecker {
 public:
     // конструктор должен принимать список запрещённых доменов через пару итераторов
     template <typename InputIt>
     DomainChecker(InputIt first, InputIt last)
-        :blocked_domain(first, last)
+        :blocked_domain(make_move_iterator(first), make_move_iterator(last))
     {}
 
     // разработайте метод IsForbidden, возвращающий true, если домен запрещён
     bool IsForbidden(const Domain& domain)
     {
-        blocked_domain.push_back(domain);
-        return true;
+        auto iter = blocked_domain.find(domain);
+        if (iter != blocked_domain.end() && (*iter).GetDomain().back() == domain.GetDomain().back())
+            return true;
+        else
+            return false;
     }
 
 private:
-    vector<Domain> blocked_domain;
+    set<Domain> blocked_domain;
 };
 
 
@@ -113,32 +138,35 @@ Number ReadNumberOnLine(istream& input) {
 void TestDomain()
 {
     string name_ = "exmaple.com";
-    string name_false = "emaple.com";
-    string name_sub = "ru.exmaple.com";
+    string name_false = "com.exmaple";
+    string name_sub_true = "ru.exmaple.com";
+    string name_sub_false = "com.exmaple.ru";
 
     Domain domain_name_(name_);
+    Domain domain_name_2(name_);
     Domain domain_name_false(name_false);
-    Domain domain_name_sub(name_sub);
-    Domain domain_name_true(name_);
-
     assert(!(domain_name_ == domain_name_false));
-    assert(domain_name_ == domain_name_true);
-    assert(domain_name_sub.IsSubdomain(domain_name_));
-    assert(!domain_name_sub.IsSubdomain(domain_name_false));
+    assert(domain_name_ == domain_name_2);
+
+
+    Domain domain_name_sub_true(name_sub_true);
+    Domain domain_name_sub_false(name_sub_false);
+    assert(domain_name_sub_true.IsSubdomain(domain_name_));
+    assert(!domain_name_sub_false.IsSubdomain(domain_name_));
 }
 
 void TestDomainCheker()
 {
-    vector<Domain> vector_ = { "good.example.com", "student.com" };
-    list<Domain> list_ = { "ru", "student" };
+    vector<Domain> vector_ = { Domain("example.com"), Domain("student.com") };
+    list<Domain> list_ = { Domain("ru"), Domain("student") };
     DomainChecker dc_vec(vector_.begin(), vector_.end());
     DomainChecker dc_list(list_.begin(), list_.end());
 
     assert(!dc_vec.IsForbidden(Domain("example_.ru")));
-    assert(dc_vec.IsForbidden(Domain("example")));
+    assert(!dc_vec.IsForbidden(Domain("example")));
 
-    assert(dc_list.IsForbidden(Domain("example1.ru")));
-    assert(!dc_list.IsForbidden(Domain("example.com")));
+    assert(dc_vec.IsForbidden(Domain("example.com")));
+    assert(!dc_vec.IsForbidden(Domain("e.com")));
 }
 
 void TestReadDomains()
@@ -151,6 +179,11 @@ void TestReadDomains()
 }
 
 int main() {
+
+    TestReadDomains();
+    TestDomain();
+    TestDomainCheker();
+
     const std::vector<Domain> forbidden_domains = ReadDomains(cin, ReadNumberOnLine<size_t>(cin));
     DomainChecker checker(forbidden_domains.begin(), forbidden_domains.end());
 
