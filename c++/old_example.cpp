@@ -6,6 +6,7 @@
 #include <vector>
 #include <set>
 #include <list>
+#include <iterator>
 #include <cassert>
 
 using namespace std;
@@ -96,11 +97,18 @@ public:
     // разработайте метод IsForbidden, возвращающий true, если домен запрещён
     bool IsForbidden(const Domain& domain)
     {
-        auto iter = blocked_domain.find(domain);
-        if (iter != blocked_domain.end() && (*iter).GetDomain().back() == domain.GetDomain().back())
-            return true;
-        else
-            return false;
+        vector<string> vec(domain.GetDomain());
+
+        auto iter = blocked_domain.find();
+        while (iter == blocked_domain.end() && vec.size() > 0)
+        {
+            if (iter != blocked_domain.end())
+                return true;
+            else
+                vec.erase(vec.begin());
+            iter = blocked_domain.find(domain);
+        }
+        return true;
     }
 
 private:
@@ -180,9 +188,9 @@ void TestReadDomains()
 
 int main() {
 
-    TestReadDomains();
-    TestDomain();
-    TestDomainCheker();
+    //TestReadDomains();
+    //TestDomain();
+    //TestDomainCheker();
 
     const std::vector<Domain> forbidden_domains = ReadDomains(cin, ReadNumberOnLine<size_t>(cin));
     DomainChecker checker(forbidden_domains.begin(), forbidden_domains.end());
