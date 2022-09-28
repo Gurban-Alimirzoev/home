@@ -9,7 +9,7 @@
 
 using namespace std;
 
-vector<string>&& MakeWithoutDot(string_view str)
+vector<string> MakeWithoutDot(string_view str)
 {
     vector<string> result;
     size_t dot = str.find_first_of('.');
@@ -20,14 +20,14 @@ vector<string>&& MakeWithoutDot(string_view str)
         str = str.substr(dot + 1);
     }
     result.push_back(string(str));
-    return move(result);
+    return (result);
 }
 
 class Domain {
     // разработайте класс домена
 public:
     Domain(string_view str)
-        :domain(MakeWithoutDot(str))
+        :domain_(MakeWithoutDot(str))
     {}
     // конструктор должен позволять конструирование из string, с сигнатурой определитесь сами
 
@@ -35,15 +35,32 @@ public:
 
     bool operator==(const Domain& domain)
     {
-
+        return domain_ == domain.domain_;
     }
 
     // разработайте метод IsSubdomain, принимающий другой домен и возвращающий true, если this его поддомен
-    bool IsSubdomain(Domain parent)
-    {}
+    bool IsSubdomain(const Domain& parent)
+    {
+        int parent_size = static_cast<int>(parent.domain_.size());
+
+        if (parent_size < static_cast<int>(domain_.size()))
+            return false;
+
+        for (const string& one_domain : domain_)
+        {
+            if (one_domain == parent.domain_[parent_size--])
+                return true;
+        }
+        return false;
+    }
+
+    const vector<string>& GetDomain()
+    {
+        return domain_;
+    }
 
 private:
-    vector<string> domain;
+    vector<string> domain_;
 };
 
 class DomainChecker {
@@ -51,18 +68,33 @@ public:
     // конструктор должен принимать список запрещённых доменов через пару итераторов
     template <typename InputIt>
     DomainChecker(InputIt first, InputIt last)
+        :blocked_domain(first, last)
     {}
 
     // разработайте метод IsForbidden, возвращающий true, если домен запрещён
     bool IsForbidden(const Domain& domain)
     {
+        blocked_domain.push_back(domain);
+        return true;
     }
+
+private:
+    vector<Domain> blocked_domain;
 };
 
 
 const vector<Domain> ReadDomains(istream& input, size_t number)
 {
+    vector<Domain> result;
+    string str;
 
+    while (number != 0)
+    {
+        getline(input, str);
+        result.push_back(Domain(str));
+        number--;
+    }
+    return result;
 }
 
 // разработайте функцию ReadDomains, читающую заданное количество доменов из стандартного входа
@@ -111,11 +143,11 @@ void TestDomainCheker()
 
 void TestReadDomains()
 {
-    istringstream stream("example.com, ru");
+    istringstream stream("example.com\n ru");
     auto result = ReadDomains(stream, 2);
 
     vector<Domain> vec = { Domain("example.com"), Domain("ru") };
-    assert(result == vec);
+    //assert(result == vec);
 }
 
 int main() {
