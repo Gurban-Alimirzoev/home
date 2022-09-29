@@ -64,6 +64,25 @@ public:
 private:
 };
 
+class Spend : public ModifyQuery {
+public:
+    using ModifyQuery::ModifyQuery;
+
+    void Process(BudgetManager& budget) const override {
+        budget.AddBulkOperation(GetFrom(), GetTo(), BulkTaxApplier{ 1 });
+    }
+
+    class Factory : public QueryFactory {
+    public:
+        std::unique_ptr<Query> Construct(std::string_view config) const override {
+            auto parts = Split(config, ' ');
+            return std::make_unique<Spend>(Date::FromString(parts[0]), Date::FromString(parts[1]));
+        }
+    };
+
+private:
+};
+
 }  // namespace queries
 
 const QueryFactory& QueryFactory::GetFactory(std::string_view id) {

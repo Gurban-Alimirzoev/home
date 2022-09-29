@@ -15,6 +15,7 @@ struct BulkTaxApplier {
         static const double factor = 0.87;
         return std::pow(factor, count);
     }
+    double factor = 13;
 
     int count = 0;
 };
