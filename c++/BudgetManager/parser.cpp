@@ -89,8 +89,9 @@ const QueryFactory& QueryFactory::GetFactory(std::string_view id) {
     static queries::ComputeIncome::Factory compute_income;
     static queries::Alter::Factory earn;
     static queries::PayTax::Factory pay_tax;
+    static queries::Spend::Factory spend;
     static std::unordered_map<std::string_view, const QueryFactory&> factories
-        = {{"ComputeIncome"sv, compute_income}, {"Earn"sv, earn}, {"PayTax"sv, pay_tax}};
+        = {{"ComputeIncome"sv, compute_income}, {"Earn"sv, earn}, {"PayTax"sv, pay_tax}, {"Spend"sv, spend} };
 
     return factories.at(id);
 }
