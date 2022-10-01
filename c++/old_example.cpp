@@ -1,184 +1,98 @@
 #include <algorithm>
+#include <cmath>
 #include <iostream>
-#include <string>
-#include <sstream>
-#include <string_view>
-#include <vector>
+#include <unordered_map>
+#include <map>
+#include <unordered_set>
 #include <set>
-#include <list>
-#include <iterator>
+#include <string>
+#include <vector>
 #include <cassert>
 
 using namespace std;
 
-vector<string> MakeWithoutDot(string_view str)
-{
-    vector<string> result;
-    size_t dot = str.find_first_of('.');
-
-    if (dot == string_view::npos)
-        result.push_back(string(str));
-
-    while (dot != string_view::npos)
-    {
-        dot = str.find_first_of('.');
-        result.push_back(string(str.substr(0, dot)));
-        str = str.substr(dot + 1);
-    }
-    return result;
-}
-
-class Domain {
+class RouteManager {
 public:
-    Domain(string_view str)
-        :domain_(MakeWithoutDot(str))
-    {}
+	RouteManager& AddRoute(int start, int finish) {
+		reachable_lists_[start].insert(finish);
+		reachable_lists_[finish].insert(start);
+		return *this;
+	}
 
-    Domain(vector<string> vec)
-        :domain_(vec)
-    {}
+	int FindNearestFinish(int start, int finish) const {
 
-    bool operator==(const Domain& domain)
-    {
-        return domain_ == domain.domain_;
-    }
+		int result = abs(start - finish);
 
-    bool IsSubdomain(const Domain& parent)
-    {
-        int parent_size = static_cast<int>(parent.domain_.size());
-        int domain_size = static_cast<int>(domain_.size());
+		auto iter = reachable_lists_.find(start);
 
-        if (parent_size > domain_size)
-            return false;
+		if (iter == reachable_lists_.end())
+			return result;
 
-        int diff_size = domain_size - parent_size;
-        for (const string& parent_domain : parent.domain_)
-        {
-            if (domain_[diff_size++] != parent_domain)
-                return false;
-        }
-        return true;
-    }
+		const set<int>& reachable_stations = iter->second;
 
-    const vector<string>& GetDomain() const
-    {
-        return domain_;
-    }
+		if (reachable_stations.empty()) {
+			return result;
+		}
+
+		if (reachable_stations.find(finish) != reachable_stations.end())
+			return 0;
+
+		auto is_short = [finish](int lhs, int rhs) {
+			return abs(lhs - finish) < abs(rhs - finish);
+		};
+
+		auto res = min_element(reachable_stations.begin(), reachable_stations.end(), is_short);
+
+		int min_el = abs(finish - (*res));
+
+		return result < min_el ? result : min_el;
+	}
 
 private:
-    vector<string> domain_;
+	map<int, set<int>> reachable_lists_;
 };
 
-bool operator<(const Domain& lhs, const Domain& rhs)
-{
-    return lexicographical_compare(
-        lhs.GetDomain().begin(),
-        lhs.GetDomain().end(),
-        rhs.GetDomain().begin(),
-        rhs.GetDomain().end()
-    );
-}
+void VariantsTests() {
 
-class DomainChecker {
-public:
-    template <typename InputIt>
-    DomainChecker(InputIt first, InputIt last)
-        :blocked_domain(make_move_iterator(first), make_move_iterator(last))
-    {}
+	// YandexLessenTest
+	{
+		RouteManager routes;
+		routes.AddRoute(-2, 5).AddRoute(10, 4).AddRoute(5, 8);
 
-    bool IsForbidden(const Domain& domain)
-    {
-        vector<string> vec(domain.GetDomain());
+		assert(routes.FindNearestFinish(4, 10) == 0);
+		assert(routes.FindNearestFinish(4, -2) == 6);
+		assert(routes.FindNearestFinish(5, 0) == 2);
+		assert(routes.FindNearestFinish(5, 100) == 92);
+	}
 
-        auto iter = blocked_domain.find(Domain(vec));
-        while (iter == blocked_domain.end() && vec.size() > 0)
-        {
-            if (iter != blocked_domain.end())
-                return true;
-            else
-                vec.erase(vec.begin());
-            iter = blocked_domain.find(Domain(vec));
-        }
-        if (iter != blocked_domain.end())
-            return true;
-        else
-            return false;
-    }
+	{
+		RouteManager routes;
+		routes.AddRoute(-2, 5).AddRoute(5, 15).AddRoute(-10, 5);
+		routes.AddRoute(10, 4).AddRoute(4, -7).AddRoute(-1, 10);
+		routes.AddRoute(5, 8).AddRoute(17, 5).AddRoute(-18, 5);
+		routes.AddRoute(5, 1).AddRoute(33, 5).AddRoute(-3, 5);
 
-private:
-    set<Domain> blocked_domain;
-};
+		assert(routes.FindNearestFinish(4, 10) == 0);     // есть такой маршрут
+		assert(routes.FindNearestFinish(4, -2) == 5);     // ближайшая станция -7
+		assert(routes.FindNearestFinish(5, 0) == 1);      // ближайшая станция 1
+		assert(routes.FindNearestFinish(5, 100) == 67);   // ближайшая станция 33
+		assert(routes.FindNearestFinish(5, -8) == 2);     // ближайшая станция -10
+		assert(routes.FindNearestFinish(5, 17) == 0);     // есть такой маршрут
+		assert(routes.FindNearestFinish(5, 37) == 4);     // ближайшая станция 33
+		assert(routes.FindNearestFinish(5, -13) == 3);    // ближайшая станция -10
+		assert(routes.FindNearestFinish(5, -15) == 3);    // ближайшая станция -18
+		assert(routes.FindNearestFinish(5, -14) == 4);    // граничный случай между -10 и -18
+	}
 
+	{
+		RouteManager routes;
+		routes.AddRoute(-658453724, -346143785);
+		assert(routes.FindNearestFinish(-658453724, -61896097) == 284247688);
+	}
 
-const vector<Domain> ReadDomains(istream& input, size_t number)
-{
-    vector<Domain> result;
-    string str;
-
-    while (number != 0)
-    {
-        getline(input, str);
-        result.push_back(Domain(str));
-        number--;
-    }
-    return result;
-}
-
-template <typename Number>
-Number ReadNumberOnLine(istream& input) {
-    string line;
-    getline(input, line);
-
-    Number num;
-    std::istringstream(line) >> num;
-
-    return num;
-}
-
-void TestDomain()
-{
-    string name_ = "exmaple.com";
-    string name_false = "com.exmaple";
-    string name_sub_true = "ru.exmaple.com";
-    string name_sub_false = "com.exmaple.ru";
-
-    Domain domain_name_(name_);
-    Domain domain_name_2(name_);
-    Domain domain_name_false(name_false);
-    assert(!(domain_name_ == domain_name_false));
-    assert(domain_name_ == domain_name_2);
-
-
-    Domain domain_name_sub_true(name_sub_true);
-    Domain domain_name_sub_false(name_sub_false);
-    assert(domain_name_sub_true.IsSubdomain(domain_name_));
-    assert(!domain_name_sub_false.IsSubdomain(domain_name_));
-}
-
-void TestDomainCheker()
-{
-    vector<Domain> vector_ = { Domain("example.com"), Domain("student.com") };
-    list<Domain> list_ = { Domain("ru"), Domain("student") };
-    DomainChecker dc_vec(vector_.begin(), vector_.end());
-    DomainChecker dc_list(list_.begin(), list_.end());
-
-    assert(!dc_vec.IsForbidden(Domain("example_.ru")));
-    assert(!dc_vec.IsForbidden(Domain("example")));
-
-    assert(dc_vec.IsForbidden(Domain("example.com")));
-    assert(!dc_vec.IsForbidden(Domain("e.com")));
+	std::cerr << "All test passed!" << std::endl;
 }
 
 int main() {
-
-    TestDomain();
-    TestDomainCheker();
-
-    const std::vector<Domain> forbidden_domains = ReadDomains(cin, ReadNumberOnLine<size_t>(cin));
-    DomainChecker checker(forbidden_domains.begin(), forbidden_domains.end());
-
-    const std::vector<Domain> test_domains = ReadDomains(cin, ReadNumberOnLine<size_t>(cin));
-    for (const Domain& domain : test_domains) {
-        cout << (checker.IsForbidden(domain) ? "Bad"sv : "Good"sv) << endl;
-    }
+	VariantsTests();
 }

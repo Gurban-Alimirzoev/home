@@ -19,7 +19,8 @@ public:
     }
 
     double ComputeSum(Date from, Date to) const {
-        return tree_.ComputeSum(MakeDateSegment(from, to));
+        auto total = tree_.ComputeSum(MakeDateSegment(from, to));
+        return total.earned - total.spent;
     }
 
     void AddBulkOperation(Date from, Date to, const BulkLinearUpdater& operation) {
@@ -27,5 +28,5 @@ public:
     }
 
 private:
-    SummingSegmentTree<double, BulkLinearUpdater> tree_{GetDayIndex(END_DATE)};
+    SummingSegmentTree<DayInfo, BulkLinearUpdater> tree_{GetDayIndex(END_DATE)};
 };
