@@ -22,30 +22,18 @@ public:
 	int FindNearestFinish(int start, int finish) const {
 
 		int result = abs(start - finish);
-
-		auto iter = reachable_lists_.find(start);
-
-		if (iter == reachable_lists_.end())
+		if (!reachable_lists_.count(start))
 			return result;
 
-		const set<int>& reachable_stations = iter->second;
-
-		if (reachable_stations.empty()) {
-			return result;
-		}
-
-		if (reachable_stations.find(finish) != reachable_stations.end())
+		const set<int>& reachable_stations = reachable_lists_.at(start);
+		if (reachable_stations.count(finish))
 			return 0;
 
-		auto is_short = [finish](int lhs, int rhs) {
-			return abs(lhs - finish) < abs(rhs - finish);
-		};
+		auto it = reachable_stations.lower_bound(finish);
 
-		auto res = min_element(reachable_stations.begin(), reachable_stations.end(), is_short);
-
-		int min_el = abs(finish - (*res));
-
-		return result < min_el ? result : min_el;
+		if (it == reachable_stations.end())
+			return (min(result, abs(*prev(it) - finish)));
+		return min({ result, abs(finish - *it), abs(finish - *prev(it)) });
 	}
 
 private:
@@ -94,5 +82,22 @@ void VariantsTests() {
 }
 
 int main() {
-	VariantsTests();
+	//VariantsTests();
+	RouteManager routes;
+
+	int query_count;
+	cin >> query_count;
+
+	for (int query_id = 0; query_id < query_count; ++query_id) {
+		string query_type;
+		cin >> query_type;
+		int start, finish;
+		cin >> start >> finish;
+		if (query_type == "ADD"s) {
+			routes.AddRoute(start, finish);
+		}
+		else if (query_type == "GO"s) {
+			cout << routes.FindNearestFinish(start, finish) << "\n"s;
+		}
+	}
 }
