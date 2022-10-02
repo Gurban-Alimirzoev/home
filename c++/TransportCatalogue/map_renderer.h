@@ -124,7 +124,7 @@ namespace renderer
     public:
         MapRenderer() = default;
         MapRenderer(Settings settings_)
-            : settings(settings_)
+            : render_settings(settings_)
         {
         }
         void SetSettings(Settings settings_);
@@ -138,7 +138,7 @@ namespace renderer
         void RenderMap(std::ostream &out);
 
     private:
-        Settings settings;
+        Settings render_settings;
         SphereProjector SP;
         std::vector<svg::Object> polylines;
         svg::Document out_doc;

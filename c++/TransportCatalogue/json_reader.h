@@ -10,6 +10,8 @@
 #include "transport_catalogue.h"
 #include "request_handler.h"
 #include "map_renderer.h"
+#include "graph.h"
+#include "route.h"
 
 class JsonReader
 {
@@ -22,12 +24,13 @@ public:
 
 	void ParseRequests();
 	void BaseRequests();
-	void ParseRenderRequests();
+	void ParseRenderSettings();
+	void ParseRouteSettings();
 	void StatRequests();
 	json::Document GetAnswerToStatRequests() const;
 	void PrintAnswerToStatRequests();
 
-	renderer::Settings GetSettings() const;
+	renderer::Settings GetRenderSettings() const;
 	void AddRendererElements();
 
 private:
@@ -38,15 +41,20 @@ private:
 	json::Array stat_requests;
 	json::Array answers;
 	json::Node result_answer;
-	json::Dict render_requests;
+	json::Dict routing_settings;
+	json::Dict rendering_settings;
 	renderer::MapRenderer &rendrer;
-	renderer::Settings settings;
+	renderer::Settings render_settings;
+	transport_catalogue::route::Settings route_settings;
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
 	std::deque<json::Dict> buses;
 	std::vector<std::pair<std::string, bool>> buses_sort;
 	std::vector<transport_catalogue::Stop> var;
 	std::unordered_map<std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
+	std::unordered_map < std::string, size_t> stop_name_and_vertex_id;
+	std::unordered_map < size_t, std::string> vertex_id_and_stop_name_;
+	graph::DirectedWeightedGraph<double> graph_;
 
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);
@@ -56,12 +64,15 @@ private:
 
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
+	void StatRequests_PrintRouteRequest(json::Dict route_request, graph::Router<double>& router);
 	void StatRequests_PrintMapRequests(json::Dict map_request);
 
-	void MakeSettings(json::Dict render_requests);
+	void MakeRenderSettings(json::Dict rendering_settings);
 	svg::Color RenderRequests_RgbOrRgba(json::Array color);
 
 	void MakeMap();
 	void AddStopsToMap();
 	void AddBusesToMap();
+
+	void MakeRouteSettings(json::Dict rendering_settings);
 };

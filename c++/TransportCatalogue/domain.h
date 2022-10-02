@@ -49,3 +49,12 @@ namespace transport_catalogue::detail
 		std::hash<const void*> coor_hasher;
 	};
 }
+
+namespace transport_catalogue::route
+{
+	struct Settings
+	{
+		double bus_wait_time = 1;
+		double bus_velocity = 1;
+	};
+}

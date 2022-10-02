@@ -4,6 +4,7 @@ using namespace std;
 using namespace transport_catalogue;
 using namespace json;
 using namespace renderer;
+using namespace graph;
 
 void JsonReader::ParseRequests()
 {
@@ -14,8 +15,10 @@ void JsonReader::ParseRequests()
 			base_requests = request.second.AsArray();
 		else if (request.first == "stat_requests")
 			stat_requests = request.second.AsArray();
+		else if (request.first == "routing_settings")
+			routing_settings = request.second.AsDict();
 		else
-			render_requests = request.second.AsDict();
+			rendering_settings = request.second.AsDict();
 	}
 }
 
@@ -72,9 +75,18 @@ void JsonReader::BaseRequests_AddStop(Dict stop)
 		{ stop.at("latitude").AsDouble(),
 		 stop.at("longitude").AsDouble() });
 	Dict road_distances = stop.at("road_distances").AsDict();
+
+	string name_first = stop.at("name").AsString();
+
+	if (stop_name_and_vertex_id.find(name_first) == stop_name_and_vertex_id.end())
+		stop_name_and_vertex_id[name_first] = stop_name_and_vertex_id.size();
+
 	for (auto [name_second_stop, distance] : road_distances)
 	{
 		buffer_distance[stop.at("name").AsString()].push_back({ name_second_stop, distance.AsDouble() });
+		
+		if (stop_name_and_vertex_id.find(name_second_stop) == stop_name_and_vertex_id.end())
+			stop_name_and_vertex_id[name_second_stop] = stop_name_and_vertex_id.size();
 	}
 }
 
@@ -82,13 +94,27 @@ void JsonReader::SetDistance()
 {
 	for (auto [stop, second_stops_and_distance] : buffer_distance)
 	{
+		size_t stop_vertex = stop_name_and_vertex_id[stop];
 		for (auto [second_stop, distance] : second_stops_and_distance)
+		{
 			db.SetEarthDistance({ stop, second_stop }, distance);
+			graph_.AddEdge({
+			stop_vertex,
+			stop_name_and_vertex_id[second_stop],
+			distance
+				});
+		}
+		graph_.AddEdge({
+			stop_vertex,
+			stop_vertex,
+			route_settings.bus_wait_time
+			});
 	}
 }
 
 void JsonReader::StatRequests()
 {
+	Router router(graph_);
 	for (Node stat_request : stat_requests)
 	{
 		Dict requests_type = stat_request.AsDict();
@@ -99,6 +125,10 @@ void JsonReader::StatRequests()
 		else if (requests_type.at("type").AsString() == "Bus")
 		{
 			StatRequests_PrintBusRequest(requests_type);
+		}
+		else if (requests_type.at("type").AsString() == "Route")
+		{
+			StatRequests_PrintRouteRequest(requests_type, router);
 		}
 		else
 		{
@@ -193,6 +223,26 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 }
 
+void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<double>& router)
+{
+	string start_stop = route_request.at("from").AsString();
+	string finish_stop = route_request.at("to").AsString();
+	router.BuildRoute(
+		{ stop_name_and_vertex_id[start_stop] },
+		{ stop_name_and_vertex_id[start_stop] });
+	router.BuildRoute(
+		{stop_name_and_vertex_id[start_stop] },
+		{stop_name_and_vertex_id[finish_stop]});
+
+	answers.push_back(Builder{}
+		.StartDict()
+		.Key("request_id")
+		.Value(route_request.at("id").AsInt())
+		.EndDict()
+		.Build()
+		.AsDict());
+}
+
 void JsonReader::StatRequests_PrintMapRequests(Dict map_request)
 {
 	ostringstream out;
@@ -218,45 +268,50 @@ void JsonReader::PrintAnswerToStatRequests()
 	Print(Document{ result_answer }, out);
 }
 
-void JsonReader::ParseRenderRequests()
+void JsonReader::ParseRenderSettings()
 {
-	MakeSettings(render_requests);
+	MakeRenderSettings(rendering_settings);
 }
 
-void JsonReader::MakeSettings(Dict render_requests)
+void JsonReader::ParseRouteSettings()
 {
-	if (!render_requests.empty())
+	MakeRouteSettings(routing_settings);
+}
+
+void JsonReader::MakeRenderSettings(Dict rendering_settings)
+{
+	if (!rendering_settings.empty())
 	{
-		settings.width = render_requests.at("width").AsDouble();
-		settings.height = render_requests.at("height").AsDouble();
-		settings.stop_label_font_size = render_requests.at("stop_label_font_size").AsInt();
-		settings.bus_label_font_size = render_requests.at("bus_label_font_size").AsInt();
+		render_settings.width = rendering_settings.at("width").AsDouble();
+		render_settings.height = rendering_settings.at("height").AsDouble();
+		render_settings.stop_label_font_size = rendering_settings.at("stop_label_font_size").AsInt();
+		render_settings.bus_label_font_size = rendering_settings.at("bus_label_font_size").AsInt();
 
-		settings.padding = render_requests.at("padding").AsDouble();
-		settings.line_width = render_requests.at("line_width").AsDouble();
-		settings.stop_radius = render_requests.at("stop_radius").AsDouble();
-		settings.underlayer_width = render_requests.at("underlayer_width").AsDouble();
+		render_settings.padding = rendering_settings.at("padding").AsDouble();
+		render_settings.line_width = rendering_settings.at("line_width").AsDouble();
+		render_settings.stop_radius = rendering_settings.at("stop_radius").AsDouble();
+		render_settings.underlayer_width = rendering_settings.at("underlayer_width").AsDouble();
 
-		settings.bus_label_offset.clear();
-		for (auto offset : render_requests.at("bus_label_offset").AsArray())
-			settings.bus_label_offset.push_back(offset.AsDouble());
-		settings.stop_label_offset.clear();
-		for (auto offset : render_requests.at("stop_label_offset").AsArray())
-			settings.stop_label_offset.push_back(offset.AsDouble());
+		render_settings.bus_label_offset.clear();
+		for (auto offset : rendering_settings.at("bus_label_offset").AsArray())
+			render_settings.bus_label_offset.push_back(offset.AsDouble());
+		render_settings.stop_label_offset.clear();
+		for (auto offset : rendering_settings.at("stop_label_offset").AsArray())
+			render_settings.stop_label_offset.push_back(offset.AsDouble());
 
-		if (render_requests.at("underlayer_color").IsString())
-			settings.underlayer_color = render_requests.at("underlayer_color").AsString();
+		if (rendering_settings.at("underlayer_color").IsString())
+			render_settings.underlayer_color = rendering_settings.at("underlayer_color").AsString();
 		else
-			settings.underlayer_color = RenderRequests_RgbOrRgba(
-				render_requests.at("underlayer_color").AsArray());
+			render_settings.underlayer_color = RenderRequests_RgbOrRgba(
+				rendering_settings.at("underlayer_color").AsArray());
 
-		for (auto color : render_requests.at("color_palette").AsArray())
+		for (auto color : rendering_settings.at("color_palette").AsArray())
 		{
 			if (color.IsString())
-				settings.color_palette.push_back(
+				render_settings.color_palette.push_back(
 					color.AsString());
 			else
-				settings.color_palette.push_back(
+				render_settings.color_palette.push_back(
 					RenderRequests_RgbOrRgba(
 						color.AsArray()));
 		}
@@ -277,9 +332,9 @@ svg::Color JsonReader::RenderRequests_RgbOrRgba(json::Array color)
 	}
 }
 
-Settings JsonReader::GetSettings() const
+Settings JsonReader::GetRenderSettings() const
 {
-	return settings;
+	return render_settings;
 }
 
 void JsonReader::AddRendererElements()
@@ -346,5 +401,14 @@ void JsonReader::AddStopsToMap()
 	{
 		if (!handler.GetBusesByStop(stop.name_stop).empty())
 			rendrer.AddStopName(stop);
+	}
+}
+
+void JsonReader::MakeRouteSettings(json::Dict routing_settings)
+{
+	if (!routing_settings.empty())
+	{
+		route_settings.bus_wait_time = routing_settings.at("bus_wait_time").AsInt();
+		route_settings.bus_velocity = routing_settings.at("bus_velocity").AsDouble();
 	}
 }

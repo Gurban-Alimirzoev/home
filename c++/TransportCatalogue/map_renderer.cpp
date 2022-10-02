@@ -8,12 +8,12 @@ namespace renderer
 {
 	void MapRenderer::SetSettings(Settings settings_)
 	{
-		settings = settings_;
+		render_settings = settings_;
 	}
 
 	void MapRenderer::MakeSphereProjector()
 	{
-		SP.CalculateCoef(all_points.begin(), all_points.end(), settings.width, settings.height, settings.padding);
+		SP.CalculateCoef(all_points.begin(), all_points.end(), render_settings.width, render_settings.height, render_settings.padding);
 	}
 
 	void MapRenderer::SavePoints(svg::Point p)
@@ -34,10 +34,10 @@ namespace renderer
 			line.AddPoint(SP(data->coor));
 		}
 		line.SetFillColor("none");
-		line.SetStrokeWidth(settings.line_width);
+		line.SetStrokeWidth(render_settings.line_width);
 		line.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		line.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
-		line.SetStrokeColor(settings.color_palette[number_of_color]);
+		line.SetStrokeColor(render_settings.color_palette[number_of_color]);
 		PlusNumberOfColor();
 
 		out_doc.Add(line);
@@ -60,13 +60,13 @@ namespace renderer
 	{
 		svg::Text text;
 		text.SetPosition(SP(bus->bus[last_or_first_stop]->coor));
-		text.SetOffset({settings.bus_label_offset[0],
-						settings.bus_label_offset[1]});
-		text.SetFontSize(settings.bus_label_font_size);
+		text.SetOffset({render_settings.bus_label_offset[0],
+						render_settings.bus_label_offset[1]});
+		text.SetFontSize(render_settings.bus_label_font_size);
 		text.SetFontFamily("Verdana");
 		text.SetFontWeight("bold");
 		text.SetData(bus->name_bus);
-		text.SetFillColor(settings.color_palette[number_of_color]);
+		text.SetFillColor(render_settings.color_palette[number_of_color]);
 
 		out_doc.Add(text);
 	}
@@ -75,15 +75,15 @@ namespace renderer
 	{
 		svg::Text text;
 		text.SetPosition(SP(bus->bus[last_or_first_stop]->coor));
-		text.SetOffset({settings.bus_label_offset[0],
-						settings.bus_label_offset[1]});
-		text.SetFontSize(settings.bus_label_font_size);
+		text.SetOffset({render_settings.bus_label_offset[0],
+						render_settings.bus_label_offset[1]});
+		text.SetFontSize(render_settings.bus_label_font_size);
 		text.SetFontFamily("Verdana");
 		text.SetFontWeight("bold");
 		text.SetData(bus->name_bus);
-		text.SetFillColor(settings.underlayer_color);
-		text.SetStrokeColor(settings.underlayer_color);
-		text.SetStrokeWidth(settings.underlayer_width);
+		text.SetFillColor(render_settings.underlayer_color);
+		text.SetStrokeColor(render_settings.underlayer_color);
+		text.SetStrokeWidth(render_settings.underlayer_width);
 		text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		text.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 
@@ -96,7 +96,7 @@ namespace renderer
 		{
 			svg::Circle circle;
 			circle.SetCenter(SP(geo::Coordinates({point.x, point.y})));
-			circle.SetRadius(settings.stop_radius);
+			circle.SetRadius(render_settings.stop_radius);
 			circle.SetFillColor("white");
 			out_doc.Add(circle);
 		}
@@ -112,14 +112,14 @@ namespace renderer
 	{
 		svg::Text text;
 		text.SetPosition(SP(stop.coor));
-		text.SetOffset({settings.stop_label_offset[0],
-						settings.stop_label_offset[1]});
-		text.SetFontSize(settings.stop_label_font_size);
+		text.SetOffset({render_settings.stop_label_offset[0],
+						render_settings.stop_label_offset[1]});
+		text.SetFontSize(render_settings.stop_label_font_size);
 		text.SetFontFamily("Verdana");
 		text.SetData(stop.name_stop);
-		text.SetFillColor(settings.underlayer_color);
-		text.SetStrokeColor(settings.underlayer_color);
-		text.SetStrokeWidth(settings.underlayer_width);
+		text.SetFillColor(render_settings.underlayer_color);
+		text.SetStrokeColor(render_settings.underlayer_color);
+		text.SetStrokeWidth(render_settings.underlayer_width);
 		text.SetStrokeLineCap(svg::StrokeLineCap::ROUND);
 		text.SetStrokeLineJoin(svg::StrokeLineJoin::ROUND);
 
@@ -129,9 +129,9 @@ namespace renderer
 	{
 		svg::Text text;
 		text.SetPosition(SP(stop.coor));
-		text.SetOffset({settings.stop_label_offset[0],
-						settings.stop_label_offset[1]});
-		text.SetFontSize(settings.stop_label_font_size);
+		text.SetOffset({render_settings.stop_label_offset[0],
+						render_settings.stop_label_offset[1]});
+		text.SetFontSize(render_settings.stop_label_font_size);
 		text.SetFontFamily("Verdana");
 		text.SetData(stop.name_stop);
 		text.SetFillColor("black");
@@ -146,7 +146,7 @@ namespace renderer
 
 	void MapRenderer::PlusNumberOfColor()
 	{
-		if (number_of_color + 1 == static_cast<int>(settings.color_palette.size()))
+		if (number_of_color + 1 == static_cast<int>(render_settings.color_palette.size()))
 			number_of_color = 0;
 		else
 			number_of_color++;
