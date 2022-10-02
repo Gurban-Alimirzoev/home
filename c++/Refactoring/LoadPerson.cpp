@@ -1,13 +1,3 @@
-#include "log_duration.h"
-#include <algorithm>
-#include <iostream>
-#include <random>
-#include <string>
-#include <vector>
-#include <unordered_set>
-
-using namespace std;
-
 struct LoadingParams
 {
     string_view db_name;
