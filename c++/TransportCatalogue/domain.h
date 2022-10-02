@@ -57,4 +57,6 @@ namespace transport_catalogue::route
 		double bus_wait_time = 1;
 		double bus_velocity = 1;
 	};
+
+	inline double m_in_km = 16.666667;
 }

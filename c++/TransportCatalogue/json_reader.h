@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
+#include <tuple>
 
 #include "json_builder.h"
 #include "transport_catalogue.h"
@@ -51,10 +52,12 @@ private:
 	std::deque<json::Dict> buses;
 	std::vector<std::pair<std::string, bool>> buses_sort;
 	std::vector<transport_catalogue::Stop> var;
-	std::unordered_map<std::string, std::vector<std::pair<std::string, double>>> buffer_distance;
-	std::unordered_map < std::string, size_t> stop_name_and_vertex_id;
+	std::unordered_map<std::string, std::unordered_map<std::string, double>> buffer_distance;
+	std::unordered_map <std::string, size_t> stop_name_and_vertex_id;
 	std::unordered_map < size_t, std::string> vertex_id_and_stop_name_;
+	std::unordered_map < size_t, std::string> vertex_id_and_bus_name_;
 	graph::DirectedWeightedGraph<double> graph_;
+	std::vector<json::Node> items;
 
 	void BaseRequest_AddBus();
 	void BaseRequests_AddStop(json::Dict stop);
@@ -75,4 +78,5 @@ private:
 	void AddBusesToMap();
 
 	void MakeRouteSettings(json::Dict rendering_settings);
+	graph::Router<double> MakeRouter();
 };

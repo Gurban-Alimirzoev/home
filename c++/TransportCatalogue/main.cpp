@@ -13,9 +13,11 @@ int main() {
 
     JsonReader reader(std::cin, std::cout, renderer);
     reader.ParseRequests();
+
     reader.ParseRenderSettings();
-    reader.ParseRouteSettings();
     renderer.SetSettings(reader.GetRenderSettings());
+
+    reader.ParseRouteSettings();
 
     reader.BaseRequests();
     reader.AddRendererElements();
