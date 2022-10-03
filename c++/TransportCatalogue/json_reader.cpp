@@ -40,7 +40,8 @@ void JsonReader::BaseRequest_AddBus()
 {
 	DirectedWeightedGraph<double> graph_start(buffer_distance.size() * buses.size());
 	graph_ = graph_start;
-
+	size_t id;
+		
 	for (auto bus : buses)
 	{
 		if (bus.at("stops").AsArray().empty())
@@ -61,9 +62,8 @@ void JsonReader::BaseRequest_AddBus()
 
 		string first_stop = stops[0];
 		string second_stop = stops[1];
-
+		string memory_stop = first_stop;
 		int i = 1;
-		size_t id;
 		while(i != stops.size())
 		{
 			double distance = buffer_distance[first_stop][second_stop];
@@ -75,10 +75,10 @@ void JsonReader::BaseRequest_AddBus()
 			distance / (route_settings.bus_velocity * route::m_in_km)
 				});
 
+			vertex_id_and_bus_name_[id] = pair{ bus_name, memory_stop };
+			
 			first_stop = second_stop;
 			second_stop = stops[i++];
-
-			vertex_id_and_bus_name_[id] = bus_name;
 		}
 	}
 }
@@ -258,21 +258,21 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	else
 	{
 		vector<size_t>& edges = start_to_finish->edges;
-		string bus_name = vertex_id_and_bus_name_[edges[0]];
-		int i = 0;
-		int span_count = 1;
-		int number_of_bus = 0;
-		int number_of_stop = 0;
+		string bus_name = vertex_id_and_bus_name_[edges[0]].first;
+		string stop_name = vertex_id_and_bus_name_[edges[0]].second;
+		double weight = graph_.GetEdge(edges[0]).weight;
+		int span_count = 0;
 		double total_time = start_to_finish->weight;
-		while (i != edges.size())
+		for (auto edge : edges)
 		{
-			if (bus_name == vertex_id_and_bus_name_[edges[i]])
+			if (bus_name == vertex_id_and_bus_name_[edge].first)
 			{
 				span_count++;
+				stop_name = vertex_id_and_bus_name_[edge].second;
+				double weight = graph_.GetEdge(edge).weight;
 			}
 			else
 			{
-				string stop_name = vertex_id_and_stop_name_[++number_of_stop];
 				Node stop(Builder{}
 					.StartDict()
 					.Key("stop_name")
@@ -286,7 +286,6 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 				);
 				total_time += route_settings.bus_wait_time;
 				items.push_back(stop);
-				double weight = graph_.GetEdge(start_to_finish->edges[++number_of_bus]).weight;
 				Node bus(Builder{}
 					.StartDict()
 					.Key("bus")
@@ -300,40 +299,10 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 					.EndDict()
 					.Build()
 				);
-				bus_name == vertex_id_and_bus_name_[edges[i]];
+				bus_name = vertex_id_and_bus_name_[edge].first;
 				items.push_back(bus);
 			}
-			i++;
 		}
-		string stop_name = vertex_id_and_stop_name_[++number_of_stop];
-		Node stop(Builder{}
-			.StartDict()
-			.Key("stop_name")
-			.Value(string(stop_name))
-			.Key("time")
-			.Value(route_settings.bus_wait_time)
-			.Key("type")
-			.Value(string("Wait"))
-			.EndDict()
-			.Build()
-		);
-		total_time += route_settings.bus_wait_time;
-		items.push_back(stop);
-		double weight = graph_.GetEdge(start_to_finish->edges[++number_of_bus]).weight;
-		Node bus(Builder{}
-			.StartDict()
-			.Key("bus")
-			.Value(string(bus_name))
-			.Key("span_count")
-			.Value(span_count)
-			.Key("time")
-			.Value(weight)
-			.Key("type")
-			.Value(string("Bus"))
-			.EndDict()
-			.Build()
-		);
-		items.push_back(bus);
 		answers.push_back(Builder{}
 			.StartDict()
 			.Key("items")

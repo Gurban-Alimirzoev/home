@@ -55,7 +55,7 @@ private:
 	std::unordered_map<std::string, std::unordered_map<std::string, double>> buffer_distance;
 	std::unordered_map <std::string, size_t> stop_name_and_vertex_id;
 	std::unordered_map < size_t, std::string> vertex_id_and_stop_name_;
-	std::unordered_map < size_t, std::string> vertex_id_and_bus_name_;
+	std::unordered_map < size_t, std::pair<std::string, std::string>> vertex_id_and_bus_name_;
 	graph::DirectedWeightedGraph<double> graph_;
 	std::vector<json::Node> items;
 
