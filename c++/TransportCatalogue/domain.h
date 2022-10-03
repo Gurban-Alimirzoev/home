@@ -52,11 +52,21 @@ namespace transport_catalogue::detail
 
 namespace transport_catalogue::route
 {
+	inline double m_in_km = 16.666667;
+
 	struct Settings
 	{
-		double bus_wait_time = 1;
+		int bus_wait_time = 1;
 		double bus_velocity = 1;
 	};
 
-	inline double m_in_km = 16.666667;
+	struct BusRoute
+	{
+		std::string bus_name;
+		std::string start;
+		std::string finish;
+		int span_count = 0;
+	};
+
+
 }

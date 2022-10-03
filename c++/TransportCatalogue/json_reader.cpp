@@ -40,7 +40,6 @@ void JsonReader::BaseRequest_AddBus()
 {
 	DirectedWeightedGraph<double> graph_start(buffer_distance.size() * buses.size());
 	graph_ = graph_start;
-	size_t id;
 		
 	for (auto bus : buses)
 	{
@@ -60,25 +59,27 @@ void JsonReader::BaseRequest_AddBus()
 			bus_name,
 			stops);
 
-		string first_stop = stops[0];
-		string second_stop = stops[1];
-		string memory_stop = first_stop;
-		int i = 1;
-		while(i != stops.size())
+		int first_s = 0;
+		int second_s = 0;
+		string second_stop, prev_stop;
+		for (auto stop : stops)
 		{
-			double distance = buffer_distance[first_stop][second_stop];
-			unordered_map<string, double>& second_stop_and_distance = buffer_distance[first_stop];
-
-			id = graph_.AddEdge({
-			stop_name_and_vertex_id[first_stop],
-			stop_name_and_vertex_id[second_stop],
-			distance / (route_settings.bus_velocity * route::m_in_km)
-				});
-
-			vertex_id_and_bus_name_[id] = pair{ bus_name, first_stop };
-			
-			first_stop = second_stop;
-			second_stop = stops[i++];
+			first_s++;
+			double run_time = 0;
+			int span_count = 0;
+			for (second_s = first_s; second_s < stops.size(); second_s++)
+			{
+				second_stop = stops[second_s];
+				prev_stop = stops[second_s - 1];
+				double distance = buffer_distance[prev_stop][second_stop];
+				run_time += (distance / (route_settings.bus_velocity * route::m_in_km));
+				size_t id = graph_.AddEdge({
+					stop_name_and_vertex_id[stop],
+					stop_name_and_vertex_id[second_stop],
+					run_time + route_settings.bus_wait_time
+					});
+				vertex_id_and_bus_name_[id] = { bus_name , stop, second_stop, ++span_count };
+			}
 		}
 	}
 }
@@ -257,55 +258,38 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	}
 	else
 	{
-		double total_time = start_to_finish->weight;
 		vector<size_t>& edges = start_to_finish->edges;
-
-		string bus_name = vertex_id_and_bus_name_[edges[0]].first;
-		string stop_name = vertex_id_and_bus_name_[edges[0]].second;
-		double weight = 0;
-		int span_count = 0;
-
+		double total_time = start_to_finish->weight - ((edges.size()/2) - 1) * route_settings.bus_wait_time;
 		for (auto edge : edges)
 		{
-			if (bus_name == vertex_id_and_bus_name_[edge].first)
-			{
-				span_count++;
-				weight += graph_.GetEdge(edge).weight;
-			}
-			else
-			{
-				Node stop(Builder{}
-					.StartDict()
-					.Key("stop_name")
-					.Value(string(stop_name))
-					.Key("time")
-					.Value(route_settings.bus_wait_time)
-					.Key("type")
-					.Value(string("Wait"))
-					.EndDict()
-					.Build()
-				);
-				total_time += route_settings.bus_wait_time;
-				items.push_back(stop);
-				Node bus(Builder{}
-					.StartDict()
-					.Key("bus")
-					.Value(string(bus_name))
-					.Key("span_count")
-					.Value(span_count)
-					.Key("time")
-					.Value(weight)
-					.Key("type")
-					.Value(string("Bus"))
-					.EndDict()
-					.Build()
-				);
-				items.push_back(bus);
-				bus_name = vertex_id_and_bus_name_[edge].first;
-				stop_name = vertex_id_and_bus_name_[edge].second;
-				weight = graph_.GetEdge(edge).weight;
-				span_count = 1;
-			}
+			route::BusRoute br_run = vertex_id_and_bus_name_[edge];
+			double weight = graph_.GetEdge(edge).weight - route_settings.bus_wait_time;
+			Node stop(Builder{}
+				.StartDict()
+				.Key("stop_name")
+				.Value(string(br_run.start))
+				.Key("time")
+				.Value(route_settings.bus_wait_time)
+				.Key("type")
+				.Value(string("Wait"))
+				.EndDict()
+				.Build()
+			);
+			items.push_back(stop);
+			Node bus(Builder{}
+				.StartDict()
+				.Key("bus")
+				.Value(string(br_run.bus_name))
+				.Key("span_count")
+				.Value(br_run.span_count)
+				.Key("time")
+				.Value(weight)
+				.Key("type")
+				.Value(string("Bus"))
+				.EndDict()
+				.Build()
+			);
+			items.push_back(bus);
 		}
 		answers.push_back(Builder{}
 			.StartDict()
