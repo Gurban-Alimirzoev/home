@@ -232,7 +232,7 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	}
 	else
 	{
-		unordered_map<route::BusRoute*, double, route::PairBusRouteHasher> edges = tr_router.GetRouteAndDistance(*start_to_finish);
+		unordered_set<pair<route::BusRoute*, double>, route::PairBusRouteHasher> edges = tr_router.GetRouteAndDistance(*start_to_finish);
 		for (auto [br_run, weight] : edges)
 		{
 			Node stop(Builder{}

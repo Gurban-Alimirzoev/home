@@ -57,9 +57,9 @@ namespace transport_catalogue::route
 		return router;
 	}
 
-	unordered_map<BusRoute*, double, route::PairBusRouteHasher> TransportRouter::GetRouteAndDistance(graph::Router<double>::RouteInfo start_to_finish)
+	unordered_set<pair<BusRoute*, double>, route::PairBusRouteHasher> TransportRouter::GetRouteAndDistance(graph::Router<double>::RouteInfo start_to_finish)
 	{
-		unordered_map<BusRoute*, double, route::PairBusRouteHasher> route_and_distance;
+		unordered_set<pair<BusRoute*, double>, route::PairBusRouteHasher> route_and_distance;
 		vector<size_t>& edges = start_to_finish.edges;
 		for (auto edge : edges)
 		{

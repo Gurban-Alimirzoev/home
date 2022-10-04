@@ -24,7 +24,7 @@ namespace transport_catalogue::route
 
 		graph::Router<double> MakeRouter();
 
-		std::unordered_map<transport_catalogue::route::BusRoute*, double, transport_catalogue::route::PairBusRouteHasher> GetRouteAndDistance(graph::Router<double>::RouteInfo start_to_finish);
+		std::unordered_set<std::pair<transport_catalogue::route::BusRoute*, double>, transport_catalogue::route::PairBusRouteHasher> GetRouteAndDistance(graph::Router<double>::RouteInfo start_to_finish);
 		double GetDistance(const graph::Router<double>::RouteInfo& start_to_finish) const;
 		size_t GetStopId(std::string stop);
 		transport_catalogue::route::Settings GetSettings();
