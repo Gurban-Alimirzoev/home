@@ -9,17 +9,21 @@
 
 #include "json_builder.h"
 #include "transport_catalogue.h"
+#include "transport_router.h"
 #include "request_handler.h"
 #include "map_renderer.h"
-#include "graph.h"
-#include "router.h"
 
 class JsonReader
 {
 public:
 	JsonReader() = default;
 	JsonReader(std::istream &input, std::ostream &out, renderer::MapRenderer &rendrer_)
-		: input(input), out(out), input_json(json::Load(input)), rendrer(rendrer_), handler(db, rendrer_)
+		: input(input)
+		, out(out)
+		, input_json(json::Load(input))
+		, rendrer(rendrer_)
+		, handler(db, rendrer_)
+		, tr_router(db)
 	{
 	}
 
@@ -49,12 +53,12 @@ private:
 	transport_catalogue::route::Settings route_settings;
 	transport_catalogue::TransportCatalogue db;
 	transport_catalogue::RequestHandler handler;
+	transport_catalogue::route::TransportRouter tr_router;
 	std::deque<json::Dict> buses;
 	std::vector<std::pair<std::string, bool>> buses_sort;
 	std::vector<transport_catalogue::Stop> var;
 	std::unordered_map<std::string, std::unordered_map<std::string, double>> buffer_distance;
 	std::unordered_map <std::string, size_t> stop_name_and_vertex_id;
-	std::unordered_map < size_t, std::string> vertex_id_and_stop_name_;
 	std::unordered_map < size_t, transport_catalogue::route::BusRoute> vertex_id_and_bus_name_;
 	graph::DirectedWeightedGraph<double> graph_;
 	std::vector<json::Node> items;
@@ -77,6 +81,5 @@ private:
 	void AddStopsToMap();
 	void AddBusesToMap();
 
-	void MakeRouteSettings(json::Dict rendering_settings);
-	graph::Router<double> MakeRouter();
+	void MakeRouteSettings();
 };

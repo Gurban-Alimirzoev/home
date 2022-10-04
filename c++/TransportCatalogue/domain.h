@@ -48,6 +48,7 @@ namespace transport_catalogue::detail
 		}
 		std::hash<const void*> coor_hasher;
 	};
+
 }
 
 namespace transport_catalogue::route
@@ -57,7 +58,14 @@ namespace transport_catalogue::route
 	struct Settings
 	{
 		int bus_wait_time = 1;
-		double bus_velocity = 1;
+		double bus_velocity = 1.0;
+
+		Settings& operator=(const Settings& lhs)
+		{
+			this->bus_wait_time = lhs.bus_wait_time;
+			this->bus_velocity = lhs.bus_velocity;
+			return *this;
+		}
 	};
 
 	struct BusRoute
@@ -68,5 +76,14 @@ namespace transport_catalogue::route
 		int span_count = 0;
 	};
 
+	class PairBusRouteHasher {
+	public:
+		size_t operator()(const std::pair< BusRoute*, double> pair_route) const
+		{
+			return route_hasher(pair_route.first) + weight_hasher(pair_route.second) * 11;
+		}
+		std::hash<const void*> route_hasher;
+		std::hash<double> weight_hasher;
+	};
 
 }

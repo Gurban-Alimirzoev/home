@@ -38,9 +38,7 @@ void JsonReader::BaseRequests()
 
 void JsonReader::BaseRequest_AddBus()
 {
-	DirectedWeightedGraph<double> graph_start(buffer_distance.size() * buses.size());
-	graph_ = graph_start;
-		
+	tr_router.SetRouterSize(4950);
 	for (auto bus : buses)
 	{
 		if (bus.at("stops").AsArray().empty())
@@ -59,28 +57,7 @@ void JsonReader::BaseRequest_AddBus()
 			bus_name,
 			stops);
 
-		int first_s = 0;
-		int second_s = 0;
-		string second_stop, prev_stop;
-		for (auto stop : stops)
-		{
-			first_s++;
-			double run_time = 0;
-			int span_count = 0;
-			for (second_s = first_s; second_s < stops.size(); second_s++)
-			{
-				second_stop = stops[second_s];
-				prev_stop = stops[second_s - 1];
-				double distance = buffer_distance[prev_stop][second_stop];
-				run_time += (distance / (route_settings.bus_velocity * route::m_in_km));
-				size_t id = graph_.AddEdge({
-					stop_name_and_vertex_id[stop],
-					stop_name_and_vertex_id[second_stop],
-					run_time + route_settings.bus_wait_time
-					});
-				vertex_id_and_bus_name_[id] = { bus_name , stop, second_stop, ++span_count };
-			}
-		}
+		tr_router.SetBus(bus_name, stops);
 	}
 }
 
@@ -104,15 +81,12 @@ void JsonReader::BaseRequests_AddStop(Dict stop)
 
 	string name_first = stop.at("name").AsString();
 
-	if (stop_name_and_vertex_id.find(name_first) == stop_name_and_vertex_id.end())
-		stop_name_and_vertex_id[name_first] = stop_name_and_vertex_id.size();
+	tr_router.SetStop(name_first);
 
 	for (auto [name_second_stop, distance] : road_distances)
 	{
 		buffer_distance[stop.at("name").AsString()].insert({ name_second_stop, distance.AsDouble() });
-		
-		if (stop_name_and_vertex_id.find(name_second_stop) == stop_name_and_vertex_id.end())
-			stop_name_and_vertex_id[name_second_stop] = stop_name_and_vertex_id.size();
+		tr_router.SetStop(name_second_stop);
 	}
 }
 
@@ -129,7 +103,7 @@ void JsonReader::SetDistance()
 
 void JsonReader::StatRequests()
 {
-	Router router = MakeRouter();
+	Router router = tr_router.MakeRouter();
 	for (Node stat_request : stat_requests)
 	{
 		Dict requests_type = stat_request.AsDict();
@@ -241,8 +215,8 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<double>& router)
 {
 	auto start_to_finish = router.BuildRoute(
-		{stop_name_and_vertex_id[route_request.at("from").AsString()] },
-		{stop_name_and_vertex_id[route_request.at("to").AsString()]});
+		{ tr_router.GetStopId(route_request.at("from").AsString()) },
+		{ tr_router.GetStopId(route_request.at("to").AsString())});
 
  	if (start_to_finish == nullopt)
 	{
@@ -258,18 +232,15 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	}
 	else
 	{
-		vector<size_t>& edges = start_to_finish->edges;
-		double total_time = start_to_finish->weight - ((edges.size()/2) - 1) * route_settings.bus_wait_time;
-		for (auto edge : edges)
+		unordered_map<route::BusRoute*, double, route::PairBusRouteHasher> edges = tr_router.GetRouteAndDistance(*start_to_finish);
+		for (auto [br_run, weight] : edges)
 		{
-			route::BusRoute br_run = vertex_id_and_bus_name_[edge];
-			double weight = graph_.GetEdge(edge).weight - route_settings.bus_wait_time;
 			Node stop(Builder{}
 				.StartDict()
 				.Key("stop_name")
-				.Value(string(br_run.start))
+				.Value(string((*br_run).start))
 				.Key("time")
-				.Value(route_settings.bus_wait_time)
+				.Value(routing_settings.at("bus_wait_time").AsInt())
 				.Key("type")
 				.Value(string("Wait"))
 				.EndDict()
@@ -279,9 +250,9 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 			Node bus(Builder{}
 				.StartDict()
 				.Key("bus")
-				.Value(string(br_run.bus_name))
+				.Value(string((*br_run).bus_name))
 				.Key("span_count")
-				.Value(br_run.span_count)
+				.Value((*br_run).span_count)
 				.Key("time")
 				.Value(weight)
 				.Key("type")
@@ -291,6 +262,7 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 			);
 			items.push_back(bus);
 		}
+		double total_time = tr_router.GetDistance(*start_to_finish);
 		answers.push_back(Builder{}
 			.StartDict()
 			.Key("items")
@@ -302,6 +274,7 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 			.EndDict()
 			.Build()
 			.AsDict());
+		items.clear();
 	}
 }
 
@@ -337,7 +310,7 @@ void JsonReader::ParseRenderSettings()
 
 void JsonReader::ParseRouteSettings()
 {
-	MakeRouteSettings(routing_settings);
+	MakeRouteSettings();
 }
 
 void JsonReader::MakeRenderSettings(Dict rendering_settings)
@@ -466,22 +439,12 @@ void JsonReader::AddStopsToMap()
 	}
 }
 
-void JsonReader::MakeRouteSettings(json::Dict routing_settings)
+void JsonReader::MakeRouteSettings()
 {
 	if (!routing_settings.empty())
 	{
-		route_settings.bus_wait_time = routing_settings.at("bus_wait_time").AsInt();
-		route_settings.bus_velocity = routing_settings.at("bus_velocity").AsDouble();
+		tr_router.SetRoutingSettings(routing_settings.at("bus_wait_time").AsInt(),
+			routing_settings.at("bus_velocity").AsDouble());
 	}
-}
-
-Router<double> JsonReader::MakeRouter()
-{
-	for (auto [stop, id] : stop_name_and_vertex_id)
-	{
-		vertex_id_and_stop_name_[id] = stop;
-	}
-	Router router(graph_);
-	return router;
 }
 
