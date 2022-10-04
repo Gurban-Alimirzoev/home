@@ -38,7 +38,8 @@ void JsonReader::BaseRequests()
 
 void JsonReader::BaseRequest_AddBus()
 {
-	tr_router.SetRouterSize(4950);
+	int bus_and_stops_number = 101;
+	tr_router.SetRouterSize(bus_and_stops_number);
 	for (auto bus : buses)
 	{
 		if (bus.at("stops").AsArray().empty())
@@ -232,9 +233,9 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	}
 	else
 	{
-		unordered_set<pair<route::BusRoute*, double>, route::PairBusRouteHasher> edges = tr_router.GetRouteAndDistance(*start_to_finish);
-		for (auto [br_run, weight] : edges)
+		for (size_t id : start_to_finish->edges)
 		{
+			auto [br_run, weight] = tr_router.GetRouteAndDistance(id);
 			Node stop(Builder{}
 				.StartDict()
 				.Key("stop_name")

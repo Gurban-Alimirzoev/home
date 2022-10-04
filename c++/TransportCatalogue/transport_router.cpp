@@ -57,16 +57,10 @@ namespace transport_catalogue::route
 		return router;
 	}
 
-	unordered_set<pair<BusRoute*, double>, route::PairBusRouteHasher> TransportRouter::GetRouteAndDistance(graph::Router<double>::RouteInfo start_to_finish)
+	tuple<BusRoute*, double> TransportRouter::GetRouteAndDistance(size_t edge)
 	{
-		unordered_set<pair<BusRoute*, double>, route::PairBusRouteHasher> route_and_distance;
-		vector<size_t>& edges = start_to_finish.edges;
-		for (auto edge : edges)
-		{
-			double weight = graph_.GetEdge(edge).weight - settings.bus_wait_time;
-			route_and_distance.insert({ &(vertex_id_and_bus_name_[edge]), weight });
-		}
-		return route_and_distance;
+		double weight = graph_.GetEdge(edge).weight - settings.bus_wait_time;
+		return { &(vertex_id_and_bus_name_[edge]), weight };
 	}
 
 	double TransportRouter::GetDistance(const graph::Router<double>::RouteInfo& start_to_finish) const
@@ -77,10 +71,5 @@ namespace transport_catalogue::route
 	size_t TransportRouter::GetStopId(string stop)
 	{
 		return stop_name_and_vertex_id[stop];
-	}
-
-	transport_catalogue::route::Settings TransportRouter::GetSettings()
-	{
-		return settings;
 	}
 }

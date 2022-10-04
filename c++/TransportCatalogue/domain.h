@@ -76,14 +76,4 @@ namespace transport_catalogue::route
 		int span_count = 0;
 	};
 
-	class PairBusRouteHasher {
-	public:
-		size_t operator()(const std::pair< BusRoute*, double> pair_route) const
-		{
-			return route_hasher(pair_route.first) + weight_hasher(pair_route.second) * 11;
-		}
-		std::hash<const void*> route_hasher;
-		std::hash<double> weight_hasher;
-	};
-
 }
