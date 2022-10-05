@@ -71,7 +71,7 @@ private:
 
 	void StatRequests_PrintBusRequest(json::Dict bus_request);
 	void StatRequests_PrintStopRequest(json::Dict stop_request);
-	void StatRequests_PrintRouteRequest(json::Dict route_request, graph::Router<double>& router);
+	void StatRequests_PrintRouteRequest(json::Dict route_request);
 	void StatRequests_PrintMapRequests(json::Dict map_request);
 
 	void MakeRenderSettings(json::Dict rendering_settings);

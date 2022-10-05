@@ -33,13 +33,14 @@ void JsonReader::BaseRequests()
 			buses.push_back(bus_or_stop);
 	}
 	SetDistance();
+	tr_router.DoAfterAddingAllStops();
 	BaseRequest_AddBus();
+	tr_router.DoAfterAddingAllBuses();
+
 }
 
 void JsonReader::BaseRequest_AddBus()
 {
-	int bus_and_stops_number = 101;
-	tr_router.SetRouterSize(bus_and_stops_number);
 	for (auto bus : buses)
 	{
 		if (bus.at("stops").AsArray().empty())
@@ -104,7 +105,6 @@ void JsonReader::SetDistance()
 
 void JsonReader::StatRequests()
 {
-	Router router = tr_router.MakeRouter();
 	for (Node stat_request : stat_requests)
 	{
 		Dict requests_type = stat_request.AsDict();
@@ -118,7 +118,7 @@ void JsonReader::StatRequests()
 		}
 		else if (requests_type.at("type").AsString() == "Route")
 		{
-			StatRequests_PrintRouteRequest(requests_type, router);
+			StatRequests_PrintRouteRequest(requests_type);
 		}
 		else
 		{
@@ -213,11 +213,11 @@ void JsonReader::StatRequests_PrintBusRequest(Dict bus_request)
 	}
 }
 
-void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<double>& router)
+void JsonReader::StatRequests_PrintRouteRequest(Dict route_request)
 {
-	auto start_to_finish = router.BuildRoute(
-		{ tr_router.GetStopId(route_request.at("from").AsString()) },
-		{ tr_router.GetStopId(route_request.at("to").AsString())});
+	auto start_to_finish = tr_router.BuildRoute(
+		route_request.at("from").AsString(),
+		route_request.at("to").AsString());
 
  	if (start_to_finish == nullopt)
 	{
@@ -233,7 +233,7 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request, Router<doubl
 	}
 	else
 	{
-		for (size_t id : start_to_finish->edges)
+		for (size_t id : start_to_finish->stops_pair_id)
 		{
 			auto [br_run, weight] = tr_router.GetRouteAndDistance(id);
 			Node stop(Builder{}

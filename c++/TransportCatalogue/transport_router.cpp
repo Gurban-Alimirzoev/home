@@ -7,10 +7,9 @@ using namespace graph;
 namespace transport_catalogue::route
 {
 
-	void TransportRouter::SetRouterSize(size_t size_r)
+	void TransportRouter::DoAfterAddingAllStops()
 	{
-		DirectedWeightedGraph<double> graph_start(size_r);
-		graph_ = graph_start;
+		graph_ = DirectedWeightedGraph<double>(db.GetAllStops().size());
 	}
 
 	void TransportRouter::SetRoutingSettings(int whait_time, double speed)
@@ -51,10 +50,17 @@ namespace transport_catalogue::route
 			stop_name_and_vertex_id[stop] = stop_name_and_vertex_id.size();
 	}
 
-	Router<double> TransportRouter::MakeRouter()
+	optional<RouteInfo> TransportRouter::BuildRoute(const string& start, const string& finish)
 	{
-		Router router(graph_);
-		return router;
+
+		auto start_to_finish = router->BuildRoute(
+			{ GetStopId(start) },
+			{ GetStopId(finish) });
+		if (start_to_finish == nullopt)
+		{
+			return nullopt;
+		}
+		return RouteInfo{ start_to_finish->weight, start_to_finish->edges };
 	}
 
 	tuple<BusRoute*, double> TransportRouter::GetRouteAndDistance(size_t edge)
@@ -63,13 +69,18 @@ namespace transport_catalogue::route
 		return { &(vertex_id_and_bus_name_[edge]), weight };
 	}
 
-	double TransportRouter::GetDistance(const graph::Router<double>::RouteInfo& start_to_finish) const
+	double TransportRouter::GetDistance(const RouteInfo& start_to_finish) const
 	{
 		return start_to_finish.weight;
 	}
 
-	size_t TransportRouter::GetStopId(string stop)
+	size_t TransportRouter::GetStopId(const string& stop)
 	{
-		return stop_name_and_vertex_id[stop];
+		return stop_name_and_vertex_id.at(stop);
+	}
+
+	void TransportRouter::DoAfterAddingAllBuses()
+	{
+		router.emplace(graph_);
 	}
 }
