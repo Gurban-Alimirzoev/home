@@ -22,11 +22,23 @@ public:
     RawMemory(const RawMemory&) = delete;
     RawMemory& operator=(const RawMemory& rhs) = delete;
 
-    RawMemory(RawMemory&& other) noexcept = default;
-    RawMemory& operator=(RawMemory&& rhs) noexcept = default;
+    RawMemory(RawMemory&& other) noexcept
+        : buffer_(other.buffer_)
+        , capacity_(other.capacity_)
+    {
+        other.buffer_ = nullptr;
+        other.capacity_ = 0;
+    }
+    RawMemory& operator=(RawMemory&& rhs) noexcept
+    {
+        buffer_ = rhs.buffer_;
+        capacity_ = rhs.capacity_;
+        rhs.buffer_ = nullptr;
+        rhs.capacity_ = 0u;
+        return *this;
+    }
 
     T* operator+(size_t offset) noexcept {
-        // Разрешается получать адрес ячейки памяти, следующей за последним элементом массива
         assert(offset <= capacity_);
         return buffer_ + offset;
     }
@@ -62,12 +74,10 @@ public:
     }
 
 private:
-    // Выделяет сырую память под n элементов и возвращает указатель на неё
     static T* Allocate(size_t n) {
         return n != 0 ? static_cast<T*>(operator new(n * sizeof(T))) : nullptr;
     }
 
-    // Освобождает сырую память, выделенную ранее по адресу buf при помощи Allocate
     static void Deallocate(T* buf) noexcept {
         operator delete(buf);
     }
@@ -95,16 +105,44 @@ public:
         std::uninitialized_copy_n(other.data_.GetAddress(), size_, data_.GetAddress());
     }
 
-    Vector(Vector&& other) noexcept = default;
+    Vector(Vector&& other) noexcept
+        : data_(std::move(other.data_))
+        , size_(other.size_)
+    {
+        other.size_ = 0;
+    }
 
     Vector& operator=(const Vector& rhs) {
         if (this != &rhs) {
             if (rhs.size_ > data_.Capacity()) {
-                /* Применить copy-and-swap */
+                Vector rhs_copy(rhs);
+                Swap(rhs_copy);
             }
             else {
-                /* Скопировать элементы из rhs, создав при необходимости новые
-                   или удалив существующие */
+                if (size_ > rhs.size_)
+                {
+                    size_t i = 0;
+                    for (; i < rhs.size_; i++)
+                    {
+                        data_[i] = (rhs.data_[i]);
+                    }
+                    for (; i < size_; i++)
+                    {
+                        std::destroy_at(data_ + i);
+                    }
+                }
+                else
+                {
+                    size_t i = 0;
+                    for (; i < size_; i++)
+                    {
+                        data_[i] = (rhs[i]);
+                    }
+                    std::uninitialized_copy_n(rhs.data_.GetAddress() + size_
+                        , rhs.size_ - size_
+                        , data_.GetAddress() + size_);
+                }
+                size_ = rhs.size_;
             }
         }
         return *this;
@@ -112,12 +150,18 @@ public:
 
     Vector& operator=(Vector&& rhs) noexcept
     {
+        if (this != &rhs) {
+            data_ = std::move(rhs.data_);
+            size_ = rhs.size_;
+            rhs.size_ = 0u;
+        }
         return *this;
     }
 
     void Swap(Vector& other) noexcept
     {
-
+        std::swap(data_, other.data_);
+        std::swap(size_, other.size_);
     }
 
     size_t Size() const noexcept {
@@ -142,18 +186,80 @@ public:
             return;
         }
         RawMemory<T> new_data(new_capacity);
-        // Конструируем элементы в new_data, копируя их из data_
         if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>) {
             std::uninitialized_move_n(data_.GetAddress(), size_, new_data.GetAddress());
         }
         else {
             std::uninitialized_copy_n(data_.GetAddress(), size_, new_data.GetAddress());
         }
-        // Разрушаем элементы в data_
         std::destroy_n(data_.GetAddress(), size_);
-        // Избавляемся от старой сырой памяти, обменивая её на новую
         data_.Swap(new_data);
-        // При выходе из метода старая память будет возвращена в кучу
+    }
+
+    void Resize(size_t new_size)
+    {
+        if (new_size > size_)
+        {
+            Reserve(new_size);
+            std::uninitialized_value_construct_n(data_.GetAddress(), new_size - size_);
+        }
+        else
+        {
+            for (size_t i = new_size; i < size_; i++)
+            {
+                std::destroy_at(data_ + i);
+            }
+        }
+        size_ = new_size;
+    }
+    void PushBack(const T& value)
+    {
+        if (size_ != Capacity())
+        {
+            new (data_ + size_) T(value);
+        }
+        else
+        {
+            RawMemory<T> new_data(size_ > 0 ? size_ * 2 : 1);
+            new (new_data + size_) T(value);
+            if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>) {
+                std::uninitialized_move_n(data_.GetAddress(), size_, new_data.GetAddress());
+            }
+            else {
+                std::uninitialized_copy_n(data_.GetAddress(), size_, new_data.GetAddress());
+            }
+            std::destroy_n(data_.GetAddress(), size_);
+            data_.Swap(new_data);
+        }
+        ++size_;
+    }
+    void PushBack(T&& value)
+    {
+        if (size_ != Capacity())
+        {
+            new (data_ + size_) T(std::move(value));
+        }
+        else
+        {
+            RawMemory<T> new_data(size_ > 0 ? size_ * 2 : 1);
+            new (new_data + size_) T(std::move(value));
+            if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>) 
+            {
+                std::uninitialized_move_n(data_.GetAddress(), size_, new_data.GetAddress());
+            }
+            else 
+            {
+                std::uninitialized_copy_n(data_.GetAddress(), size_, new_data.GetAddress());
+            }
+            std::destroy_n(data_.GetAddress(), size_);
+            data_.Swap(new_data);
+        }
+        ++size_;
+
+    }
+    void PopBack() noexcept
+    {
+        std::destroy_at(data_ + (size_--));
     }
 
     ~Vector() {
@@ -163,12 +269,10 @@ private:
     RawMemory<T> data_;
     size_t size_ = 0;
 
-    // Создаёт копию объекта elem в сырой памяти по адресу buf
     static void CopyConstruct(T* buf, const T& elem) {
         new (buf) T(elem);
     }
 
-    // Вызывает деструктор объекта по адресу buf
     static void Destroy(T* buf) noexcept {
         buf->~T();
     }
