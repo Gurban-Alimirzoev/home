@@ -294,13 +294,11 @@ public:
 	{
 		iterator iter = const_cast<iterator>(pos);
 		auto dist = std::distance(begin(), iter);
-
 		if (size_ != Capacity())
 		{
-			T* var_value = new T(std::forward<Args>(args)...);
+			T var_value(std::forward<Args>(args)...);
 			std::move_backward(begin() + dist, end(), begin() + dist + 1u);
-			new (data_ + dist) T(std::forward<T>(*var_value));
-			//std::destroy_at(var_value);
+			new (data_ + dist) T(std::forward<T>(var_value));
 		}
 		else
 		{
