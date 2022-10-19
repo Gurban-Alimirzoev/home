@@ -4,6 +4,8 @@
 #include <new>
 #include <utility>
 #include <memory>
+#include <tuple>
+#include <algorithm>
 
 template <typename T>
 class RawMemory {
@@ -294,11 +296,34 @@ public:
 	{
 		iterator iter = const_cast<iterator>(pos);
 		auto dist = std::distance(begin(), iter);
+
 		if (size_ != Capacity())
 		{
-			T var_value(std::forward<Args>(args)...);
-			std::move_backward(begin() + dist, end(), begin() + dist + 1u);
-			new (data_ + dist) T(std::forward<T>(var_value));
+			if (iter == nullptr || iter == end()) 
+			{
+				if (std::is_nothrow_move_constructible_v<T> || std::is_copy_constructible_v<T>)
+				{
+					try
+					{
+						new (data_ + dist) T(std::forward<Args>(args)...);
+					}
+					catch (...)
+					{
+						std::destroy_at(data_ + dist);
+						throw;
+					}
+				}
+				else
+				{
+					new (data_ + dist) T(std::forward<Args>(args)...);
+				}
+			}
+			else
+			{
+				new(end()) T(std::forward<T>(data_[size_]));
+				std::move_backward(data_ + dist, end(), std::next(end()));
+				new (data_ + dist) T(std::forward<Args>(args)...);
+			}
 		}
 		else
 		{
@@ -321,12 +346,15 @@ public:
 		return iterator(begin() + dist);
 	}
 
-	iterator Erase(const_iterator pos)
+	iterator Erase(const_iterator pos) noexcept(std::is_nothrow_move_assignable_v<T>)
 	{
 		iterator iter = const_cast<iterator>(pos);
 		auto dist = std::distance(begin(), iter);
-		std::move(begin() + dist + 1, end(), begin() + dist);
-		--size_;
+		if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
+			std::move(data_ + dist, std::prev(end()), data_ + dist - 1);
+		else
+			std::copy(data_ + dist, std::prev(end()), data_ + dist - 1);
+		PopBack();
 		return iterator(begin() + dist);
 	}
 
