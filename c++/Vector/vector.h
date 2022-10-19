@@ -297,18 +297,10 @@ public:
 
 		if (size_ != Capacity())
 		{
-			RawMemory<T> new_data(2);
-			T* var_value = new (new_data + 1) T(std::forward<Args>(args)...);
+			T* var_value = new T(std::forward<Args>(args)...);
 			std::move_backward(begin() + dist, end(), begin() + dist + 1u);
-			if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
-			{
-				iter = std::move(var_value);
-			}
-			else
-			{
-				iter = var_value;
-			}
-			//std::destroy_n(new_data.GetAddress(), 2);
+			new (data_ + dist) T(std::forward<T>(*var_value));
+			//std::destroy_at(var_value);
 		}
 		else
 		{
