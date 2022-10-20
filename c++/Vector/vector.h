@@ -119,27 +119,27 @@ public:
 
 	iterator begin() noexcept
 	{
-		return (size_ == 0) ? iterator() : iterator(data_.GetAddress());
+		return iterator(data_.GetAddress());
 	}
 	iterator end() noexcept
 	{
-		return (size_ == 0) ? iterator() : iterator(data_.GetAddress() + size_);
+		return iterator(data_.GetAddress() + size_);
 	}
 	const_iterator begin() const noexcept
 	{
-		return (size_ == 0) ? const_iterator() : const_iterator(data_.GetAddress());
+		return const_iterator(data_.GetAddress());
 	}
 	const_iterator end() const noexcept
 	{
-		return (size_ == 0) ? const_iterator() : const_iterator(data_.GetAddress() + size_);
+		return const_iterator(data_.GetAddress() + size_);
 	}
 	const_iterator cbegin() const noexcept
 	{
-		return (size_ == 0) ? const_iterator() : const_iterator(data_.GetAddress());
+		return const_iterator(data_.GetAddress());
 	}
 	const_iterator cend() const noexcept
 	{
-		return (size_ == 0) ? const_iterator() : const_iterator(data_.GetAddress() + size_);
+		return const_iterator(data_.GetAddress() + size_);
 	}
 
 	Vector& operator=(const Vector& rhs) {
