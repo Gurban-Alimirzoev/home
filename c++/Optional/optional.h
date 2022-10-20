@@ -117,12 +117,12 @@ public:
 		return is_initialized_;
 	}
 
-	T& operator*() 
+	T& operator*()&
 	{
 		return *value_;
 	}
 
-	const T& operator*() const 
+	const T& operator*() const&
 	{
 		return *value_;
 	}
@@ -136,7 +136,7 @@ public:
 		return value_;
 	}
 
-	T& Value() 
+	T& Value()&
 	{
 		if (!this->is_initialized_)
 		{
@@ -145,12 +145,24 @@ public:
 		return *value_;
 	}
 
-	const T& Value() const
+	const T& Value() const&
 	{
 		if (!this->is_initialized_) {
 			throw BadOptionalAccess();
 		}
 		return  *this->value_;
+	}
+
+	T&& operator*()&&
+	{
+		return std::move(* value_);
+	}
+	T&& Value()&&
+	{
+		if (!this->is_initialized_) {
+			throw BadOptionalAccess();
+		}
+		return  std::move(* value_);
 	}
 
 	void Reset()

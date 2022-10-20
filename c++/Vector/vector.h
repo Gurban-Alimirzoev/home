@@ -295,11 +295,11 @@ public:
 	iterator Emplace(const_iterator pos, Args&&... args)
 	{
 		iterator iter = const_cast<iterator>(pos);
-		auto dist = std::distance(begin(), iter);
+		int dist = std::distance(begin(), iter);
 
 		if (size_ != Capacity())
 		{
-			if (iter == nullptr || iter == end()) 
+			if (iter == nullptr || iter == end())
 			{
 				if (std::is_nothrow_move_constructible_v<T> || std::is_copy_constructible_v<T>)
 				{
@@ -322,6 +322,7 @@ public:
 			{
 				new(end()) T(std::forward<T>(data_[size_]));
 				std::move_backward(data_ + dist, end(), std::next(end()));
+				std::destroy_at(data_ + size_);
 				new (data_ + dist) T(std::forward<Args>(args)...);
 			}
 		}
@@ -351,9 +352,13 @@ public:
 		iterator iter = const_cast<iterator>(pos);
 		auto dist = std::distance(begin(), iter);
 		if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
-			std::move(data_ + dist, std::prev(end()), data_ + dist - 1);
+		{
+			std::move(std::next(iter), end(), iter);
+		}
 		else
-			std::copy(data_ + dist, std::prev(end()), data_ + dist - 1);
+		{
+			std::copy(std::next(iter), end(), iter);
+		}
 		PopBack();
 		return iterator(begin() + dist);
 	}
