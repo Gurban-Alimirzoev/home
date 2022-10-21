@@ -149,25 +149,23 @@ public:
 				Swap(rhs_copy);
 			}
 			else {
+				//std::copy_n(rhs.begin(), rhs.size_, begin());
 				if (size_ > rhs.size_)
 				{
-					size_t i = 0;
-					for (; i < rhs.size_; i++)
-					{
-						data_[i] = (rhs.data_[i]);
-					}
-					for (; i < size_; i++)
+					std::copy_n(rhs.begin(), rhs.size_, begin());
+					for (size_t i = rhs.size_; i < size_; i++)
 					{
 						std::destroy_at(data_ + i);
 					}
 				}
 				else
 				{
-					size_t i = 0;
+					/*size_t i = 0;
 					for (; i < size_; i++)
 					{
 						data_[i] = (rhs[i]);
-					}
+					}*/
+					std::copy_n(rhs.begin(), size_, begin());
 					std::uninitialized_copy_n(rhs.data_.GetAddress() + size_
 						, rhs.size_ - size_
 						, data_.GetAddress() + size_);
@@ -216,7 +214,7 @@ public:
 			return;
 		}
 		RawMemory<T> new_data(new_capacity);
-		if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>) {
+		if (MustMove()) {
 			std::uninitialized_move_n(data_.GetAddress(), size_, new_data.GetAddress());
 		}
 		else {
@@ -268,7 +266,7 @@ public:
 		{
 			RawMemory<T> new_data(size_ > 0 ? size_ * 2 : 1);
 			new (new_data + size_) T(std::forward<Args>(args)...);
-			if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
+			if (MustMove())
 			{
 				std::uninitialized_move_n(data_.GetAddress(), size_, new_data.GetAddress());
 			}
@@ -330,7 +328,7 @@ public:
 		{
 			RawMemory<T> new_data(size_ > 0 ? size_ * 2 : 1);
 			new (new_data + dist) T(std::forward<Args>(args)...);
-			if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
+			if (MustMove())
 			{
 				std::uninitialized_move_n(data_.GetAddress(), dist, new_data.GetAddress());
 				std::uninitialized_move_n(data_.GetAddress() + dist, size_ - dist, new_data.GetAddress() + dist + 1);
@@ -351,7 +349,7 @@ public:
 	{
 		iterator iter = const_cast<iterator>(pos);
 		auto dist = std::distance(begin(), iter);
-		if constexpr (std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>)
+		if (MustMove())
 		{
 			std::move(std::next(iter), end(), iter);
 		}
@@ -370,11 +368,19 @@ private:
 	RawMemory<T> data_;
 	size_t size_ = 0;
 
-	static void CopyConstruct(T* buf, const T& elem) {
+	static void CopyConstruct(T* buf, const T& elem) 
+	{
 		new (buf) T(elem);
 	}
 
-	static void Destroy(T* buf) noexcept {
+	static void Destroy(T* buf) noexcept 
+	{
 		buf->~T();
 	}
+
+	bool constexpr MustMove()
+	{
+		return std::is_nothrow_move_constructible_v<T> || !std::is_copy_constructible_v<T>;
+	}
+
 };
