@@ -1,127 +1,69 @@
-#include "log_duration.h"
-#include <algorithm>
-#include <iostream>
-#include <random>
+#include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <string>
-#include <vector>
-#include <unordered_set>
 
 using namespace std;
 
-struct LoadingParams
-{
-    string_view db_name;
-    int db_connection_timeout;
-    bool db_allow_exceptions;
-    DBLogLevel db_log_level;
-    int min_age;
-    int max_age;
-    string_view name_filter;
-
-
-    LoadingParams() = default;
-
-    LoadingParams& SetDataBaseName(string_view db_name_)
-    {
-        this->db_name = db_name_;
-        return *this;
-    }
-
-    LoadingParams& SetDataBaseConnectionTimeout(int db_connection_timeout_)
-    {
-        this->db_connection_timeout = db_connection_timeout_;
-        return *this;
-    }
-
-    LoadingParams& SetDataBaseAllowExecptions(bool db_allow_exceptions_)
-    {
-        this->db_allow_exceptions = db_allow_exceptions_;
-        return *this;
-    }
-
-    LoadingParams& SetDataBaseLogLevel(DBLogLevel db_log_level_)
-    {
-        this->db_log_level = db_log_level_;
-        return *this;
-    }
-
-    LoadingParams& SetMinAge(int min_age_)
-    {
-        this->min_age = min_age_;
-        return *this;
-    }
-
-    LoadingParams& SetMaxAge(int max_age_)
-    {
-        this->max_age = max_age_;
-        return *this;
-    }
-
-    LoadingParams& SetNameFilter(string_view name_filter_)
-    {
-        name_filter = name_filter_;
-        return *this;
-    }
+struct Nucleotide {
+    char symbol;
+    size_t position;
+    int chromosome_num;
+    int gene_num;
+    bool is_marked;
+    char service_info;
 };
 
-class LoadPersons
-{
-public:
-    LoadPersons(LoadingParams params)
-    {
-        Load();
-    }
-
-    vector<Person> Load()
-    {
-        if (!ConnectDB())
-            return {};
-        ostringstream query_str;
-        DBQuery query = MakeQuery(query_str);
-        return LoadConstainer();
-    }
-
-    bool ConnectDB();
-    DBQuery MakeQuery(ostringstream& query_str);
-    vector<Person> LoadConstainer();
-
-private:
-    LoadingParams params;
-    DBConnector connector;
-    DBHandler db;
-    DBQuery query;
-    vector<Person> persons;
+struct CompactNucleotide {
+    uint32_t position;
+    uint16_t gene_num_and_is_marked;
+    uint16_t chromosome_num_and_symbol;
+    uint8_t service_info;
 };
 
-bool LoadPersons::ConnectDB()
-{
-    DBConnector connector(db_allow_exceptions, db_log_level);
-    DBHandler db;
-    if (db_name.starts_with("tmp."s)) {
-        db = connector.ConnectTmp(db_name, db_connection_timeout);
-    }
-    else {
-        db = connector.Connect(db_name, db_connection_timeout);
-    }
-    if (!db_allow_exceptions && !db.IsOK()) {
-        return false;
-    }
-    return true;
+CompactNucleotide Compress(const Nucleotide& n) {
+    return CompactNucleotide({
+        static_cast<uint32_t>(n.position)
+        ,static_cast<uint16_t>(static_cast<uint16_t>(n.gene_num) + (n.is_marked ? 25001 - static_cast<uint16_t>(n.gene_num) : 0))
+        ,static_cast<uint16_t>(static_cast<uint8_t>(n.chromosome_num) + static_cast<uint8_t>(n.symbol) * 100)
+        ,static_cast<uint8_t>(n.service_info) });
 }
 
-DBQuery LoadPersons::MakeQuery(ostringstream& query_str)
-{
-    query_str << "from Persons "s
-        << "select Name, Age "s
-        << "where Age between "s << params.min_age << " and "s << params.max_age << " "s
-        << "and Name like '%"s << db.Quote(params.name_filter) << "%'"s;
-    return query(query_str.str());
+Nucleotide Decompress(const CompactNucleotide& cn) {
+    return Nucleotide({
+        static_cast<char>(cn.chromosome_num_and_symbol / 100)
+        ,static_cast<size_t>(cn.position)
+        ,static_cast<int>(cn.chromosome_num_and_symbol % 100)
+        ,static_cast<int>(cn.gene_num_and_is_marked - (cn.gene_num_and_is_marked == 25001 ? 1 : 0))
+        ,static_cast<bool>(cn.gene_num_and_is_marked > 25001 ? 1 : 0)
+        ,static_cast<char>(cn.service_info) });
 }
 
-vector<Person> LoadPersons::LoadConstainer()
-{
-    for (auto [name, age] : db.LoadRows<string, int>(query)) {
-        persons.push_back({ move(name), age });
-    }
-    return persons;
+static_assert(sizeof(CompactNucleotide) <= 8, "Your CompactNucleotide is not compact enough");
+static_assert(alignof(CompactNucleotide) == 4, "Don't use '#pragma pack'!");
+bool operator==(const Nucleotide& lhs, const Nucleotide& rhs) {
+    return (lhs.symbol == rhs.symbol) && (lhs.position == rhs.position) && (lhs.chromosome_num == rhs.chromosome_num)
+        && (lhs.gene_num == rhs.gene_num) && (lhs.is_marked == rhs.is_marked) && (lhs.service_info == rhs.service_info);
+}
+void TestSize() {
+    assert(sizeof(CompactNucleotide) <= 8);
+}
+void TestCompressDecompress() {
+    Nucleotide source;
+    source.symbol = 'T';
+    source.position = 1'000'000'000;
+    source.chromosome_num = 48;
+    source.gene_num = 1'000;
+    source.is_marked = true;
+    source.service_info = '!';
+
+    CompactNucleotide compressedSource = Compress(source);
+    Nucleotide decompressedSource = Decompress(compressedSource);
+
+    assert(source == decompressedSource);
+}
+
+int main() {
+    TestSize();
+    TestCompressDecompress();
 }
