@@ -1,42 +1,55 @@
+#include <array>
+#include <iostream>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <random>
 
 using namespace std;
 
+const static int N = 4;
+const std::array<char, N> Letters = {
+        'A', 'T', 'G', 'C' };
+
 struct Nucleotide {
-    char symbol;
-    size_t position;
-    int chromosome_num;
-    int gene_num;
-    bool is_marked;
-    char service_info;
+    char symbol; // 4
+    size_t position; //3,3*10*9
+    int chromosome_num; // 46
+    int gene_num; // 25000
+    bool is_marked; //1
+    char service_info; //255
 };
 
 struct CompactNucleotide {
     uint32_t position;
-    uint16_t gene_num_and_is_marked;
-    uint16_t chromosome_num_and_symbol;
-    uint8_t service_info;
+    uint32_t gene_num : 15;
+    uint32_t is_marked : 1;
+    uint32_t chromosome_num : 6;
+    uint32_t symbol : 2;
+    uint32_t service_info : 8;
 };
 
 CompactNucleotide Compress(const Nucleotide& n) {
-    return CompactNucleotide({
-        static_cast<uint32_t>(n.position)
-        ,static_cast<uint16_t>(static_cast<uint16_t>(n.gene_num) + (n.is_marked ? 25001 - static_cast<uint16_t>(n.gene_num) : 0))
-        ,static_cast<uint16_t>(static_cast<uint8_t>(n.chromosome_num) + static_cast<uint8_t>(n.symbol) * 100)
-        ,static_cast<uint8_t>(n.service_info) });
+    CompactNucleotide result;
+    result.position = n.position;
+    result.gene_num = n.gene_num;
+    result.chromosome_num = n.chromosome_num;
+    result.service_info = n.service_info;
+    result.is_marked = n.is_marked;
+    result.symbol = distance(Letters.begin(), std::find(Letters.begin(), Letters.end(), n.symbol));
+    return result;
 }
 
 Nucleotide Decompress(const CompactNucleotide& cn) {
-    return Nucleotide({
-        static_cast<char>(cn.chromosome_num_and_symbol / 100)
-        ,static_cast<size_t>(cn.position)
-        ,static_cast<int>(cn.chromosome_num_and_symbol % 100)
-        ,static_cast<int>(cn.gene_num_and_is_marked - (cn.gene_num_and_is_marked == 25001 ? 1 : 0))
-        ,static_cast<bool>(cn.gene_num_and_is_marked > 25001 ? 1 : 0)
-        ,static_cast<char>(cn.service_info) });
+    Nucleotide result;
+    result.position = cn.position;
+    result.gene_num = cn.gene_num;
+    result.chromosome_num = cn.chromosome_num;
+    result.service_info = cn.service_info;
+    result.is_marked = cn.is_marked;
+    result.symbol = Letters[cn.symbol];
+    return result;
 }
 
 static_assert(sizeof(CompactNucleotide) <= 8, "Your CompactNucleotide is not compact enough");
