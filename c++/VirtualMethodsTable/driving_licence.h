@@ -52,7 +52,7 @@ inline const vtable vtable_DrivingLicence(
 
 inline void DrivingLicence::PrintID() const
 {
-    return *(vtable_ptr->PrintID)();
+    return (this->*(vtable_ptr->PrintID))();
 }
 
 inline void DrivingLicence::Delete()
