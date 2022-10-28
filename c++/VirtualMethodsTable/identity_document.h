@@ -74,6 +74,7 @@ struct vtable
     void (IdentityDocument::* const PrintID)() const;
     void (IdentityDocument::* const Delete)();
 
+
     // constructor
     vtable (
             void (IdentityDocument::* const PrintID)() const,

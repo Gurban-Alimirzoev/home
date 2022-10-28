@@ -9,7 +9,8 @@ extern const vtable vtable_DrivingLicence;
 
 class DrivingLicence : public IdentityDocument {
 public:
-    DrivingLicence() : IdentityDocument(&vtable_DrivingLicence) {
+    DrivingLicence() 
+    {
         std::cout << "DrivingLicence::Ctor()"sv << std::endl;
         vtable_ptr = &vtable_DrivingLicence;
     }
@@ -21,7 +22,8 @@ public:
         std::cout << "DrivingLicence::CCtor()"sv << std::endl;
     }
 
-    DrivingLicence(const vtable* vtable_ptr) : IdentityDocument(vtable_ptr) {
+    DrivingLicence(const vtable* vtable_ptr) 
+    {
         std::cout << "DrivingLicence::Ctor()"sv << std::endl;
     }
 
@@ -45,11 +47,12 @@ public:
 };
 
 inline const vtable vtable_DrivingLicence(
-        static_cast<void (IdentityDocument::*)() const>(&DrivingLicence::PrintID_), static_cast<void (IdentityDocument::*)()>(&DrivingLicence::Delete_));
+        static_cast<void (IdentityDocument::*)() const>(&DrivingLicence::PrintID_)
+    , static_cast<void (IdentityDocument::*)()>(&DrivingLicence::Delete_));
 
 inline void DrivingLicence::PrintID() const
 {
-    return (this->*(vtable_ptr->PrintID))();
+    return *(vtable_ptr->PrintID)();
 }
 
 inline void DrivingLicence::Delete()
