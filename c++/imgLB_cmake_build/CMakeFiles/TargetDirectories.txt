@@ -1,3 +1,0 @@
-C:/Users/Гурбан/Documents/git/Home/c++/imgLB_cmake_build/CMakeFiles/negate.dir
-C:/Users/Гурбан/Documents/git/Home/c++/imgLB_cmake_build/CMakeFiles/ALL_BUILD.dir
-C:/Users/Гурбан/Documents/git/Home/c++/imgLB_cmake_build/CMakeFiles/ZERO_CHECK.dir

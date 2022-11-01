@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.11)
+
+project(LumaCorr CXX)
+set(CMAKE_CXX_STANDARD 17)
+
+set(IMGLIB_DLL_DIR CACHE STRING "ImgLib static library directory")
+
+if(NOT IMGLIB_DLL_DIR)
+    message(FATAL_ERROR "Please, specify ImgLib directory via -DIMGLIB_DLL_DIR=<dir>")
+endif()
+message(STATUS "ImgLib dir is ${IMGLIB_DLL_DIR}, change via -DIMGLIB_DLL_DIR=<dir>")
+
+if (CMAKE_SYSTEM_NAME MATCHES "^MINGW")
+    set(SYSTEM_LIBS -lstdc++)
+else()
+    set(SYSTEM_LIBS)
+endif()
+
+add_executable(lumacorr main.cpp)
+
+target_include_directories(lumacorr PUBLIC "${IMGLIB_DLL_DIR}/include")
+
+# в команде target_link_libraries можно указывать полный путь
+# к файлу библиотеки
+target_link_libraries(lumacorr "${IMGLIB_DLL_DIR}/lib/libImgLibDll.so" ${SYSTEM_LIBS})

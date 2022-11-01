@@ -9,4 +9,4 @@ using Path = std::filesystem::path;
 bool SavePPM(const Path& file, const Image& image);
 Image LoadPPM(const Path& file);
 
-} // of namespace img_lib
+}  // namespace img_lib
