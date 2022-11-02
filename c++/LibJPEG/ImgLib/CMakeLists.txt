@@ -27,7 +27,7 @@ target_include_directories(ImgLib PUBLIC "${LIBJPEG_DIR}/include")
 # Для самой ImgLib не нужно указывать зависимости компоновки, поскольку
 # статическая библиотека не компонуется, а просто архивируется
 target_link_directories(ImgLib INTERFACE
-    "${LIBJPEG_DIR}/lib/$<IF:$<CONFIG:Debug>,Debug,Release>"
+    "${LIBJPEG_DIR}/lib/$<IF:$<CONFIG:Release>,Debug,Release>"
     )
 
 # В качестве зависимости указано jpeg. Компоновщик будет искать
