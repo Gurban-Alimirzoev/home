@@ -34,6 +34,8 @@ namespace transport_catalogue
 		double GetGeoDistance(std::pair <Stop*, Stop*> stop_and_next_stop) const;
 
 		const std::deque <Stop>& GetAllStops() const;
+		const std::deque <Bus>& GetAllBuses() const;
+		const std::unordered_map <std::pair <Stop*, Stop*>, double, detail::PairStopStopHasher>& GetAllEarthDistances() const;
 	private:
 		std::deque <Stop> stops;
 		std::unordered_map <std::string_view, Stop*> stopname_to_stop;

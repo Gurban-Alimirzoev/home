@@ -1,41 +1,27 @@
-#include "transport_catalogue.h"
-#include "geo.h"
-#include "input_reader.h"
-#include "stat_reader.h"
-
-#include <sstream>
 #include <cassert>
+#include <chrono>
+#include <sstream>
+#include <string_view>
 #include <iostream>
 #include <fstream>
+#include <iostream>
 
-using namespace transport_catalogue;
+#include "json_reader.h"
 
 int main() {
-	std::ifstream input("e:/git/Home/c++/TransportCatalogue/tsC_case1_input.txt");
+    renderer::MapRenderer renderer;
 
-	std::string line;
-	std::getline(input, line);
-	int number = stoi(line);
+    JsonReader reader(std::cin, std::cout, renderer);
+    reader.ParseRequests();
 
-	TransportCatalogue cat;
-	input::InputReader input_reader;
+    reader.ParseRenderSettings();
+    renderer.SetSettings(reader.GetRenderSettings());
 
-	for (int i = 0; i < number; i++)
-	{
-		getline(input, line);
-		input_reader.ParseCommand(line, cat);
-	}
-	input_reader.ParseDistance(cat);
-	input_reader.FinalizationDataRead(cat);
+    reader.ParseRouteSettings();
 
-	getline(input, line);
-	number = stoi(line);
-
-	stat_::StatReader stat_reader;
-
-	for (int i = 0; i < number; i++)
-	{
-		getline(input, line);
-		stat_reader.OutStatReader(line, cat);
-	}
+    reader.BaseRequests();
+    reader.AddRendererElements();
+    reader.StatRequests();
+    //renderer.RenderMap(std::cout);
+    reader.PrintAnswerToStatRequests();
 }

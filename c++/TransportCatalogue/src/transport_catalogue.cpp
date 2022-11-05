@@ -115,8 +115,18 @@ namespace transport_catalogue
 			return geo_stops_distance.at({ stop_and_next_stop.second, stop_and_next_stop.first });
 	}
 
-	const std::deque <Stop>& TransportCatalogue::GetAllStops() const
+	const deque <Stop>& TransportCatalogue::GetAllStops() const
 	{
 		return stops;
+	}
+
+	const deque <Bus>& TransportCatalogue::GetAllBuses() const
+	{
+		return buses;
+	}
+
+	const unordered_map <pair <Stop*, Stop*>, double, detail::PairStopStopHasher>& TransportCatalogue::GetAllEarthDistances() const
+	{
+		return earth_stops_distance;
 	}
 }
