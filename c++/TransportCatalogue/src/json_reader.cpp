@@ -35,10 +35,7 @@ void JsonReader::BaseRequests()
 			buses.push_back(bus_or_stop);
 	}
 	SetDistance();
-	//tr_router.DoAfterAddingAllStops();
 	BaseRequest_AddBuses();
-	//tr_router.DoAfterAddingAllBuses();
-
 }
 
 void JsonReader::BaseRequest_AddBuses()
@@ -61,8 +58,6 @@ void JsonReader::BaseRequest_AddBuses()
 			bus_name,
 			stops,
 			bus.at("is_roundtrip").AsBool());
-
-		//tr_router.SetBus(bus_name, stops);
 	}
 }
 
@@ -84,14 +79,9 @@ void JsonReader::BaseRequests_AddStop(Dict stop)
 		 stop.at("longitude").AsDouble() });
 	Dict road_distances = stop.at("road_distances").AsDict();
 
-	string name_first = stop.at("name").AsString();
-
-	//tr_router.SetStop(name_first);
-
 	for (auto [name_second_stop, distance] : road_distances)
 	{
 		buffer_distance[stop.at("name").AsString()].insert({ name_second_stop, distance.AsDouble() });
-		//tr_router.SetStop(name_second_stop);
 	}
 }
 

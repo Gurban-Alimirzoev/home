@@ -12,7 +12,6 @@
 #include <transport_catalogue.pb.h>
 #include <map_renderer.pb.h>
 #include <graph.pb.h>
-//#include "transport_router.pb.h"
 
 class SerializatorDB
 {
@@ -40,7 +39,6 @@ private:
 	void SerealizeRenderSettings();
 	transport_catalogue_serialize::Color SerealizeColor(const svg::Color& color);
 	void SerealizeRoutingSettings();
-	//void SerealizeTransportRouter();
 };
 
 class DeserializatorDB
@@ -62,7 +60,6 @@ public:
 	renderer::Settings DeserializeRenderSettings();
 	svg::Color DeserealizeColor(const transport_catalogue_serialize::Color& color);
 	void DeserealizeRoutingSettings();
-	//transport_catalogue::route::TransportRouter DeserealizeTransportRouter();
 
 private:
 	transport_catalogue::TransportCatalogue& db_;

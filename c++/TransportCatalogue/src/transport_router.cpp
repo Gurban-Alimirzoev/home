@@ -88,14 +88,4 @@ namespace transport_catalogue::route
 	{
 		return settings;
 	}
-
-	unordered_map <string, size_t> TransportRouter::GetStopAndVertexID() const
-	{
-		return stop_name_and_vertex_id;
-	}
-
-	unordered_map < size_t, BusRoute> TransportRouter::GetVertexIDAndBus() const
-	{
-		return vertex_id_and_bus_name_;
-	}
 }

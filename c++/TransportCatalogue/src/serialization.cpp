@@ -114,35 +114,6 @@ void SerializatorDB::SerealizeRoutingSettings()
 	*db_ser_.mutable_routing_settings() = buf_routing_settings;
 }
 
-/*void SerializatorDB::SerealizeTransportRouter()
-{
-	transport_catalogue_serialize::TransportRouter tr_;
-
-	transport_catalogue_serialize::Pair_stop_name_and_vertex_id stop_name_and_vertex_id;
-	for (const auto& stop_and_id: tr_router_.GetStopAndVertexID())
-	{
-		stop_name_and_vertex_id.set_key(stop_and_id.first);
-		stop_name_and_vertex_id.set_value(stop_and_id.second);
-		*tr_.add_stop_name_and_vertex_id() = stop_name_and_vertex_id;
-	}
-
-	transport_catalogue_serialize::Pair_vertex_id_and_bus_name_ vertex_id_and_name;
-	transport_catalogue_serialize::BusRoute bus_route;
-	for (const auto& vertex_and_name : tr_router_.GetVertexIDAndBus())
-	{
-		bus_route.set_bus_name(vertex_and_name.second.bus_name);
-		bus_route.set_start(vertex_and_name.second.start);
-		bus_route.set_finish(vertex_and_name.second.finish);
-		bus_route.set_span_count(vertex_and_name.second.span_count);
-
-		vertex_id_and_name.set_key(vertex_and_name.first);
-		*vertex_id_and_name.mutable_value() = bus_route;
-
-		*tr_.add_vertex_id_and_bus_name_() = vertex_id_and_name;
-	}
-	*db_ser_.mutable_router() = tr_;
-}*/
-
 void SerializatorDB::SerializeDB(const string& filename)
 {
 	ofstream out(filename, ios::binary);
@@ -190,7 +161,6 @@ void DeserializatorDB::DeserializeDistance()
 		const transport_catalogue::Stop* stop_to = db_.FindStop(db_ser_.distance(i).to());
 		double distance = db_ser_.distance(i).distance();
 		db_.SetEarthDistance({ stop_from->name_stop , stop_to->name_stop }, distance);
-		//tr_router.SetStop(stop_from->name_stop);
 		tr_router.SetStop(stop_to->name_stop);
 	}
 }
@@ -242,12 +212,3 @@ void DeserializatorDB::DeserealizeRoutingSettings()
 	router_settings.bus_velocity = routing_settings_ser.bus_velocity();
 	tr_router.SetRoutingSettings(router_settings.bus_wait_time, router_settings.bus_velocity);
 }
-
-/*transport_catalogue::route::TransportRouter DeserializatorDB::DeserealizeTransportRouter()
-{
-
-	for (const auto& name_and_vertex: db_ser_.router().stop_name_and_vertex_id())
-	{
-		name_and_vertex.
-	}
-}*/
