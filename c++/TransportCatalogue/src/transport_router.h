@@ -27,12 +27,15 @@ namespace transport_catalogue::route
 		void SetRoutingSettings(int whait_time, double speed);
 		void SetBus(std::string bus_name, std::vector<std::string>& stops);
 		void SetStop(std::string stop);
-
+		//void SetRouterBase();
 		std::optional<RouteInfo> BuildRoute(const std::string& start, const std::string& finish);
 
 		std::tuple<transport_catalogue::route::BusRoute*, double> GetRouteAndDistance(size_t edge);
 		double GetDistance(const RouteInfo& start_to_finish) const;
 		size_t GetStopId(const std::string& stop);
+		const transport_catalogue::route::Settings GetSettings() const;
+		std::unordered_map <std::string, size_t> GetStopAndVertexID() const;
+		std::unordered_map < size_t, transport_catalogue::route::BusRoute> GetVertexIDAndBus() const;
 
 	private:
 		std::optional<graph::Router<double>> router;

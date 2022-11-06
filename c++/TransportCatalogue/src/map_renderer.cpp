@@ -151,4 +151,9 @@ namespace renderer
 		else
 			number_of_color++;
 	}
+
+	const Settings MapRenderer::GetSettings() const
+	{
+		return render_settings;
+	}
 }

@@ -59,7 +59,8 @@ void JsonReader::BaseRequest_AddBuses()
 		string bus_name = bus.at("name").AsString();
 		db.AddBus(
 			bus_name,
-			stops);
+			stops,
+			bus.at("is_roundtrip").AsBool());
 
 		//tr_router.SetBus(bus_name, stops);
 	}
@@ -243,7 +244,7 @@ void JsonReader::StatRequests_PrintRouteRequest(Dict route_request)
 				.Key("stop_name")
 				.Value(string((*br_run).start))
 				.Key("time")
-				.Value(routing_settings.at("bus_wait_time").AsInt())
+				.Value(tr_router.GetSettings().bus_wait_time)
 				.Key("type")
 				.Value(string("Wait"))
 				.EndDict()
@@ -404,15 +405,16 @@ void JsonReader::MakeMap()
 
 void JsonReader::AddBusesToMap()
 {
+	auto buses = db.GetAllBuses();
 	buses_sort.resize(buses.size());
 	transform(
 		buses.begin(),
 		buses.end(),
 		buses_sort.begin(),
-		[this](Dict str)
+		[this](auto bus)
 		{
-			return pair{ str.at("name").AsString(),
-				str.at("is_roundtrip").AsBool() };
+			return pair{ bus.name_bus,
+				bus.is_roundtrip };
 		});
 
 	sort(buses_sort.begin(), buses_sort.end());
@@ -453,17 +455,20 @@ void JsonReader::MakeRouteSettings()
 
 void JsonReader::MakeBase()
 {
-	SerializatorDB serializer(db);
+	SerializatorDB serializer(db, render_settings, tr_router.GetSettings());
 	serializer.SerializeDB(serialization_settings.at("file").AsString());
 }
 
 void JsonReader::GetBase()
 {
-	DeserializatorDB deserializer(db);
+	DeserializatorDB deserializer(db, render_settings, tr_router);
 	deserializer.StartDeserializeDB(serialization_settings.at("file").AsString());
+	deserializer.DeserealizeRoutingSettings();
 	deserializer.DeserializeStops();
 	deserializer.DeserializeDistance();
-	//tr_router.DoAfterAddingAllStops();
+	tr_router.DoAfterAddingAllStops();
 	deserializer.DeserializeBuses();
-	//tr_router.DoAfterAddingAllBuses();
+	tr_router.DoAfterAddingAllBuses();
+	render_settings = deserializer.DeserializeRenderSettings();
+	rendrer.SetSettings(render_settings);
 }

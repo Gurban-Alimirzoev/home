@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package transport_catalogue_serialize;
 
+import "map_renderer.proto";
+import "graph.proto";
+
 message Coordinates
 {
 	double lat = 1;
@@ -10,19 +13,20 @@ message Coordinates
 
 message Stop
 {
-	string name_stop = 1;
+	bytes name_stop = 1;
 	Coordinates coor = 2;
 }
 
 message Bus {
-    string name = 1;
-    repeated string stops = 2;
+    bytes name = 1;
+    repeated bytes stops_in_bus = 2;
+	bool is_roundtrip = 3;
 }
 
 message Distance
 {
-	string from = 1;
-	string to = 2;
+	bytes from = 1;
+	bytes to = 2;
 	double distance = 3;
 }
 
@@ -30,4 +34,6 @@ message TransportCatalogue  {
     repeated Stop stops = 1;
     repeated Bus buses = 2;
     repeated Distance distance = 3;
+	RenderSettings render_settings = 4;
+	RoutingSettings routing_settings = 5;
 }

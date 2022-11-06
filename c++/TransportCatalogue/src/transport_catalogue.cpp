@@ -20,7 +20,7 @@ namespace transport_catalogue
 		return iter->second;
 	}
 
-	void TransportCatalogue::AddBus(string_view bus_name, vector<string>& bus)
+	void TransportCatalogue::AddBus(string_view bus_name, vector<string>& bus, bool is_roundtrip)
 	{
 		vector<Stop*> stops(bus.size());
 
@@ -32,7 +32,7 @@ namespace transport_catalogue
 				return stopname_to_stop[stop];
 			}
 		);
-		buses.push_back({ string(bus_name), stops });
+		buses.push_back({ string(bus_name), stops, is_roundtrip });
 		busname_to_bus.insert({ buses.back().name_bus , &(buses.back()) });
 
 		Stop* stop1 = buses.back().bus[0];

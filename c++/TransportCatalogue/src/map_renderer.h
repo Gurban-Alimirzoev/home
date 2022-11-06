@@ -136,6 +136,7 @@ namespace renderer
         void AddStopName(transport_catalogue::Stop &stop);
         void RestartNumberOfColor();
         void RenderMap(std::ostream &out);
+        const Settings GetSettings() const;
 
     private:
         Settings render_settings;
