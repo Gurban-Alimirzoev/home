@@ -16,12 +16,12 @@ namespace ast {
         const string INIT_METHOD = "__init__"s;
     }  // namespace
 
-    VariableValue::VariableValue(const std::string &var_name) {
+    VariableValue::VariableValue(const string &var_name) {
         dotted_ids_.push_back(var_name);
     }
 
-    VariableValue::VariableValue(std::vector<std::string> dotted_ids)
-            : dotted_ids_(std::move(dotted_ids)) {
+    VariableValue::VariableValue(vector<string> dotted_ids)
+            : dotted_ids_(move(dotted_ids)) {
     }
 
     ObjectHolder VariableValue::Execute(Closure &closure, Context & /*context*/) {
@@ -39,15 +39,15 @@ namespace ast {
         return result;
     }
 
-    std::string VariableValue::GetName() const {
-        std::string full_name;
+    string VariableValue::GetName() const {
+        string full_name;
         for (const auto &id: dotted_ids_) {
             full_name += full_name.empty() ? id : '.' + id;
         }
         return full_name;
     }
 
-    const std::vector<std::string> &VariableValue::GetDottedIds() const {
+    const vector<string> &VariableValue::GetDottedIds() const {
         return dotted_ids_;
     }
 
@@ -57,13 +57,13 @@ namespace ast {
         return closure.at(var_name_);
     }
 
-    Assignment::Assignment(std::string var, std::unique_ptr<Statement> rv)
-            : var_name_(std::move(var)), rv_(std::move(rv)) {
+    Assignment::Assignment(string var, unique_ptr<Statement> rv)
+            : var_name_(move(var)), rv_(move(rv)) {
     }
 
-    FieldAssignment::FieldAssignment(VariableValue object, std::string field_name,
-                                     std::unique_ptr<Statement> rv)
-            : object_(std::move(object)), field_name_(std::move(field_name)), rv_(std::move(rv)) {
+    FieldAssignment::FieldAssignment(VariableValue object, string field_name,
+                                     unique_ptr<Statement> rv)
+            : object_(move(object)), field_name_(move(field_name)), rv_(move(rv)) {
     }
 
     ObjectHolder FieldAssignment::Execute(Closure &closure, Context &context) {
@@ -73,20 +73,20 @@ namespace ast {
             auto &val = p_closure->at(id);
             p_closure = &val.TryAs<runtime::ClassInstance>()->Fields();
         }
-        (*p_closure)[field_name_] = std::move(rv_->Execute(closure, context));
+        (*p_closure)[field_name_] = move(rv_->Execute(closure, context));
         return p_closure->at(field_name_);
     }
 
-    unique_ptr<Print> Print::Variable(const std::string &name) {
+    unique_ptr<Print> Print::Variable(const string &name) {
         return make_unique<Print>(Print(make_unique<VariableValue>(VariableValue(name))));
     }
 
     Print::Print(unique_ptr<Statement> argument) {
-        args_.push_back(std::move(argument));
+        args_.push_back(move(argument));
     }
 
     Print::Print(vector<unique_ptr<Statement>> args) {
-        args_ = std::move(args);
+        args_ = move(args);
     }
 
     ObjectHolder Print::Execute(Closure &closure, Context &context) {
@@ -104,16 +104,16 @@ namespace ast {
         return {};
     }
 
-    MethodCall::MethodCall(std::unique_ptr<Statement> object, std::string method,
-                           std::vector<std::unique_ptr<Statement>> args)
-            : object_(std::move(object)), method_(std::move(method)), args_(std::move(args)) {
+    MethodCall::MethodCall(unique_ptr<Statement> object, string method,
+                           vector<unique_ptr<Statement>> args)
+            : object_(move(object)), method_(move(method)), args_(move(args)) {
     }
 
     ObjectHolder MethodCall::Execute(Closure &closure, Context &context) {
         auto holder = object_->Execute(closure, context);
         auto instance = holder.TryAs<runtime::ClassInstance>();
         if (instance && instance->HasMethod(method_, args_.size())) {
-            std::vector<ObjectHolder> actual_args;
+            vector<ObjectHolder> actual_args;
             for (const auto &stmt: args_) {
                 actual_args.push_back(stmt->Execute(closure, context));
             }
@@ -125,7 +125,7 @@ namespace ast {
     ObjectHolder Stringify::Execute(Closure &closure, Context &context) {
         auto holder = argument_->Execute(closure, context);
         if (holder) {
-            std::stringstream ss;
+            stringstream ss;
             holder->Print(ss, context);
             return ObjectHolder::Own(runtime::String(ss.str()));
         } else {
@@ -206,11 +206,11 @@ namespace ast {
 
     ObjectHolder Return::Execute(Closure &closure, Context &context) {
         auto holder = statement_->Execute(closure, context);
-        throw ReturnException(std::move(holder));
+        throw ReturnException(move(holder));
     }
 
     ClassDefinition::ClassDefinition(ObjectHolder cls)
-            : cls_(std::move(cls)) {
+            : cls_(move(cls)) {
     }
 
     ObjectHolder ClassDefinition::Execute(Closure &closure, Context &) {
@@ -218,9 +218,9 @@ namespace ast {
         return cls_;
     }
 
-    IfElse::IfElse(std::unique_ptr<Statement> condition, std::unique_ptr<Statement> if_body,
-                   std::unique_ptr<Statement> else_body)
-            : condition_(std::move(condition)), if_body_(std::move(if_body)), else_body_(std::move(else_body)) {
+    IfElse::IfElse(unique_ptr<Statement> condition, unique_ptr<Statement> if_body,
+                   unique_ptr<Statement> else_body)
+            : condition_(move(condition)), if_body_(move(if_body)), else_body_(move(else_body)) {
     }
 
     ObjectHolder IfElse::Execute(Closure &closure, Context &context) {
@@ -262,7 +262,7 @@ namespace ast {
     }
 
     Comparison::Comparison(Comparator cmp, unique_ptr<Statement> lhs, unique_ptr<Statement> rhs)
-            : BinaryOperation(std::move(lhs), std::move(rhs)), cmp_(std::move(cmp)) {
+            : BinaryOperation(move(lhs), move(rhs)), cmp_(move(cmp)) {
     }
 
     ObjectHolder Comparison::Execute(Closure &closure, Context &context) {
@@ -271,8 +271,8 @@ namespace ast {
         return ObjectHolder::Own(runtime::Bool{cmp_(lhs_holder, rhs_holder, context)});
     }
 
-    NewInstance::NewInstance(const runtime::Class &cls, std::vector<std::unique_ptr<Statement>> args)
-            : class_(cls), args_(std::move(args)) {
+    NewInstance::NewInstance(const runtime::Class &cls, vector<unique_ptr<Statement>> args)
+            : class_(cls), args_(move(args)) {
     }
 
     NewInstance::NewInstance(const runtime::Class &cls)
@@ -280,14 +280,14 @@ namespace ast {
     }
 
     ObjectHolder NewInstance::Execute(Closure &closure, Context &context) {
-        std::string self_name = context.GetSelfName();
+        string self_name = context.GetSelfName();
         {
             runtime::ClassInstance inst{class_};
-            closure[self_name] = ObjectHolder::Own(std::move(inst));
+            closure[self_name] = ObjectHolder::Own(move(inst));
         }
         auto *instance = const_cast<runtime::ClassInstance *>(closure.at(self_name).TryAs<runtime::ClassInstance>());
         if (instance->HasMethod(INIT_METHOD, args_.size())) {
-            std::vector<ObjectHolder> actual_args;
+            vector<ObjectHolder> actual_args;
             for (const auto &stmt: args_) {
                 actual_args.push_back(stmt->Execute(closure, context));
             }
@@ -296,8 +296,8 @@ namespace ast {
         return closure.at(self_name);
     }
 
-    MethodBody::MethodBody(std::unique_ptr<Statement> body)
-            : body_(std::move(body)) {
+    MethodBody::MethodBody(unique_ptr<Statement> body)
+            : body_(move(body)) {
     }
 
     ObjectHolder MethodBody::Execute(Closure &closure, Context &context) {
@@ -309,7 +309,7 @@ namespace ast {
     }
 
     ReturnException::ReturnException(runtime::ObjectHolder result)
-            : result_(std::move(result)) {
+            : result_(move(result)) {
     }
 
     runtime::ObjectHolder ReturnException::GetResult() {

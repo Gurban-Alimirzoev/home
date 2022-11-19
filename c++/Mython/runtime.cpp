@@ -8,8 +8,8 @@ using namespace std;
 
 namespace runtime {
 
-    ObjectHolder::ObjectHolder(std::shared_ptr<Object> data)
-            : data_(std::move(data)) {
+    ObjectHolder::ObjectHolder(shared_ptr<Object> data)
+            : data_(move(data)) {
     }
 
     void ObjectHolder::AssertIsValid() const {
@@ -18,7 +18,7 @@ namespace runtime {
 
     ObjectHolder ObjectHolder::Share(Object &object) {
         // Возвращаем невладеющий shared_ptr (его deleter ничего не делает)
-        return ObjectHolder(std::shared_ptr<Object>(&object, [](auto * /*p*/) { /* do nothing */ }));
+        return ObjectHolder(shared_ptr<Object>(&object, [](auto * /*p*/) { /* do nothing */ }));
     }
 
     ObjectHolder ObjectHolder::None() {
@@ -67,7 +67,7 @@ namespace runtime {
             : cls_(cls) {
     }
 
-    void ClassInstance::Print(std::ostream &os, Context &context) {
+    void ClassInstance::Print(ostream &os, Context &context) {
         const string STR_METHOD = "__str__"s;
         if (HasMethod(STR_METHOD, 0)) {
             Call(STR_METHOD, {}, context)->Print(os, context);
@@ -76,7 +76,7 @@ namespace runtime {
         }
     }
 
-    bool ClassInstance::HasMethod(const std::string &method, size_t argument_count) const {
+    bool ClassInstance::HasMethod(const string &method, size_t argument_count) const {
         auto *p_method = cls_.GetMethod(method);
         return p_method && p_method->formal_params.size() == argument_count;
     }
@@ -89,11 +89,11 @@ namespace runtime {
         return closure_;
     }
 
-    ObjectHolder ClassInstance::Call(const std::string &method,
-                                     const std::vector<ObjectHolder> &actual_args,
+    ObjectHolder ClassInstance::Call(const string &method,
+                                     const vector<ObjectHolder> &actual_args,
                                      Context &context) {
         if (!HasMethod(method, actual_args.size())) {
-            throw std::runtime_error("Method not found."s);
+            throw runtime_error("Method not found."s);
         }
         auto *p_method = cls_.GetMethod(method);
         Closure locals;
@@ -104,14 +104,14 @@ namespace runtime {
         return p_method->body->Execute(locals, context);
     }
 
-    Class::Class(std::string name, std::vector<Method> methods, const Class *parent)
-            : name_(std::move(name)), methods_(std::move(methods)), parent_(parent) {
+    Class::Class(string name, vector<Method> methods, const Class *parent)
+            : name_(move(name)), methods_(move(methods)), parent_(parent) {
         for (size_t i = 0; i < methods_.size(); ++i) {
             methods_by_name_[methods_.at(i).name] = i;
         }
     }
 
-    const Method *Class::GetMethod(const std::string &name) const {
+    const Method *Class::GetMethod(const string &name) const {
         if (methods_by_name_.count(name)) {
             return &methods_.at(methods_by_name_.at(name));
         } else if (parent_) {
@@ -120,7 +120,7 @@ namespace runtime {
         return nullptr;
     }
 
-    [[nodiscard]] const std::string &Class::GetName() const {   // inline ?
+    [[nodiscard]] const string &Class::GetName() const {   // inline ?
         return name_;
     }
 
@@ -128,7 +128,7 @@ namespace runtime {
         os << "Class "sv << name_;
     }
  
-    void Bool::Print(std::ostream &os, [[maybe_unused]] Context &context) {
+    void Bool::Print(ostream &os, [[maybe_unused]] Context &context) {
         os << (GetValue() ? "True"sv : "False"sv);
     }
 
@@ -149,7 +149,7 @@ namespace runtime {
         if (!lhs.operator bool() && !rhs.operator bool()) {
             return true;
         }
-        throw std::runtime_error("Cannot compare objects for equality"s);
+        throw runtime_error("Cannot compare objects for equality"s);
     }
 
     bool Less(const ObjectHolder &lhs, const ObjectHolder &rhs, Context &context) {
@@ -166,7 +166,7 @@ namespace runtime {
         if (lhs.TryAs<ClassInstance>() && lhs.TryAs<ClassInstance>()->HasMethod(LT_METHOD, 1)) {
             return lhs.TryAs<ClassInstance>()->Call(LT_METHOD, {rhs}, context).TryAs<Bool>()->GetValue();
         }
-        throw std::runtime_error("Cannot compare objects for less"s);
+        throw runtime_error("Cannot compare objects for less"s);
     }
 
     bool NotEqual(const ObjectHolder &lhs, const ObjectHolder &rhs, Context &context) {
