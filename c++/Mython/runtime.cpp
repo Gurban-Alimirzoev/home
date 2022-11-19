@@ -8,10 +8,6 @@ using namespace std;
 
 namespace runtime {
 
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //  ObjectHolder
-
     ObjectHolder::ObjectHolder(std::shared_ptr<Object> data)
             : data_(std::move(data)) {
     }
@@ -67,14 +63,8 @@ namespace runtime {
         return true;
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //  ClassInstance
-
     ClassInstance::ClassInstance(const Class &cls)
             : cls_(cls) {
-        //self_ = std::shared_ptr<ClassInstance>(this, [](auto * /*p*/) { /* do nothing */ });
-        //p_locals_ = new Closure {};
     }
 
     void ClassInstance::Print(std::ostream &os, Context &context) {
@@ -108,16 +98,11 @@ namespace runtime {
         auto *p_method = cls_.GetMethod(method);
         Closure locals;
         locals["self"s] = ObjectHolder::Share(*this);
-        //locals["self"s] = ObjectHolder::Share(*self_);
         for (size_t i = 0; i < p_method->formal_params.size(); ++i) {
             locals[p_method->formal_params.at(i)] = actual_args.at(i);
         }
         return p_method->body->Execute(locals, context);
     }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //  Class
 
     Class::Class(std::string name, std::vector<Method> methods, const Class *parent)
             : name_(std::move(name)), methods_(std::move(methods)), parent_(parent) {
@@ -142,18 +127,10 @@ namespace runtime {
     void Class::Print(ostream &os, [[maybe_unused]] Context &context) {
         os << "Class "sv << name_;
     }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //  Bool
-
+ 
     void Bool::Print(std::ostream &os, [[maybe_unused]] Context &context) {
         os << (GetValue() ? "True"sv : "False"sv);
     }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //
-    //  Globals
 
     bool Equal(const ObjectHolder &lhs, const ObjectHolder &rhs, Context &context) {
         if (lhs.TryAs<Bool>() && rhs.TryAs<Bool>()) {
