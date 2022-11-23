@@ -49,10 +49,15 @@ string Position::ToString() const
 }
 
 Position Position::FromString(string_view str) 
-{
-	
+{	
+	bool col = false;
+	bool row = false;
+	Position pos;
 	for (char c : str)
 	{
-
+		if (c > '@' && c < '[' && !row)
+		{
+			pos.col += c - '@';
+		}
 	}
 }
