@@ -68,18 +68,30 @@ Position Position::FromString(string_view str)
 	{
 		pos.col += (first_word - '@') * number_of_english_words * number_of_english_words;
 	}
+	else
+	{
+		return NONE;
+	}
 	if (IsWord(second_word))
 	{
 		pos.col += (second_word - '@') * number_of_english_words;
 	}
+	else
+	{
+		return NONE;
+	}
 	if (IsWord(thrid_word))
 	{
 		pos.col += thrid_word - '@' - 1;
+	}
+	else
+	{
+		return NONE;
 	}
 
 	//pos.row = stoi(str.substr(3));
 	str = str.substr(3);
 	from_chars(str.begin(), str.end(), pos.row);
 
-	return pos;
+	return pos.IsValid() ? pos : NONE;
 }
