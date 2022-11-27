@@ -34,7 +34,7 @@ public:
 
 	CellInterface::Value GetValue() override
 	{
-		if (expression_[0] == '\'')
+		if (expression_[0] == ESCAPE_SIGN)
 		{
 			return expression_.substr(1);
 		}
@@ -68,11 +68,11 @@ private:
 // Реализуйте следующие методы
 
 Cell::~Cell() {
-	Clear();
+	impl_.release();
 }
 
 void Cell::Set(std::string text) {
-	if (text[0] == '=' && text.size() > 1)
+	if (text[0] == FORMULA_SIGN && text.size() > 1)
 	{
 		impl_ = std::make_unique<FormulaImpl>(std::move(text.substr(1)));
 	}
