@@ -2,10 +2,7 @@
 
 #include <cctype>
 #include <sstream>
-#include <charconv>
-#include <cmath>
-#include <vector>
-//using namespace std;
+#include <algorithm>
 
 const int LETTERS = 26;
 const int MAX_POSITION_LENGTH = 17;
@@ -13,125 +10,69 @@ const int MAX_POS_LETTER_COUNT = 3;
 
 const Position Position::NONE = { -1, -1 };
 
-bool IsWord(char c)
-{
-	return c > '@' && c < '[';
+bool Position::operator==(const Position rhs) const {
+    return row == rhs.row && col == rhs.col;
 }
 
-bool IsNumber(char c)
-{
-	return c > '/' && c < ':';
+bool Position::operator<(const Position rhs) const {
+    return std::tie(row, col) < std::tie(rhs.row, rhs.col);
 }
 
-void ConvertNumberToColFormat(int& col, std::string& result)
-{
-	/*if (col >= LETTERS)
-	{
-		int base_word = col / LETTERS;
-		ConvertNumberToColFormat(base_word, result);
-		col %= LETTERS;
-		result += char(base_word + '@');
-		//ConvertNumberToColFormat(col, result);
-	}*/
-
-	while (col >= LETTERS)
-	{
-		int base_word = col / LETTERS;
-
-		if (base_word > LETTERS)
-		{
-			int cur_word = base_word / LETTERS;
-			base_word %= LETTERS;
-			result += char(cur_word + '@');
-		}
-
-		col %= LETTERS;
-		result += char(base_word + '@');
-	}
+bool Position::IsValid() const {
+    return row >= 0 && col >= 0 && row < MAX_ROWS&& col < MAX_COLS;
 }
 
-// Реализуйте методы:
-bool Position::operator==(const Position rhs) const
-{
-	return this->row == rhs.row && this->col == rhs.col;
+std::string Position::ToString() const {
+    if (!IsValid()) {
+        return "";
+    }
+
+    std::string result;
+    result.reserve(MAX_POSITION_LENGTH);
+    int c = col;
+    while (c >= 0) {
+        result.insert(result.begin(), 'A' + c % LETTERS);
+        c = c / LETTERS - 1;
+    }
+
+    result += std::to_string(row + 1);
+
+    return result;
 }
 
-bool Position::operator<(const Position rhs) const
-{
-	return this->row * this->col < rhs.row * rhs.col;
+Position Position::FromString(std::string_view str) {
+    auto it = std::find_if(str.begin(), str.end(), [](const char c) {
+        return !(std::isalpha(c) && std::isupper(c));
+        });
+    auto letters = str.substr(0, it - str.begin());
+    auto digits = str.substr(it - str.begin());
+
+    if (letters.empty() || digits.empty()) {
+        return Position::NONE;
+    }
+    if (letters.size() > MAX_POS_LETTER_COUNT) {
+        return Position::NONE;
+    }
+
+    if (!std::isdigit(digits[0])) {
+        return Position::NONE;
+    }
+
+    int row;
+    std::istringstream row_in{ std::string{digits} };
+    if (!(row_in >> row) || !row_in.eof()) {
+        return Position::NONE;
+    }
+
+    int col = 0;
+    for (char ch : letters) {
+        col *= LETTERS;
+        col += ch - 'A' + 1;
+    }
+
+    return { row - 1, col - 1 };
 }
 
-bool Position::IsValid() const
-{
-	return this->row < MAX_ROWS && this->row >= 0 && this->col < MAX_COLS && this->col >= 0;
-}
-
-std::string Position::ToString() const
-{
-	if (!IsValid())
-	{
-		return{};
-	}
-
-	std::string result;
-	int first_word = (this->col);
-
-	ConvertNumberToColFormat(first_word, result);
-
-	result += char(first_word + 'A');
-	result += std::to_string(this->row + 1);
-	return result;
-}
-
-Position Position::FromString(std::string_view str)
-{
-	Position pos;
-	std::vector<int> cols;
-
-	if (str.size() < 2)
-	{
-		return NONE;
-	}
-
-	int number_of_word = 0;
-	for (char c : str)
-	{
-		if (IsWord(c) && number_of_word < MAX_POS_LETTER_COUNT)
-		{
-			cols.push_back(c - '@');
-			number_of_word++;
-		}
-		else if (IsWord(c) && number_of_word == MAX_POS_LETTER_COUNT)
-		{
-			return NONE;
-		}
-		else if (!IsNumber(c))
-		{
-			return NONE;
-		}
-		else if (IsNumber(c))
-		{
-			break;
-		}
-
-	}
-
-	for (int col : cols)
-	{
-		pos.col += col * std::pow(LETTERS, --number_of_word);
-	}
-	pos.col--;
-	str = str.substr(cols.size());
-
-	for (char c : str)
-	{
-		if (!IsNumber(c))
-		{
-			return NONE;
-		}
-	}
-
-	auto [ptr, ec] {std::from_chars(str.data(), str.data() + str.size(), pos.row)};
-	pos.row--;
-	return pos.IsValid() && ec == std::errc() ? pos : NONE;
+bool Size::operator==(Size rhs) const {
+    return cols == rhs.cols && rows == rhs.rows;
 }
