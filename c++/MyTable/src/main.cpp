@@ -102,6 +102,27 @@ namespace {
         sheet->ClearCell("B2"_pos);
         ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{ 2, 1 }));
     }
+    void TestHand()
+    {
+        auto sheet = CreateSheet();
+        sheet->SetCell("A1"_pos, "=(1+2)*3");
+        sheet->SetCell("A2"_pos, "some");
+        sheet->SetCell("B1"_pos, "=1+(2*3)");
+        sheet->SetCell("B2"_pos, "text");
+        sheet->SetCell("B5"_pos, "=1/0");
+        sheet->SetCell("C2"_pos, "here");
+        sheet->SetCell("C3"_pos, "'and");
+        sheet->SetCell("D3"_pos, "'here");
+
+        ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{ 4, 5 }));
+
+        //std::ostringstream texts;
+        //sheet->PrintTexts(texts);
+        //ASSERT_EQUAL(texts.str(), "=(1+2)*3");
+
+        std::ostringstream values;
+        sheet->PrintValues(values);
+    }
 
 }  // namespace
 
@@ -112,5 +133,6 @@ int main() {
     RUN_TEST(tr, TestSetCellPlainText);
     RUN_TEST(tr, TestClearCell);
     RUN_TEST(tr, TestPrint);
+    RUN_TEST(tr, TestHand);
     return 0;
 }

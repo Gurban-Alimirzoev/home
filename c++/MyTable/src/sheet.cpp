@@ -59,13 +59,6 @@ void Sheet::SetCell(Position pos, string text) {
 		all_pos.insert(pos);
 		//cells_in_row.insert({ pos, move(cell) });
 	}
-
-
-	/*shared_ptr<CellInterface> cell = make_unique<Cell>();
-	cell->Set(text);
-	pos_and_cells.insert({ pos, cell });
-	cells_and_pos.insert({ cell, pos });
-	cells_in_row.insert({ pos, cell });*/
 }
 
 void Sheet::ReplaceCell(Position pos, string text)
@@ -73,12 +66,16 @@ void Sheet::ReplaceCell(Position pos, string text)
 	pos_and_cells[pos]->Set(text);
 }
 const CellInterface* Sheet::GetCell(Position pos) const {
+	if (!pos.IsValid())
+		throw InvalidPositionException("");
 	auto iter = pos_and_cells.find(pos);
 	if (iter == pos_and_cells.end())
 		return nullptr;
 	return iter->second.get();
 }
 CellInterface* Sheet::GetCell(Position pos) {
+	if (!pos.IsValid())
+		throw InvalidPositionException("");
 	auto iter = pos_and_cells.find(pos);
 	if (iter == pos_and_cells.end())
 		return nullptr;
@@ -86,6 +83,8 @@ CellInterface* Sheet::GetCell(Position pos) {
 }
 
 void Sheet::ClearCell(Position pos) {
+	if (!pos.IsValid())
+		throw InvalidPositionException("");
 	auto iter = pos_and_cells.find(pos);
 	if (iter != pos_and_cells.end())
 	{
@@ -98,13 +97,14 @@ void Sheet::ClearCell(Position pos) {
 Size Sheet::GetPrintableSize() const {
 	if (all_pos.empty())
 		return Size();
-	auto max_pos = *max_element(all_pos.begin(), all_pos.end(),
-		[](const Position& p1,
-			const Position& p2)
-		{
-			return p1 < p2;
-		});;
-	return { max_pos.row + 1, max_pos.col + 1 };
+	int max_row = 0;
+	int max_col = 0;
+	for (auto pos : all_pos)
+	{
+		max_row = max_row > pos.row ? max_row : pos.row;
+		max_col = max_col > pos.col ? max_col : pos.col;
+	}
+	return { max_col + 1, max_row + 1 };
 }
 
 void Sheet::PrintValues(ostream& output) const {
