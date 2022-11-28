@@ -35,11 +35,6 @@ bool Comp(const Position& p1, const Position& p2)
 }
 
 Sheet::~Sheet() {
-	/*int map_size = static_cast<int>(pos_and_cells.size());
-	for (int i= 0; i < map_size; i++)
-	{
-		ClearCell(pos_and_cells[i]);
-	}*/
 }
 
 void Sheet::SetCell(Position pos, string text) {
@@ -56,7 +51,6 @@ void Sheet::SetCell(Position pos, string text) {
 		cell->Set(text);
 		pos_and_cells.insert({ pos, move(cell) });
 		all_pos.insert(pos);
-		//cells_in_row.insert({ pos, move(cell) });
 	}
 }
 
