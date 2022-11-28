@@ -47,5 +47,9 @@ private:
     std::set<Position> all_pos;
  
     void ReplaceCell(Position pos, std::string text);
-    bool CheckPos(Position pos);
+    void StepInSheet(Position& current_pos,const Position& next_pos,const Position& max_position, std::ostream& output) const;
+    void LastStepInSheet(Position& current_pos, Position& max_position, std::ostream& output) const;
+    void PrintT(std::ostream& output) const;
+    void PrintN(std::ostream& output) const;
 };
+

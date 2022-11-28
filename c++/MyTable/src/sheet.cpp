@@ -35,13 +35,15 @@ bool Comp(const Position& p1, const Position& p2)
 }
 
 Sheet::~Sheet() {
+
 }
 
 void Sheet::SetCell(Position pos, string text) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
 
-	if (!CheckPosition(pos))
+	auto iter = pos_and_cells.find(pos);
+	if (iter != pos_and_cells.end())
 	{
 		ReplaceCell(pos, text);
 	}
@@ -58,19 +60,19 @@ void Sheet::ReplaceCell(Position pos, string text)
 {
 	pos_and_cells[pos]->Set(text);
 }
-
 const CellInterface* Sheet::GetCell(Position pos) const {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
-	if (CheckPosition(pos))
+	auto iter = pos_and_cells.find(pos);
+	if (iter == pos_and_cells.end())
 		return nullptr;
 	return iter->second.get();
 }
-
 CellInterface* Sheet::GetCell(Position pos) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
-	if (CheckPosition(pos))
+	auto iter = pos_and_cells.find(pos);
+	if (iter == pos_and_cells.end())
 		return nullptr;
 	return iter->second.get();
 }
@@ -79,12 +81,13 @@ void Sheet::ClearCell(Position pos) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
 
-	if (!CheckPosition(pos))
+	auto iter = pos_and_cells.find(pos);
+	if (iter != pos_and_cells.end())
 	{
 		all_pos.erase(find(all_pos.begin(), all_pos.end(), pos));
-		pos_and_cells[pos]->~CellInterface();
-		pos_and_cells.erase(pos);
+		pos_and_cells.erase(iter);
 	}
+
 }
 
 Size Sheet::GetPrintableSize() const {
@@ -97,48 +100,83 @@ Size Sheet::GetPrintableSize() const {
 		max_row = max_row > pos.row ? max_row : pos.row;
 		max_col = max_col > pos.col ? max_col : pos.col;
 	}
-	return { max_col + 1, max_row + 1 };
+	return { max_row + 1, max_col + 1 };
 }
 
 void Sheet::PrintValues(ostream& output) const {
-	int number_row = 1;
-	int cells_row = static_cast<int>(pos_and_cells.size());
-	int check = 0;
+	if (all_pos.empty())
+		return;
+	Position current_pos;
+	auto [max_r, max_c] = GetPrintableSize();
+	Position max_position({ max_r, max_c });
 
 	for (const auto& pos : all_pos)
 	{
-		if (number_row <= pos.row)
-		{
-			for (; number_row <= pos.row; number_row++) {}
-			output << '\n';
-		}
+		StepInSheet(current_pos, pos, max_position, output);
 
 		ostringstream strm;
 		visit(OstreamValuePrinter{ strm }, pos_and_cells.at(pos)->GetValue());
-		output << strm.str() << ((++check < cells_row) ? '\t' : '\n');
+		output << strm.str();
 	}
+	LastStepInSheet(current_pos, max_position, output);
 }
-void Sheet::PrintTexts(ostream& output) const {
-	int number_row = 1;
-	int cells_row = static_cast<int>(pos_and_cells.size());
-	int check = 0;
 
+void Sheet::PrintTexts(ostream& output) const {
+	if (all_pos.empty())
+		return;
+	Position current_pos;
+	auto [max_r, max_c] = GetPrintableSize();
+	Position max_position({ max_r, max_c});
 	for (const auto& pos : all_pos)
 	{
-		if (number_row <= pos.row)
-		{
-			for (; number_row <= pos.row; number_row++) {}
-			output << '\n';
-		}
-		output << pos_and_cells.at(pos)->GetText() << ((++check < cells_row) ? '\t' : '\n');
+		StepInSheet(current_pos, pos, max_position, output);
+		output << pos_and_cells.at(pos)->GetText();
 	}
+	LastStepInSheet(current_pos, max_position, output);
+}
+
+void Sheet::StepInSheet(Position& current_pos,const Position& next_pos,const Position& max_position, std::ostream& output) const
+{
+	if (current_pos.row != next_pos.row)
+	{
+		if (current_pos.col + 1 != max_position.col)
+		{
+			PrintT(output);
+		}
+		for (; current_pos.row != next_pos.row; current_pos.row++) {
+			PrintN(output);
+		}
+		current_pos.col = 0;
+	}
+
+	if (current_pos.col != next_pos.col)
+	{
+		for (; current_pos.col != next_pos.col; current_pos.col++)
+		{
+			PrintT(output);
+		}
+	}
+}
+
+void Sheet::LastStepInSheet(Position& current_pos, Position& max_position, std::ostream& output) const
+{
+	if (current_pos.col + 1 != max_position.col)
+	{
+		PrintT(output);
+	}
+	PrintN(output);
+}
+
+void Sheet::PrintT(ostream& output) const
+{
+	output << '\t';
+}
+
+void Sheet::PrintN(ostream& output) const
+{
+	output << '\n';
 }
 
 unique_ptr<SheetInterface> CreateSheet() {
 	return make_unique<Sheet>();
-}
-
-bool CheckPosition(Position pos)
-{
-	return (pos_and_cells.find(pos) == pos_and_cells.end());
 }

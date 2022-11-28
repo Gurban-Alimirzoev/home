@@ -113,15 +113,18 @@ namespace {
         sheet->SetCell("C2"_pos, "here");
         sheet->SetCell("C3"_pos, "'and");
         sheet->SetCell("D3"_pos, "'here");
-
-        ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{ 4, 5 }));
-
-        //std::ostringstream texts;
-        //sheet->PrintTexts(texts);
-        //ASSERT_EQUAL(texts.str(), "=(1+2)*3");
+        
+        ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{ 5, 4 }));
 
         std::ostringstream values;
         sheet->PrintValues(values);
+        ASSERT_EQUAL(values.str(), "9\t7\t\nsome\ttext\there\t\n\t\tand\there\n\n\t#DIV/0!\t\n");
+
+        sheet->ClearCell("D3"_pos);
+        ASSERT_EQUAL(sheet->GetPrintableSize(), (Size{ 5, 3 }));
+        std::ostringstream values_del;
+        sheet->PrintValues(values_del);
+        //ASSERT_EQUAL(values.str(), "9\t7\t\nsome\ttext\there\t\n\t\tand\there\n\n\t#DIV/0!\t\n");
     }
 
 }  // namespace
