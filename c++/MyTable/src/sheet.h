@@ -42,14 +42,17 @@ public:
     void PrintValues(std::ostream& output) const override;
     void PrintTexts(std::ostream& output) const override;
 
-    // Можете дополнить ваш класс нужными полями и методами
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 
     void ReplaceCell(Position pos, std::string text);
+
 
 private:
     std::unordered_map<Position, std::unique_ptr<CellInterface>, PosHasher> pos_and_cells;
     std::set<Position> all_pos;
     //std::vector<std::vector< std::unique_ptr<CellInterface>>> pos_and_cells;
     //std::map<Position, std::unique_ptr<CellInterface>> cells_in_row;
-    // Можете дополнить ваш класс нужными полями и методами
+    // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+
+    bool CheckPos(Position pos);
 };

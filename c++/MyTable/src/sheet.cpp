@@ -46,8 +46,7 @@ void Sheet::SetCell(Position pos, string text) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
 
-	auto iter = pos_and_cells.find(pos);
-	if (iter != pos_and_cells.end())
+	if (!CheckPosition(pos))
 	{
 		ReplaceCell(pos, text);
 	}
@@ -65,19 +64,19 @@ void Sheet::ReplaceCell(Position pos, string text)
 {
 	pos_and_cells[pos]->Set(text);
 }
+
 const CellInterface* Sheet::GetCell(Position pos) const {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
-	auto iter = pos_and_cells.find(pos);
-	if (iter == pos_and_cells.end())
+	if (CheckPosition(pos))
 		return nullptr;
 	return iter->second.get();
 }
+
 CellInterface* Sheet::GetCell(Position pos) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
-	auto iter = pos_and_cells.find(pos);
-	if (iter == pos_and_cells.end())
+	if (CheckPosition(pos))
 		return nullptr;
 	return iter->second.get();
 }
@@ -85,8 +84,8 @@ CellInterface* Sheet::GetCell(Position pos) {
 void Sheet::ClearCell(Position pos) {
 	if (!pos.IsValid())
 		throw InvalidPositionException("");
-	auto iter = pos_and_cells.find(pos);
-	if (iter != pos_and_cells.end())
+
+	if (!CheckPosition(pos))
 	{
 		all_pos.erase(find(all_pos.begin(), all_pos.end(), pos));
 		pos_and_cells[pos]->~CellInterface();
@@ -143,4 +142,9 @@ void Sheet::PrintTexts(ostream& output) const {
 
 unique_ptr<SheetInterface> CreateSheet() {
 	return make_unique<Sheet>();
+}
+
+bool CheckPosition(Position pos)
+{
+	return (pos_and_cells.find(pos) == pos_and_cells.end());
 }
