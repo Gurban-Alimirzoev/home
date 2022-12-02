@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <optional>
+#include <set>
 
 class PosHasher {
 public:
