@@ -14,36 +14,37 @@ std::ostream& operator<<(std::ostream& output, FormulaError fe) {
 }
 
 namespace {
-    class Formula : public FormulaInterface {
-    public:
-        // Ðåàëèçóéòå ñëåäóþùèå ìåòîäû:
-        explicit Formula(std::string expression)
-            : ast_(ParseFormulaAST(expression))
-        {
+class Formula : public FormulaInterface {
+public:
+// Ð ÐµÐ°Ð»Ð¸Ð·ÑƒÐ¹Ñ‚Ðµ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ðµ Ð¼ÐµÑ‚Ð¾Ð´Ñ‹:
+    explicit Formula(std::string expression)
+        : ast_(ParseFormulaAST(std::move(expression)))
+    {}
+
+    Value Evaluate(const SheetInterface& sheet) const override  { // TODO
+        try {
+            return ast_.Execute(sheet);
+        } catch (const FormulaError& exc) {
+            return exc;
         }
+    }
 
-        Value Evaluate() const override
-        {
-            try
-            {
-                return ast_.Execute();
-            }
-            catch (const FormulaError& fe) {
-                return fe;
-            }
-        }
+    std::string GetExpression() const override {
+        std::stringstream ss;
+        ast_.PrintFormula(ss);
+        return ss.str();
+    }
 
+    std::vector<Position> GetReferencedCells() const override {
+        std::vector<Position> result = {ast_.GetCells().begin(), ast_.GetCells().end()};
+        auto new_end = std::unique(result.begin(), result.end());
+        result.erase(new_end, result.end());
+        return result;
+    }
 
-        std::string GetExpression() const override
-        {
-            std::stringstream out;
-            ast_.PrintFormula(out);
-            return out.str();
-        }
-
-    private:
-        FormulaAST ast_;
-    };
+private:
+    FormulaAST ast_;
+};
 }  // namespace
 
 std::unique_ptr<FormulaInterface> ParseFormula(std::string expression) {

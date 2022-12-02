@@ -8,6 +8,32 @@ const int LETTERS = 26;
 const int MAX_POSITION_LENGTH = 17;
 const int MAX_POS_LETTER_COUNT = 3;
 
+namespace {
+    using namespace std::literals;
+    const std::string uppercase_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"s;
+    const std::string digits = "0123456789"s;
+    bool IsValidSV(std::string_view cell_sv) {
+        bool contains_only_admissible_symbols = cell_sv.find_first_not_of(uppercase_alphabet + digits) == cell_sv.npos;
+        bool contains_uppercase_letters = cell_sv.find_first_not_of(uppercase_alphabet) != cell_sv.npos;
+        bool contains_digits = cell_sv.find_first_not_of(digits) != cell_sv.npos;
+        bool letters_first = cell_sv.find_last_of(uppercase_alphabet) < cell_sv.find_first_of(digits);
+
+        return
+            contains_only_admissible_symbols &&
+            contains_uppercase_letters &&
+            contains_digits &&
+            letters_first;
+    }
+
+    std::string_view GetRowSV(std::string_view cell_sv) {
+        return cell_sv.substr(cell_sv.find_first_of(digits));
+    }
+
+    std::string_view GetColSV(std::string_view cell_sv) {
+        return cell_sv.substr(0, cell_sv.find_first_of(digits));
+    }
+}
+
 const Position Position::NONE = { -1, -1 };
 
 bool Position::operator==(const Position rhs) const {
@@ -41,28 +67,12 @@ std::string Position::ToString() const {
 }
 
 Position Position::FromString(std::string_view str) {
-    auto it = std::find_if(str.begin(), str.end(), [](const char c) {
-        return !(std::isalpha(c) && std::isupper(c));
-        });
-    auto letters = str.substr(0, it - str.begin());
-    auto digits = str.substr(it - str.begin());
-
-    if (letters.empty() || digits.empty()) {
-        return Position::NONE;
-    }
-    if (letters.size() > MAX_POS_LETTER_COUNT) {
+    if (!IsValidSV(str)) {
         return Position::NONE;
     }
 
-    if (!std::isdigit(digits[0])) {
-        return Position::NONE;
-    }
-
-    int row;
-    std::istringstream row_in{ std::string{digits} };
-    if (!(row_in >> row) || !row_in.eof()) {
-        return Position::NONE;
-    }
+    auto letters = GetColSV(str);
+    auto digits = GetRowSV(str);
 
     int col = 0;
     for (char ch : letters) {
@@ -70,9 +80,45 @@ Position Position::FromString(std::string_view str) {
         col += ch - 'A' + 1;
     }
 
-    return { row - 1, col - 1 };
+    int row;
+    try {
+        row = std::stoi(std::string(digits));
+    }
+    catch (...) {
+        return Position::NONE;
+    }
+
+    Position result = { row - 1, col - 1 };
+    if (!result.IsValid()) {
+        return Position::NONE;
+    }
+    return result;
 }
 
 bool Size::operator==(Size rhs) const {
     return cols == rhs.cols && rows == rhs.rows;
+}
+
+FormulaError::FormulaError(Category category)
+    : category_(category)
+{}
+
+FormulaError::Category FormulaError::GetCategory() const {
+    return category_;
+}
+
+bool FormulaError::operator==(FormulaError rhs) const {
+    return category_ == rhs.category_;
+}
+
+std::string_view FormulaError::ToString() const {
+    if (category_ == Category::Ref) {
+        return "#REF!";
+    }
+    else if (category_ == Category::Value) {
+        return "#VALUE!";
+    }
+    else {
+        return "#DIV/0!";
+    }
 }

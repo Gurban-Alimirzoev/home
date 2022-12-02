@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iosfwd>
 #include <memory>
 #include <stdexcept>
@@ -24,6 +26,12 @@ struct Position {
     static const Position NONE;
 };
 
+struct PositionHasher {
+    size_t operator() (const Position& pos) const {
+        return std::hash<int>{}(pos.row) + 13 * std::hash<int>{}(pos.col);
+    }
+};
+
 struct Size {
     int rows = 0;
     int cols = 0;
@@ -41,11 +49,8 @@ public:
     };
 
     FormulaError(Category category);
-
     Category GetCategory() const;
-
     bool operator==(FormulaError rhs) const;
-
     std::string_view ToString() const;
 
 private:
@@ -90,6 +95,7 @@ public:
     // редактирование. В случае текстовой ячейки это её текст (возможно,
     // содержащий экранирующие символы). В случае формулы - её выражение.
     virtual std::string GetText() const = 0;
+    virtual void InvalidateCache() = 0;
 
     // Возвращает список ячеек, которые непосредственно задействованы в данной
     // формуле. Список отсортирован по возрастанию и не содержит повторяющихся
@@ -118,7 +124,7 @@ public:
     // * Если текст начинается с символа "'" (апостроф), то при выводе значения
     // ячейки методом GetValue() он опускается. Можно использовать, если нужно
     // начать текст со знака "=", но чтобы он не интерпретировался как формула.
-    virtual void SetCell(Position pos, std::string text) = 0;
+    virtual void SetCell(Position pos, const std::string& text) = 0;
 
     // Возвращает значение ячейки.
     // Если ячейка пуста, может вернуть nullptr.
@@ -144,4 +150,4 @@ public:
 };
 
 // Создаёт готовую к работе пустую таблицу.
-//std::unique_ptr<SheetInterface> CreateSheet();
+std::unique_ptr<SheetInterface> CreateSheet();

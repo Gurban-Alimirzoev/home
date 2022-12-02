@@ -1,37 +1,20 @@
 #pragma once
 
-#include "cell.h"
-#include "common.h"
-
-#include <algorithm>
 #include <functional>
-#include <iostream>
-#include <optional>
-#include <set>
+#include <vector>
+#include <map>
+#include <unordered_map>
+#include <unordered_set>
 
-class PosHasher {
-public:
-    size_t operator()(const Position pos) const
-    {
-        return pos_hasher(pos.row) + pos_hasher(pos.col) * 11;
-    }
-    std::hash<int> pos_hasher;
-};
-
-/*class PtrHasher {
-public:
-    size_t operator()(const std::shared_ptr<CellInterface> cell) const
-    {
-        return shared_ptr_hasher(cell);
-    }
-    std::hash<std::shared_ptr<CellInterface>> shared_ptr_hasher;
-};*/
+#include "common.h"
+#include "cell.h"
 
 class Sheet : public SheetInterface {
 public:
-    ~Sheet();
+    Sheet() = default;
+    ~Sheet() = default;
 
-    void SetCell(Position pos, std::string text) override;
+    void SetCell(Position pos, const std::string& text) override;
 
     const CellInterface* GetCell(Position pos) const override;
     CellInterface* GetCell(Position pos) override;
@@ -44,13 +27,26 @@ public:
     void PrintTexts(std::ostream& output) const override;
 
 private:
-    std::unordered_map<Position, std::unique_ptr<CellInterface>, PosHasher> pos_and_cells;
-    std::set<Position> all_pos;
- 
-    void ReplaceCell(Position pos, std::string text);
-    void StepInSheet(Position& current_pos,const Position& next_pos,const Position& max_position, std::ostream& output) const;
-    void LastStepInSheet(Position& current_pos, Position& max_position, std::ostream& output) const;
-    void PrintT(std::ostream& output) const;
-    void PrintN(std::ostream& output) const;
+	std::vector<std::vector<Cell>> sheet_;
+    std::map<int, int> row_to_cell_count_;
+    std::map<int, int> col_to_cell_count_; 
+
+    // Структура: ключ - позиция некоторой формульной ячейки,
+    // значение - множество ячеек, непосредственно зависящих от данной.
+    std::unordered_map<Position, std::unordered_set<Position, PositionHasher>, PositionHasher> dependencies_;
+
+    void ResizeSheetIfNeeded(Position new_cell_pos);
+    void AdjustMapsAfterErasing(Position erased_pos);
+    void ResizeNewlyCreatedRows(size_t old_size);
+    void ProcessCellSetting(Position pos, std::string text);
+    bool CheckPositionCorrectness(Position pos) const;
+    // Возвращает true, если формульная ячейка на позиции new_cell_pos
+    // содержит циклические зависимости.
+    // Метод SetCell на основании результата работы этого метода будет
+    // либо выбрасывать исключение CircularDependencyException,
+    // либо продолжать работу
+    bool IsCircularDependent(Position new_cell_pos, Position initial_pos);
+    void InvalidateCache(Position pos);
 };
 
+std::ostream& operator<<(std::ostream& output, const CellInterface::Value& value);
