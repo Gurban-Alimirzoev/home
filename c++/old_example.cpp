@@ -3,44 +3,49 @@
 #include <iostream>
 #include <algorithm>
 
-std::vector<int> Example(std::vector<int> numbers)
+using std::cin;
+
+bool CheckNumber(int& number)
 {
+	return number > 0;
+}
+
+void CinNumber(int& number, int& int_)
+{
+	if (CheckNumber(number))
+	{
+		cin >> int_;
+		number--;
+	}
+}
+
+void Example(int& number, std::vector<int>& numbers)
+{	
+	int prev = 0;
+	int cur = 0;
+	CinNumber(number, prev);
+	while (CheckNumber(number))
+	{
+		CinNumber(number, cur);
+		if (prev ^ cur)
+		{
+			numbers.push_back(prev);
+		}
+		prev = cur;
+	}
+
+	if (!numbers.empty() && numbers.back() != prev)
+	{
+		numbers.push_back(prev);
+	}
 }
 
 int main()
 {
 	int number = 0;
-	std::cin >> number;
-	int prev = 0;
-	int cur = 0;
-	std::cin >> prev >> cur;
-	number -= 2;
+	cin >> number;
 	std::vector<int> result;
-	while (number >= 0)
-	{
-		if (prev ^ cur)
-		{
-			result.push_back(prev);
-			prev = cur;
-		}
-		else
-		{
-			if (--number < 0)
-			{
-				break;
-			}
-			std::cin >> prev;
-		}
-		if (--number < 0)
-		{
-			break;
-		}
-		std::cin >> cur;
-	}
-	if (result.back() != prev)
-	{
-		result.push_back(prev);
-	}
+	Example(number, result);
 	for (auto c : result)
 	{
 		std::cout << c << std::endl;
