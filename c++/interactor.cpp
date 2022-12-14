@@ -7,7 +7,7 @@
 using std::cin;
 using std::cout;
 
-bool Interactor(int result_code = 0,
+int Interactor(int result_code = 0,
 	int interactor_code = 0,
 	int checker_code = 0)
 {
