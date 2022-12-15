@@ -7,39 +7,30 @@
 using std::cin;
 using std::cout;
 
-bool Interactor(int result_code = 0,
-	int interactor_code = 0,
-	int checker_code = 0)
+struct Coordinates
 {
-	int result;
-	switch (interactor_code)
-	{
-		case 0 :
-			result = result_code != 0 ? 3 : checker_code;
-			break;
-		case 1 :
-			result = checker_code;
-			break;
-		case 4 :
-			result = result_code != 0 ? 3 : 4;
-			break;
-		case 6 :
-			result = 0;
-			break;
-		case 7 :
-			result = 1;
-			break;
-		default :
-			result = interactor_code;
-	}
-	return result;	
+	int32_t x = 0;
+	int32_t y = 0;
+};
+
+int32_t FindRoad(std::vector<Coordinates> cites, int32_t fule, int32_t start, int32_t finish)
+{
+	
 }
 
 int main()
 {
-	int result_code = 0;
-	int interactor_code = 0;
-	int checker_code = 0;
-	cin >> result_code >> interactor_code >> checker_code;
-	cout << Interactor(result_code, interactor_code, checker_code);
+	int32_t number_of_city;
+	cin >> number_of_city;
+	std::vector<Coordinates> cites(number_of_city);
+	Coordinates coor;
+	for(int32_t i = 0; i < number_of_city; i++)
+	{		
+		cin >> coor.x >> coor.y;
+		cites [i] = coor;
+	}
+	int32_t fule = 0;
+	int32_t start = 0;
+	int32_t finish = 0;
+	cout << FindRoad(cites, fule, start, finish);
 }
