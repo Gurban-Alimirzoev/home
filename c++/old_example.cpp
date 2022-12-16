@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
+#include <set>
 
 using std::cin;
 using std::cout;
@@ -11,6 +12,15 @@ struct Coordinates
 {
 	int32_t x = 0;
 	int32_t y = 0;
+};
+
+class Graph
+{
+	public:
+	void Get();
+
+	private:
+	std::set<Coordinates> nodes;
 };
 
 int32_t FindRoad(std::vector<Coordinates> cites, int32_t fule, int32_t start, int32_t finish)
