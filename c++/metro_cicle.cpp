@@ -15,7 +15,7 @@ int MetroCicle(int station_number = 0,
         return 0;
     if (station_number - finish == 0 && start == 1)
         return 0;
-	int result = finish - start < station_number - finish ? finish - start : station_number - finish;	
+	int result = finish - start < station_number - finish + start - 1? finish - start : station_number - finish + start - 1;	
 	return result;	
 }
 
