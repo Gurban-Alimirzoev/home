@@ -3,7 +3,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: cpp.exe",
-            "command": "C:\\MinGW\\bin\\c++.exe",
+            "command": "C:\\msys64\\mingw64\\bin\\c++.exe",
             "args": [
                 "-std=c++17",
                 "-fdiagnostics-color=always",
@@ -22,7 +22,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "компилятор: C:\\MinGW\\bin\\c++.exe"
+            "detail": "компилятор: C:\\msys64\\mingw64\\bin\\c++.exe"
         }
     ],
     "version": "2.0.0"

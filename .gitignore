@@ -5,3 +5,12 @@ cpp-search-server/search_server_VS/*
 cpp-search-server/ss_test/*
 c++/old_example/*
 *build*
+
+*
+!*/
+!.gitignore
+!.gitattributes
+!.gitmodules
+!CMakeLists.txt
+!*.cpp
+!*.hpp

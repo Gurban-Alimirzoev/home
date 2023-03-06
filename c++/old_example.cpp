@@ -23,7 +23,7 @@ std::optional<int32_t> CalcDistance(Coordinates start, Coordinates finish, int32
 
 int32_t FindRoad(std::vector<Coordinates> cites, int32_t fule, int32_t start, int32_t finish)
 {
-	
+	return 0;
 }
 
 int main()
