@@ -18,15 +18,6 @@ int Parser::ReadNumberOnLine(std::istream& input) {
 	return std::stoi(line);
 }
 
-int Parser::ConvertTimeToMinute(std::string& line)
-{
-	size_t colon = line.find(':');
-	int symbols_of_minute = 2;
-	int hours = std::stoi(line.substr(0, symbols_of_minute));
-	int minutes = std::stoi(line.substr(colon + 1, symbols_of_minute).data());
-	return hours * 60 + minutes;
-};
-
 std::pair<int, int> Parser::ParseWorkingTime(std::istream& input)
 {
 	std::string line, open_time, close_time;
@@ -35,17 +26,17 @@ std::pair<int, int> Parser::ParseWorkingTime(std::istream& input)
 	//int symbols_of_time = 5;
 	open_time = line.substr(0, symbols_of_time);
 	close_time = line.substr(space + 1, symbols_of_time);
-	return { ConvertTimeToMinute(open_time) , ConvertTimeToMinute(close_time) };
+	return { ConvertTimeToInt(open_time) , ConvertTimeToInt(close_time) };
 }
 
 Event Parser::ParseEvent(std::string line)
 {	
 	std::string time = line.substr(0, symbols_of_time);
-	line = line.substr(symbols_of_time + 1, line.size() - symbols_of_time);
-	size_t space = line.find(' ');
-	std::string event_id = line.substr(0, space);
-	std::string client_id = line.substr(space + symbols_of_word_client  + 1, line.size() - space);
-	return { ConvertTimeToMinute(time), std::stoi(event_id), std::stoi(client_id) };
+	std::string event_plus_client_id = line.substr(symbols_of_time + 1, line.size() - symbols_of_time);
+	size_t space = event_plus_client_id.find(' ');
+	std::string event_id = event_plus_client_id.substr(0, space);
+	std::string client_id = event_plus_client_id.substr(space + 1, event_plus_client_id.size() - space);
+	return { ConvertTimeToInt(time), std::stoi(event_id), client_id,  line };
 }
 
 void Parser::ParseEvents(std::istream& input)
