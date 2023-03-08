@@ -23,20 +23,35 @@ std::pair<int, int> Parser::ParseWorkingTime(std::istream& input)
 	std::string line, open_time, close_time;
 	std::getline(input, line);
 	size_t space = line.find(' ');
-	//int symbols_of_time = 5;
 	open_time = line.substr(0, symbols_of_time);
 	close_time = line.substr(space + 1, symbols_of_time);
 	return { ConvertTimeToInt(open_time) , ConvertTimeToInt(close_time) };
 }
 
-Event Parser::ParseEvent(std::string line)
+Event Parser::ParseEvent(std::string line_)
 {	
-	std::string time = line.substr(0, symbols_of_time);
-	std::string event_plus_client_id = line.substr(symbols_of_time + 1, line.size() - symbols_of_time);
-	size_t space = event_plus_client_id.find(' ');
-	std::string event_id = event_plus_client_id.substr(0, space);
-	std::string client_id = event_plus_client_id.substr(space + 1, event_plus_client_id.size() - space);
-	return { ConvertTimeToInt(time), std::stoi(event_id), client_id,  line };
+	std::string line = line_;
+
+	std::string time = ParseLine(line);
+	std::string event_id = ParseLine(line);
+	std::string client_id = ParseLine(line);
+
+	EventType event_type = EventType(std::stoi(event_id));
+	int table_number = 0;
+	if (event_type == EventType::ClientSatDown)
+	{
+		table_number = std::stoi(ParseLine(line));
+
+	}
+	return { ConvertTimeToInt(time), EventType(std::stoi(event_id)), client_id, table_number, line_ };
+}
+
+std::string ParseLine(std::string& line)
+{
+	size_t space = line.find(' ');
+	std::string result = line.substr(0, space);
+	line = line.substr(space + 1, line.size() - space);
+	return result;
 }
 
 void Parser::ParseEvents(std::istream& input)
@@ -49,46 +64,22 @@ void Parser::ParseEvents(std::istream& input)
 	}
 }
 
-bool Parser::ParseInputFile(std::ifstream& input)
+void Parser::ParseInputFile(std::ifstream& input)
 {
-	if (!CheckWord(input, "BEGIN CFG"))
-	{
-		return false;
-	}
-	if (!CheckWord(input, "BEGIN ROOM"))
-	{
-		return false;
-	}
+	CheckWord(input, "BEGIN CFG");
+	CheckWord(input, "BEGIN ROOM");
 	int rooms_number = ReadNumberOnLine(input);
-	if (!CheckWord(input, "END ROOM"))
-	{
-		return false;
-	}
-	if (!CheckWord(input, "BEGIN SCHEDULE"))
-	{
-		return false;
-	}
+	clubManager.SetRoomsNumber(rooms_number);
+	CheckWord(input, "END ROOM");
+	CheckWord(input, "BEGIN SCHEDULE");
 	auto [start, stop] = ParseWorkingTime(input);
-	if (!CheckWord(input, "END SCHEDULE"))
-	{
-		return false;
-	}
-	if (!CheckWord(input, "BEGIN PRICE"))
-	{
-		return false;
-	}
+	clubManager.SetWorkingTime({ start, stop });
+	CheckWord(input, "END SCHEDULE");
+	CheckWord(input, "BEGIN PRICE");
 	int price = ReadNumberOnLine(input);
-	if (!CheckWord(input, "END PRICE"))
-	{
-		return false;
-	}
-	if (!CheckWord(input, "END CFG"))
-	{
-		return false;
-	}
-	if (!CheckWord(input, "BEGIN EVENTS"))
-	{
-		return false;
-	}
+	clubManager.SetPrice(price);
+	CheckWord(input, "END PRICE");
+	CheckWord(input, "END CFG");
+	CheckWord(input, "BEGIN EVENTS");
 	ParseEvents(input);
 }

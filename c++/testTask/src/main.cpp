@@ -8,7 +8,8 @@ int main(int argc, char* argv[])
 
     ClubManager clubManager;
     Parser parser(clubManager);
-    if (!parser.ParseInputFile(input))
-        return 0;
-
+    parser.ParseInputFile(input);
+    clubManager.ExecuteEvents();
+    clubManager.CloseClub();
+    clubManager.CalculateTotal();
 }

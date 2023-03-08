@@ -8,6 +8,9 @@ void ClubManager::SetPrice(int price_)
 void ClubManager::SetRoomsNumber(int rooms_number_)
 {
 	rooms_number = rooms_number_;
+	clients_queue.reserve(rooms_number);
+	tables_and_revenue.resize(rooms_number);
+
 }
 
 void ClubManager::SetWorkingTime(std::pair<int, int> working_time_)
@@ -17,28 +20,30 @@ void ClubManager::SetWorkingTime(std::pair<int, int> working_time_)
 
 void ClubManager::AddEvent(Event event_)
 {
-	events.push_back(event_);
+	incoming_events.push_back(event_);
 }
 
 void ClubManager::ExecuteEvents()
 {
-	for (auto& event_ : events)
+
+
+	for (auto& event_ : incoming_events)
 	{
 		switch (event_.event_id)
 		{
-		case (IncomingEventType::ClientCome) :
+		case (EventType::ClientCome) :
 		{
 			EventId1(event_);
 		}
-		case (IncomingEventType::ClientSatDown):
+		case (EventType::ClientSatDown):
 		{
 			EventId2(event_);
 		}
-		case (IncomingEventType::ClientWait):
+		case (EventType::ClientWait):
 		{
 			EventId3(event_);
 		}
-		case (IncomingEventType::ClientLeft):
+		case (EventType::ClientLeft):
 		{
 			EventId4(event_);
 		}
@@ -52,13 +57,13 @@ void ClubManager::EventId1(Event& event_)
 {
 	if (clients_on_table.find(event_.client_id) == clients_on_table.end())
 	{
-		EventId13(Errors::YouShallNotPass);
+		EventId13(event_.time, Errors::YouShallNotPass);
 		return;
 	}
 
 	if (CheckTime(event_.time))
 	{
-		EventId13(Errors::NotOpenYet);
+		EventId13(event_.time, Errors::NotOpenYet);
 		return;
 	}
 
@@ -75,13 +80,13 @@ void ClubManager::EventId2(Event& event_)
 {
 	if (!CheckClient(event_.client_id))
 	{
-		EventId13(Errors::ClientUnknown);
+		EventId13(event_.time, Errors::ClientUnknown);
 		return;
 	}
 
 	if (!SatAtSpecificTable(event_))
 	{
-		EventId13(Errors::PlaceIsBusy);
+		EventId13(event_.time, Errors::PlaceIsBusy);
 		return;
 	}
 
@@ -92,7 +97,7 @@ void ClubManager::EventId3(Event& event_)
 {
 	if (CheckClientsQueue())
 	{
-		EventId13(Errors::ICanWaitNoLonger);
+		EventId13(event_.time, Errors::ICanWaitNoLonger);
 		return;
 	}
 
@@ -106,7 +111,7 @@ void ClubManager::EventId4(Event& event_)
 
 	if (!CheckClient(client_id))
 	{
-		EventId13(Errors::ClientUnknown);
+		EventId13(event_.time, Errors::ClientUnknown);
 		return;
 	}
 
@@ -120,17 +125,25 @@ void ClubManager::EventId11(Event& event_)
 {
 	CalculateTable(event_);
 	DeleteClient(event_);
+	PrintFullIncomingLine(event_);
 }
 
 void ClubManager::EventId12(TableTime table_time)
 {
 	if (!clients_queue.empty())
 	{
-		auto first_client_in_queue = clients_queue.front().client_id;
+		auto& first_client_in_queue = clients_queue.front().client_id;
 		clients_on_table[first_client_in_queue] = table_time;
 		tables_for_clients[table_time.number] = first_client_in_queue;
 		clients_queue.pop_back();
 
+		Event& event_ = OutgoingEventConstructor({ table_time.start_time,
+			EventType::ClientSatDownOutgoing,
+			first_client_in_queue ,
+			table_time.number ,
+			"" });
+
+		PrintFullIncomingLine(event_);
 	}
 }
 
@@ -173,7 +186,6 @@ void ClubManager::DeleteClient(Event& event_)
 {
 	tables_for_clients.erase(clients_on_table[event_.client_id].number);
 	clients_on_table.erase(event_.client_id);
-	clients_queue.erase(find(clients_queue.begin(), clients_queue.end(), event_));
 }
 
 TableTime ClubManager::CalculateTable(Event& event_)
@@ -182,10 +194,40 @@ TableTime ClubManager::CalculateTable(Event& event_)
 
 	int& stop_time = event_.time;
 	int& start_time = table_and_start_time->second.start_time;
-	int spend = (stop_time - start_time) * price;
+	int table_working_time = stop_time - start_time;
+	int spend = table_working_time * price;
 
 	int table_number = table_and_start_time->second.number;
-	tables_and_revenue[table_number] = spend;
+	tables_and_revenue[table_number] += TableTotalSpend{ spend, table_working_time };
 
 	return { table_number, stop_time };
+}
+
+void ClubManager::CloseClub()
+{
+	for (auto& [table, client_id] : tables_for_clients)
+	{
+		Event& event_ = OutgoingEventConstructor({ working_time.second,
+			EventType::ClientLeftOutgoing,
+			client_id ,
+			table ,
+			"" });
+		EventId11(event_);
+	}
+}
+
+Event& ClubManager::OutgoingEventConstructor(Event event_to_save)
+{
+	incoming_events.push_back(event_to_save);
+	return incoming_events.back();
+}
+
+void ClubManager::CalculateTotal()
+{
+	std::cout << working_time.second << std::endl;
+	for (int i = 0; i < tables_and_revenue.size(); i++)
+	{
+		auto& [time, revenue] = tables_and_revenue[i];
+		std::cout << i << " " << revenue << " " << time << std::endl;
+	}
 }
