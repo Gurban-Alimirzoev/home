@@ -30,7 +30,7 @@ std::pair<int, int> Parser::ParseWorkingTime(std::istream& input)
 
 Event Parser::ParseEvent(std::string line_)
 {	
-	std::string line = line_;
+	std::string line(line_);
 
 	std::string time = ParseLine(line);
 	std::string event_id = ParseLine(line);
@@ -43,10 +43,10 @@ Event Parser::ParseEvent(std::string line_)
 		table_number = std::stoi(ParseLine(line));
 
 	}
-	return { ConvertTimeToInt(time), EventType(std::stoi(event_id)), client_id, table_number, line_ };
+	return std::move(Event{ client_id, line_, event_type, ConvertTimeToInt(time), table_number });
 }
 
-std::string ParseLine(std::string& line)
+std::string Parser::ParseLine(std::string& line)
 {
 	size_t space = line.find(' ');
 	std::string result = line.substr(0, space);
@@ -57,10 +57,9 @@ std::string ParseLine(std::string& line)
 void Parser::ParseEvents(std::istream& input)
 {
 	std::string line;
-	while (line != "END EVENTS");
-	{
-		std::getline(input, line);
-		clubManager.AddEvent(ParseEvent(line));
+	while (std::getline(input, line))
+	{		
+		line != "END EVENTS" ? clubManager.AddEvent(ParseEvent(line)) : clubManager.CloseClub();
 	}
 }
 
